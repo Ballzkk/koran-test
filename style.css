@@ -1,0 +1,342 @@
+/* =========================================
+   Koran Test v2.0 - Custom Styles
+   Theme: Dark Mode (Cyan Primary)
+   ========================================= */
+
+/* 1. Google Font Import */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+/* Color Palette & Layout Variables */
+:root {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-surface: rgba(30, 41, 59, 0.5);
+  --border: #334155;
+  --primary: #22d3ee;
+  --primary-hover: #06b6d4;
+  --primary-dark: #0891b2;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --success: #34d399;
+  --warning: #fbbf24;
+  --error: #f87171;
+
+  /* Mobile Layout System Variables */
+  --mobile-header-height: 3.5rem;
+  --mobile-nav-height: 4rem;
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --mobile-bottom-spacing: calc(var(--mobile-nav-height) + var(--safe-area-bottom) + 2.5rem);
+}
+
+/* 2. Base Styles */
+html {
+  scroll-behavior: smooth;
+  height: 100%;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-top: constant(safe-area-inset-top, 0px);
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-bottom: constant(safe-area-inset-bottom, 0px);
+}
+
+/* Mobile Main Layout Bottom Spacing & Responsive Navigation Fix */
+@media (max-width: 767px) {
+  main.main-content {
+    padding-top: calc(var(--mobile-header-height) + env(safe-area-inset-top, 0px) + 0.75rem) !important;
+    padding-bottom: var(--mobile-bottom-spacing) !important;
+  }
+  #main-topnav,
+  #main-footer,
+  footer {
+    display: none !important;
+  }
+  #mobile-header {
+    display: block !important;
+  }
+  /* Mobile nav: always show on mobile — JS controls via .hidden class */
+  #mobile-nav {
+    display: block !important;
+  }
+}
+
+@media (min-width: 768px) {
+  #main-topnav,
+  #main-footer,
+  footer {
+    display: block !important;
+  }
+  #mobile-header,
+  #mobile-nav {
+    display: none !important;
+  }
+}
+
+/* .hidden class hides #mobile-nav everywhere (including mobile) */
+#mobile-nav.hidden {
+  display: none !important;
+}
+
+/* Fullscreen Views (test-screen & admin): Hide all navigation elements */
+body.hide-navs #main-topnav,
+body.hide-navs #mobile-header,
+body.hide-navs #mobile-nav,
+body.hide-navs #main-footer,
+body.hide-navs footer {
+  display: none !important;
+}
+
+::selection {
+  background-color: var(--primary);
+  color: var(--bg-primary);
+}
+
+/* 8. Scrollbar Styling (Dark Theme) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* 6. Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(100%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideOutRight {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(100%); }
+}
+@keyframes pulse-warning {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* 3. Page View System */
+.page-view {
+  display: none;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.page-view.active {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 4. Numpad Button Styles */
+.numpad-btn {
+  min-width: 65px;
+  min-height: 65px;
+  transition: all 0.1s ease;
+}
+@media (max-width: 640px) {
+  .numpad-btn {
+    min-width: 48px;
+    min-height: 52px;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    font-size: 1.25rem;
+  }
+}
+.numpad-btn:active {
+  transform: scale(0.92);
+}
+
+/* 5. Toast Notification System */
+.toast-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+@media (max-width: 767px) {
+  #toast-container, .toast-container {
+    top: calc(var(--mobile-header-height) + env(safe-area-inset-top, 0px) + 0.5rem) !important;
+    right: 0.75rem !important;
+    left: auto !important;
+    align-items: flex-end !important;
+    max-width: calc(100vw - 1.5rem) !important;
+  }
+  .toast {
+    min-width: 240px !important;
+    max-width: 100% !important;
+    width: auto !important;
+  }
+}
+.toast {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-left: 4px solid var(--primary);
+  padding: 0.875rem 1.125rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
+  animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  pointer-events: auto;
+  min-width: 250px;
+  max-width: 380px;
+}
+.toast.toast-success { border-left-color: var(--success); }
+.toast.toast-warning { border-left-color: var(--warning); }
+.toast.toast-error { border-left-color: var(--error); }
+.toast.toast-exit { animation: slideOutRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+/* 7. Utility Classes */
+.no-select { user-select: none; }
+.animate-fade-in { animation: fadeIn 0.3s ease forwards; }
+.timer-warning {
+  color: var(--error);
+  animation: pulse-warning 1s infinite;
+}
+.dark-admin { background-color: var(--bg-primary); }
+.badge-locked {
+  opacity: 0.4;
+  filter: grayscale(1);
+}
+.badge-earned {
+  box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* cyan-500/30 ring + shadow */
+}
+
+/* 9. Podium Styles for Leaderboard */
+.podium-gold {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(217, 119, 6, 0.2));
+  border: 1px solid var(--warning);
+}
+.podium-silver {
+  background: linear-gradient(135deg, rgba(148, 163, 184, 0.2), rgba(71, 85, 105, 0.2));
+  border: 1px solid #94a3b8;
+}
+.podium-bronze {
+  background: linear-gradient(135deg, rgba(180, 83, 9, 0.2), rgba(120, 53, 15, 0.2));
+  border: 1px solid #b45309;
+}
+
+/* 10. Admin Sidebar */
+.admin-sidebar {
+  background-color: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+}
+.admin-sidebar-item {
+  color: var(--text-secondary);
+  transition: all 0.2s;
+  padding: 0.75rem 1rem;
+  border-radius: 0.375rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.admin-sidebar-item:hover {
+  color: var(--primary);
+  background-color: rgba(34, 211, 238, 0.05);
+}
+.admin-sidebar-item.active {
+  color: var(--primary);
+  background-color: rgba(34, 211, 238, 0.1);
+  font-weight: 500;
+}
+
+/* 11. Article Card hover effect */
+.article-card {
+  transition: transform 0.2s ease;
+  overflow: hidden;
+}
+.article-card:hover {
+  transform: scale(1.02);
+}
+.article-card-image {
+  transition: transform 0.3s ease;
+}
+.article-card:hover .article-card-image {
+  transform: scale(1.05);
+}
+
+/* 12. Tab active indicator */
+.tab-btn {
+  color: var(--text-secondary);
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  padding: 0.75rem 1rem;
+  font-weight: 500;
+}
+.tab-btn:hover {
+  color: var(--primary);
+}
+.tab-btn.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+/* 13. Custom Thin Dark Theme Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(51, 65, 85, 0.8);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(6, 182, 212, 0.6);
+}
+
+/* 14. Modal & Notification UI Enhancements */
+@keyframes modalPopIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-card {
+  animation: modalPopIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.toast {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
