@@ -47,6 +47,7 @@ const app = {
         verificationPollingInterval: null,
         isEmailVerificationSuccess: false,
         currentView: 'home',
+        isInternalHashChange: false,
         announcementDismissed: JSON.parse(localStorage.getItem('kt_announcement_dismissed')) || false,
         historyChart: null
     },
@@ -1103,18 +1104,30 @@ const app = {
 
     // ======================== INIT ========================
     async init() {
-        const path = window.location.pathname;
-        const hash = window.location.hash;
-        const search = window.location.search;
-
-        if (path.includes('verify-email') || hash.includes('verify-email') || search.includes('token_hash') || search.includes('type=signup') || search.includes('type=email') || (search.includes('code=') && !hash.includes('access_token='))) {
-            this.navigate('verify-email');
-        } else if (hash === '#/admin' || path.endsWith('/admin')) {
-            this.navigate('admin');
-        } else {
-            this.navigate('home');
-        }
         await checkSession();
+
+        // Parse route from hash or URL parameters on initial page load
+        const routeFromHash = this.getRouteFromHash();
+        if (routeFromHash) {
+            this.navigate(routeFromHash, true);
+        } else if (this.state.user && !this.state.user.isGuest) {
+            this.navigate('dashboard', true);
+        } else {
+            this.navigate('home', true);
+        }
+
+        // Listen for hash changes (browser Back and Forward buttons)
+        window.addEventListener('hashchange', () => {
+            if (this.state.isInternalHashChange) {
+                this.state.isInternalHashChange = false;
+                return;
+            }
+            const newRoute = this.getRouteFromHash();
+            if (newRoute && newRoute !== this.state.currentView) {
+                this.navigate(newRoute, false);
+            }
+        });
+
         this.syncAuthStateDisplay();
         this.bindGlobalProtection();
         this.usernameValidation.init();
@@ -1153,6 +1166,7 @@ const app = {
                 localStorage.removeItem('kt_user');
                 localStorage.removeItem('kt_history');
                 app.syncAuthStateDisplay();
+                app.navigate('home', true);
             }
         });
 
@@ -1175,6 +1189,41 @@ const app = {
                 }
             }
         });
+    },
+
+    getRouteFromHash() {
+        const path = window.location.pathname;
+        const hash = window.location.hash;
+        const search = window.location.search;
+
+        // Verify Email check (query params, hash or path)
+        if (path.includes('verify-email') || hash.includes('verify-email') || search.includes('token_hash') || search.includes('type=signup') || search.includes('type=email') || (search.includes('code=') && !hash.includes('access_token='))) {
+            return 'verify-email';
+        }
+
+        // Admin route check
+        if (hash === '#/admin' || hash === '#admin' || path.endsWith('/admin')) {
+            return 'admin';
+        }
+
+        // Parse standard hash
+        if (hash) {
+            let route = hash;
+            if (route.startsWith('#')) route = route.slice(1);
+            if (route.startsWith('/')) route = route.slice(1);
+
+            // Strip any query params from hash
+            if (route.includes('?')) {
+                route = route.split('?')[0];
+            }
+
+            route = route.trim();
+            if (route !== '') {
+                return route;
+            }
+        }
+
+        return null;
     },
 
     // ======================== TOAST SYSTEM ========================
@@ -1208,7 +1257,7 @@ const app = {
     },
 
     // ======================== NAVIGATION ========================
-    navigate(viewId) {
+    navigate(viewId, updateHash = true) {
         if (viewId === 'verify-email' || viewId === 'verify') viewId = 'verify-email';
 
         // Stop email verification polling if leaving verify-email view
@@ -1228,13 +1277,13 @@ const app = {
             this.actions.terminateTestEngine();
         }
 
-        // Authenticated user Home -> Dashboard redirection
+        // Authenticated user Home / Login / Register -> Dashboard redirection
         if (this.state.user && !this.state.user.isGuest && (viewId === 'home' || viewId === 'login' || viewId === 'register')) {
             viewId = 'dashboard';
         }
-        // Guest user Dashboard -> Home redirection
-        if ((!this.state.user || this.state.user.isGuest) && viewId === 'dashboard') {
-            viewId = 'home';
+        // Guest user Dashboard / Protected Views -> Login redirection
+        if ((!this.state.user || this.state.user.isGuest) && (viewId === 'dashboard' || viewId === 'profile' || viewId === 'edit-profile' || viewId === 'achievements' || viewId === 'history')) {
+            viewId = 'login';
         }
 
         // Account view routing
@@ -1242,6 +1291,15 @@ const app = {
             viewId = 'profile';
         } else if (viewId === 'account' && (!this.state.user || this.state.user.isGuest)) {
             viewId = 'login';
+        }
+
+        // Synchronize browser URL hash if requested
+        if (updateHash !== false) {
+            const targetHash = '#' + viewId;
+            if (window.location.hash !== targetHash && !window.location.hash.startsWith(targetHash + '?')) {
+                this.state.isInternalHashChange = true;
+                window.location.hash = targetHash;
+            }
         }
 
         const loader = document.getElementById('global-loader');
@@ -4170,8 +4228,8 @@ const app = {
                 console.log('[REGISTER] Starting registration for:', email);
 
                 const verifyRedirectUrl = window.location.origin.includes('korantest.my.id') 
-                    ? 'https://www.korantest.my.id/verify-email' 
-                    : `${window.location.origin}/verify-email`;
+                    ? 'https://www.korantest.my.id/#verify-email' 
+                    : `${window.location.origin}/#verify-email`;
 
                 const { data, error } = await supabaseClient.auth.signUp({
                     email,
