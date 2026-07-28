@@ -1313,13 +1313,62 @@
       </div>
     </section>
 
-    <!-- VIEW 16: VERIFY EMAIL WAITING ROOM -->
-    <section id="view-verify" class="page-view max-w-md mx-auto hidden">
+    <!-- VIEW 16: DEDICATED VERIFY EMAIL PAGE -->
+    <section id="view-verify-email" class="page-view max-w-md mx-auto hidden">
       <div id="verify-card" class="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl shadow-xl text-center space-y-6">
         
-        <!-- Standard Waiting UI State -->
+        <!-- 1. LOADING STATE (Verifying OTP token or Code in progress) -->
+        <div id="verify-loading-state" class="hidden space-y-5 py-2">
+          <div class="w-20 h-20 mx-auto bg-cyan-500/10 text-cyan-400 rounded-2xl flex items-center justify-center text-4xl border border-cyan-500/20 shadow-lg shadow-cyan-500/10">
+            <i class="fa-solid fa-spinner animate-spin"></i>
+          </div>
+          <div class="space-y-2">
+            <h2 class="text-2xl font-extrabold text-slate-100">Verifying Email...</h2>
+            <p class="text-xs text-slate-400 leading-relaxed">Please wait while we confirm your email address with Koran Test.</p>
+          </div>
+          <div class="flex items-center justify-center space-x-2 text-xs text-cyan-400 bg-slate-950/60 py-2.5 px-4 rounded-xl border border-slate-800/80">
+            <div class="animate-spin rounded-full h-3.5 w-3.5 border-2 border-cyan-400 border-t-transparent"></div>
+            <span class="font-medium">Validating verification link...</span>
+          </div>
+        </div>
+
+        <!-- 2. SUCCESS STATE -->
+        <div id="verify-success-state" class="hidden space-y-5 py-2">
+          <div class="w-20 h-20 mx-auto bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center text-4xl border border-emerald-500/30 shadow-lg shadow-emerald-500/20 animate-bounce">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <div class="space-y-1.5">
+            <h2 class="text-2xl font-black text-slate-100">Email Verified Successfully</h2>
+            <p class="text-xs text-emerald-400 font-medium">Your account has been activated.</p>
+          </div>
+          <p class="text-xs text-slate-400">Redirecting to Login...</p>
+          <div class="flex items-center justify-center space-x-2 text-xs text-slate-400 bg-slate-950/60 py-2.5 px-4 rounded-xl border border-slate-800/80">
+            <div class="animate-spin rounded-full h-4 w-4 border-2 border-cyan-400 border-t-transparent"></div>
+            <span class="font-medium">Navigating to login page...</span>
+          </div>
+        </div>
+
+        <!-- 3. ERROR STATE -->
+        <div id="verify-error-state" class="hidden space-y-5 py-2">
+          <div class="w-20 h-20 mx-auto bg-rose-500/10 text-rose-400 rounded-full flex items-center justify-center text-4xl border border-rose-500/30 shadow-lg shadow-rose-500/20">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+          <div class="space-y-2">
+            <h2 class="text-2xl font-extrabold text-slate-100">Verification Failed</h2>
+            <p id="verify-error-message" class="text-xs text-rose-400 leading-relaxed font-medium">The verification link is invalid or has expired.</p>
+          </div>
+          <div class="space-y-3 pt-2">
+            <button type="button" onclick="app.navigate('login')" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold py-2.5 px-4 rounded-xl transition shadow-lg shadow-cyan-500/20 text-sm">
+              Go to Login
+            </button>
+            <button type="button" onclick="app.navigate('register')" class="w-full text-xs text-slate-400 hover:text-slate-200 font-bold transition py-1">
+              Back to Registration
+            </button>
+          </div>
+        </div>
+
+        <!-- 4. WAITING STATE (Post-Registration default screen) -->
         <div id="verify-waiting-state" class="space-y-5">
-          <!-- Animated Icon Container -->
           <div class="relative w-20 h-20 mx-auto">
             <div class="w-20 h-20 bg-cyan-500/10 text-cyan-400 rounded-2xl flex items-center justify-center text-4xl border border-cyan-500/20 shadow-lg shadow-cyan-500/10">
               <i class="fa-solid fa-envelope-open-text animate-bounce"></i>
@@ -1329,7 +1378,6 @@
             </div>
           </div>
 
-          <!-- Title & Message -->
           <div class="space-y-2">
             <h2 class="text-2xl font-extrabold text-slate-100">Verify Your Email</h2>
             <p class="text-xs text-slate-400 leading-relaxed">
@@ -1338,7 +1386,6 @@
             </p>
           </div>
 
-          <!-- Instruction Box -->
           <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3.5 text-left text-xs text-slate-400 space-y-1.5 leading-relaxed">
             <div class="flex items-center space-x-2 text-cyan-300 font-bold text-[11px] uppercase tracking-wider">
               <i class="fa-solid fa-circle-info"></i>
@@ -1347,21 +1394,17 @@
             <p>Please open your inbox and click the verification link to activate your account. If you don't receive the email within a few minutes, check your Spam or Junk folder.</p>
           </div>
 
-          <!-- Realtime Polling Status -->
           <div id="verify-status-box" class="flex items-center justify-center space-x-2 text-xs text-slate-400 bg-slate-950/60 py-2 px-3 rounded-lg border border-slate-800/80">
             <div id="verify-status-spinner" class="animate-spin rounded-full h-3.5 w-3.5 border-2 border-cyan-400 border-t-transparent"></div>
             <span id="verify-status-text" class="font-medium">Waiting for email verification...</span>
           </div>
 
-          <!-- Action Buttons -->
           <div class="space-y-3 pt-1">
-            <!-- Primary Action: Open Email App -->
             <button type="button" onclick="app.actions.openEmailApp()" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold py-2.5 px-4 rounded-xl transition shadow-lg shadow-cyan-500/20 flex items-center justify-center space-x-2 text-sm">
               <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
               <span>Open Email App</span>
             </button>
 
-            <!-- Resend Verification Button & Cooldown -->
             <div class="flex items-center justify-between bg-slate-800/40 p-2.5 rounded-xl border border-slate-800 text-xs">
               <button type="button" id="btn-verify-resend" onclick="app.actions.resendVerificationFromPage()" class="text-cyan-400 font-bold hover:underline disabled:opacity-50 disabled:no-underline disabled:cursor-not-allowed">
                 Resend Verification Email
@@ -1369,24 +1412,10 @@
               <span id="verify-resend-cooldown" class="text-slate-400 font-mono text-[11px] hidden"></span>
             </div>
 
-            <!-- Secondary Action: Change Email -->
-            <button type="button" onclick="app.actions.changeEmailFromVerify()" class="w-full text-xs text-slate-400 hover:text-slate-200 font-bold transition flex items-center justify-center space-x-1.5 py-1">
+            <button type="button" onclick="app.actions.changeEmailFromVerify()" class="w-full text-xs text-slate-400 hover:text-slate-200 font-bold transition py-1">
               <i class="fa-solid fa-pen-to-square text-[10px]"></i>
               <span>Change Email or Try Again</span>
             </button>
-          </div>
-        </div>
-
-        <!-- Success UI State (Hidden by default) -->
-        <div id="verify-success-state" class="hidden space-y-4 py-4">
-          <div class="w-20 h-20 mx-auto bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center text-4xl border border-emerald-500/30 shadow-lg shadow-emerald-500/20 animate-bounce">
-            <i class="fa-solid fa-circle-check"></i>
-          </div>
-          <h2 class="text-2xl font-black text-slate-100">Email Verified!</h2>
-          <p class="text-xs text-emerald-400 font-medium">Your account has been successfully verified.</p>
-          <div class="flex items-center justify-center space-x-2 text-xs text-slate-400 pt-2">
-            <div class="animate-spin rounded-full h-4 w-4 border-2 border-cyan-400 border-t-transparent"></div>
-            <span>Redirecting you to Login...</span>
           </div>
         </div>
 
@@ -1497,47 +1526,7 @@
       </div>
     </section>
 
-  <!-- AUTHENTICATED DASHBOARD WELCOME MODAL -->
-  <div id="modal-welcome" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden transition-all duration-300">
-    <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl p-6 shadow-2xl relative space-y-5 border-cyan-500/20 text-center">
-      
-      <!-- Close Button -->
-      <button onclick="app.closeWelcomeModal()" class="absolute top-4 right-4 text-slate-500 hover:text-slate-300 w-8 h-8 rounded-lg flex items-center justify-center hover:bg-slate-800 transition focus:outline-none focus:ring-2 focus:ring-cyan-400">
-        <i class="fa-solid fa-xmark text-lg"></i>
-      </button>
 
-      <!-- 1. Welcome Back Header -->
-      <div class="space-y-1 pt-2">
-        <div class="w-12 h-12 bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 rounded-full flex items-center justify-center text-2xl mx-auto mb-3 shadow-lg shadow-cyan-500/10">
-          👋
-        </div>
-        <h3 class="text-xs font-black uppercase tracking-widest text-cyan-400">Welcome Back!</h3>
-        <h2 id="welcome-modal-user" class="text-xl font-extrabold text-slate-100 leading-tight">—</h2>
-      </div>
-
-      <!-- 2. Current Rank Card (Dynamically computed from test_results) -->
-      <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-4 space-y-1 text-center">
-        <span class="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block">Current Rank</span>
-        <div id="welcome-modal-rank" class="text-2xl font-black text-cyan-400">
-          #—
-        </div>
-        <p id="welcome-modal-rank-sub" class="text-xs text-slate-400 font-medium">
-          —
-        </p>
-      </div>
-
-      <!-- 3. Daily Motivation -->
-      <div class="bg-slate-950/40 border-l-2 border-cyan-500 p-3.5 rounded-r-xl text-left">
-        <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 block mb-1">Daily Motivation</span>
-        <p id="welcome-modal-motivation" class="text-xs text-slate-300 italic font-medium leading-relaxed">—</p>
-      </div>
-
-      <!-- Action Button -->
-      <button onclick="app.closeWelcomeModal()" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold py-3 rounded-xl transition shadow-lg shadow-cyan-500/20 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400">
-        Continue to Dashboard →
-      </button>
-    </div>
-  </div>
 
   <!-- AUTH INTENT MODAL -->
   <div id="modal-auth-intent" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">

@@ -381,7 +381,6 @@ const app = {
                 app.toast.show('Login successful!', 'success');
                 console.log('[NAVIGATION] Dashboard');
                 app.navigate('dashboard');
-                await app.evaluateLeaderboardNotification(true);
             }
         } else {
             // CASE 2: Profile does NOT exist
@@ -1104,7 +1103,13 @@ const app = {
 
     // ======================== INIT ========================
     async init() {
-        if (window.location.hash === '#/admin' || window.location.pathname.endsWith('/admin')) {
+        const path = window.location.pathname;
+        const hash = window.location.hash;
+        const search = window.location.search;
+
+        if (path.includes('verify-email') || hash.includes('verify-email') || search.includes('token_hash') || search.includes('type=signup') || search.includes('type=email') || (search.includes('code=') && !hash.includes('access_token='))) {
+            this.navigate('verify-email');
+        } else if (hash === '#/admin' || path.endsWith('/admin')) {
             this.navigate('admin');
         } else {
             this.navigate('home');
@@ -1204,10 +1209,10 @@ const app = {
 
     // ======================== NAVIGATION ========================
     navigate(viewId) {
-        if (viewId === 'verify-email') viewId = 'verify';
+        if (viewId === 'verify-email' || viewId === 'verify') viewId = 'verify-email';
 
-        // Stop email verification polling if leaving verify view
-        if (this.state.currentView === 'verify' && viewId !== 'verify') {
+        // Stop email verification polling if leaving verify-email view
+        if (this.state.currentView === 'verify-email' && viewId !== 'verify-email') {
             this.stopEmailVerificationPolling();
         }
 
@@ -1282,7 +1287,7 @@ const app = {
             if (viewId === 'achievements') this.renderAchievements();
             if (viewId === 'history') await this.renderHistoryStatistics();
             if (viewId === 'articles') this.articles.renderList();
-            if (viewId === 'verify') this.initVerifyEmailView();
+            if (viewId === 'verify-email') this.initVerifyEmailView();
 
             if (viewId === 'register') this.resetAuthForms('register');
             if (viewId === 'login') {
@@ -1663,149 +1668,7 @@ const app = {
         }
     },
 
-    async evaluateLeaderboardNotification(isFreshLogin = false) {
-        if (!isFreshLogin) {
-            console.log('[LEADERBOARD] Session Restore - Modal Skipped');
-            return;
-        }
 
-        const user = this.state.user;
-        if (!user || user.isGuest) return;
-
-        const modal = document.getElementById('modal-welcome');
-        if (!modal) return;
-
-        const userEl = document.getElementById('welcome-modal-user');
-        const rankEl = document.getElementById('welcome-modal-rank');
-        const rankSubEl = document.getElementById('welcome-modal-rank-sub');
-        const motivationEl = document.getElementById('welcome-modal-motivation');
-
-        const displayName = (user.displayName && user.displayName.trim() !== '') ? user.displayName.trim() : (user.username || 'User');
-        if (userEl) userEl.innerText = displayName;
-        if (motivationEl) motivationEl.innerText = `"${this.getDailyMotivationQuote()}"`;
-
-        try {
-            const allRanked = await this.getLeaderboardData('alltime', true);
-            const userMatch = allRanked.find(r => r.id === user.id);
-            const currentRank = userMatch ? userMatch.rank : null;
-
-            const storedPrev = localStorage.getItem('leaderboard_last_rank') || localStorage.getItem('kt_last_viewed_rank');
-            const prevRank = storedPrev !== null ? parseInt(storedPrev, 10) : null;
-
-            let rankChanged = false;
-            let shouldShowModal = false;
-
-            if (currentRank !== null) {
-                if (prevRank === null) {
-                    rankChanged = true;
-                    shouldShowModal = true;
-                    if (rankEl) rankEl.innerHTML = `#${currentRank}`;
-                    if (rankEl) rankEl.className = 'text-3xl sm:text-4xl font-black text-cyan-400 tracking-tight my-1';
-                    if (rankSubEl) {
-                        rankSubEl.innerHTML = `<span class="text-emerald-400 font-bold block">Welcome!</span><span class="text-slate-400 font-medium">Complete your first test to begin climbing the leaderboard.</span>`;
-                        rankSubEl.className = 'text-xs space-y-0.5 leading-snug';
-                    }
-                } else if (currentRank === 1 && prevRank !== 1) {
-                    rankChanged = true;
-                    shouldShowModal = true;
-                    if (rankEl) rankEl.innerHTML = `#1`;
-                    if (rankEl) rankEl.className = 'text-3xl sm:text-4xl font-black text-amber-400 tracking-tight my-1';
-                    if (rankSubEl) {
-                        rankSubEl.innerHTML = `<span class="text-amber-400 font-bold block">👑 Reached Rank #1!</span><span class="text-slate-400 font-medium">You are currently leading the All Time leaderboard.</span>`;
-                        rankSubEl.className = 'text-xs space-y-0.5 leading-snug';
-                    }
-                } else if (prevRank > 100 && currentRank <= 100) {
-                    rankChanged = true;
-                    shouldShowModal = true;
-                    if (rankEl) rankEl.innerHTML = `#${currentRank}`;
-                    if (rankEl) rankEl.className = 'text-3xl sm:text-4xl font-black text-cyan-400 tracking-tight my-1';
-                    if (rankSubEl) {
-                        rankSubEl.innerHTML = `<span class="text-emerald-400 font-bold block">🎉 Entered Top 100!</span><span class="text-slate-400 font-medium">Welcome to the Top 100. Keep improving to climb higher.</span>`;
-                        rankSubEl.className = 'text-xs space-y-0.5 leading-snug';
-                    }
-                } else if (prevRank <= 100 && currentRank > 100) {
-                    rankChanged = true;
-                    shouldShowModal = true;
-                    if (rankEl) rankEl.innerHTML = `Not Ranked`;
-                    if (rankEl) rankEl.className = 'text-2xl font-black text-slate-300 tracking-tight my-1';
-                    if (rankSubEl) {
-                        rankSubEl.innerHTML = `<span class="text-rose-400 font-bold block">💪 Dropped out of Top 100</span><span class="text-slate-400 font-medium">You are just outside the Top 100. Complete another test to reclaim your position.</span>`;
-                        rankSubEl.className = 'text-xs space-y-0.5 leading-snug';
-                    }
-                } else if (currentRank < prevRank) {
-                    const climbed = prevRank - currentRank;
-                    rankChanged = true;
-                    shouldShowModal = true;
-                    if (rankEl) rankEl.innerHTML = `#${currentRank}`;
-                    if (rankEl) rankEl.className = 'text-3xl sm:text-4xl font-black text-cyan-400 tracking-tight my-1';
-                    if (rankSubEl) {
-                        rankSubEl.innerHTML = `<span class="text-emerald-400 font-bold block">▲ Up ${climbed} ${climbed === 1 ? 'position' : 'positions'}!</span><span class="text-slate-400 font-medium">Your rank improved since your last login.</span>`;
-                        rankSubEl.className = 'text-xs space-y-0.5 leading-snug';
-                    }
-                } else if (currentRank > prevRank) {
-                    const dropped = currentRank - prevRank;
-                    rankChanged = true;
-                    shouldShowModal = true;
-                    if (rankEl) rankEl.innerHTML = `#${currentRank}`;
-                    if (rankEl) rankEl.className = 'text-3xl sm:text-4xl font-black text-slate-200 tracking-tight my-1';
-                    if (rankSubEl) {
-                        rankSubEl.innerHTML = `<span class="text-rose-400 font-bold block">▼ Down ${dropped} ${dropped === 1 ? 'position' : 'positions'}</span><span class="text-slate-400 font-medium">Complete another test to improve your ranking.</span>`;
-                        rankSubEl.className = 'text-xs space-y-0.5 leading-snug';
-                    }
-                } else {
-                    rankChanged = false;
-                    shouldShowModal = false;
-                }
-            } else {
-                if (prevRank === null) {
-                    rankChanged = false;
-                    shouldShowModal = true;
-                    if (rankEl) rankEl.innerText = 'Unranked';
-                    if (rankEl) rankEl.className = 'text-2xl font-black text-slate-300 tracking-tight my-1';
-                    if (rankSubEl) {
-                        rankSubEl.innerHTML = `<span class="text-cyan-400 font-bold block">Welcome!</span><span class="text-slate-400 font-medium">Complete your first test to begin climbing the leaderboard.</span>`;
-                        rankSubEl.className = 'text-xs space-y-0.5 leading-snug';
-                    }
-                } else {
-                    rankChanged = false;
-                    shouldShowModal = false;
-                }
-            }
-
-            console.log('[LEADERBOARD] Previous Rank:', prevRank);
-            console.log('[LEADERBOARD] Current Rank:', currentRank);
-            console.log('[LEADERBOARD] Rank Changed:', rankChanged);
-            console.log('[LEADERBOARD] Modal Opened:', shouldShowModal);
-
-            if (shouldShowModal) {
-                setTimeout(() => {
-                    modal.classList.remove('hidden');
-                }, 400);
-            }
-
-            if (currentRank !== null) {
-                localStorage.setItem('leaderboard_last_rank', String(currentRank));
-                localStorage.setItem('kt_last_viewed_rank', String(currentRank));
-            }
-
-        } catch (e) {
-            console.error('Error evaluating leaderboard notification:', e);
-        }
-    },
-
-    async showWelcomeModal() {
-        return this.evaluateLeaderboardNotification(true);
-    },
-
-    notifyRankChangeRealtime(newRank) {
-        if (!newRank) return;
-        app.toast.show(`🏆 Your leaderboard position has changed. Current Rank: #${newRank}`, 'info');
-    },
-
-    closeWelcomeModal() {
-        const modal = document.getElementById('modal-welcome');
-        if (modal) modal.classList.add('hidden');
-    },
 
     async renderDashboardHero() {
         const user = this.state.user;
@@ -3553,7 +3416,6 @@ const app = {
                 app.actions.closeInfoModal();
                 if (app.achievements) app.achievements.closeDetailModal();
                 if (app.leaderboard) app.leaderboard.closeProfilePreview();
-                if (app.closeWelcomeModal) app.closeWelcomeModal();
             }
 
             if (app.state.isTestRunning && e.key >= '0' && e.key <= '9') {
@@ -3564,16 +3426,130 @@ const app = {
         });
     },
 
-    // ======================== EMAIL VERIFICATION WAITING ROOM ========================
-    initVerifyEmailView() {
+    // ======================== EMAIL VERIFICATION WAITING & VERIFY PAGE ========================
+    async initVerifyEmailView() {
+        const loadingState = document.getElementById('verify-loading-state');
+        const successState = document.getElementById('verify-success-state');
+        const errorState = document.getElementById('verify-error-state');
+        const errorMsgEl = document.getElementById('verify-error-message');
+        const waitingState = document.getElementById('verify-waiting-state');
+
+        // Helper to reset view states
+        const showState = (targetState) => {
+            if (loadingState) loadingState.classList.add('hidden');
+            if (successState) successState.classList.add('hidden');
+            if (errorState) errorState.classList.add('hidden');
+            if (waitingState) waitingState.classList.add('hidden');
+
+            if (targetState) targetState.classList.remove('hidden');
+        };
+
+        // Parse search params & hash params
+        const searchParams = new URLSearchParams(window.location.search);
+        let hashString = window.location.hash;
+        if (hashString.startsWith('#')) hashString = hashString.slice(1);
+        if (hashString.startsWith('/')) hashString = hashString.slice(1);
+        const hashParams = new URLSearchParams(hashString);
+
+        const tokenHash = searchParams.get('token_hash') || hashParams.get('token_hash');
+        const type = searchParams.get('type') || hashParams.get('type') || 'signup';
+        const code = searchParams.get('code') || hashParams.get('code');
+        const errorParam = searchParams.get('error') || hashParams.get('error') || searchParams.get('error_description') || hashParams.get('error_description');
+
+        console.log('[VERIFY-EMAIL] Params detected:', { tokenHash: !!tokenHash, code: !!code, type, errorParam: !!errorParam });
+
+        // CASE 1: URL contains explicit error (e.g. link expired, access denied)
+        if (errorParam) {
+            console.warn('[VERIFY-EMAIL] Error param in URL:', errorParam);
+            showState(errorState);
+            if (errorMsgEl) {
+                const desc = decodeURIComponent(errorParam).toLowerCase();
+                if (desc.includes('expired') || desc.includes('otp_expired')) {
+                    errorMsgEl.innerText = 'This email verification link has expired. Please request a new verification link.';
+                } else {
+                    errorMsgEl.innerText = 'The verification link is invalid or corrupted. Please request a new link.';
+                }
+            }
+            return;
+        }
+
+        // CASE 2: URL contains token_hash (Supabase PKCE / OTP confirmation)
+        if (tokenHash) {
+            showState(loadingState);
+            try {
+                console.log('[VERIFY-EMAIL] Executing verifyOtp for type:', type);
+                const { data, error } = await supabaseClient.auth.verifyOtp({
+                    token_hash: tokenHash,
+                    type: type
+                });
+
+                if (error) {
+                    console.error('[VERIFY-EMAIL] verifyOtp error:', error);
+                    if (error.message && error.message.toLowerCase().includes('already')) {
+                        app.handleVerificationSuccess(data?.user?.email);
+                        return;
+                    }
+
+                    showState(errorState);
+                    if (errorMsgEl) {
+                        if (error.message.toLowerCase().includes('expired')) {
+                            errorMsgEl.innerText = 'This email verification link has expired. Please request a new verification link.';
+                        } else {
+                            errorMsgEl.innerText = error.message || 'Verification failed. The link may be invalid or expired.';
+                        }
+                    }
+                } else {
+                    console.log('[VERIFY-EMAIL] verifyOtp success!');
+                    const verifiedEmail = data?.user?.email || data?.session?.user?.email;
+                    app.handleVerificationSuccess(verifiedEmail);
+                }
+            } catch (err) {
+                console.error('[VERIFY-EMAIL] Unexpected verifyOtp exception:', err);
+                showState(errorState);
+                if (errorMsgEl) errorMsgEl.innerText = 'Network or connection error. Please try again.';
+            }
+            return;
+        }
+
+        // CASE 3: URL contains PKCE auth code
+        if (code) {
+            showState(loadingState);
+            try {
+                console.log('[VERIFY-EMAIL] Executing exchangeCodeForSession');
+                const { data, error } = await supabaseClient.auth.exchangeCodeForSession(code);
+                if (error) {
+                    console.error('[VERIFY-EMAIL] exchangeCodeForSession error:', error);
+                    showState(errorState);
+                    if (errorMsgEl) errorMsgEl.innerText = error.message || 'Invalid or expired verification code.';
+                } else {
+                    console.log('[VERIFY-EMAIL] exchangeCodeForSession success!');
+                    app.handleVerificationSuccess(data?.user?.email);
+                }
+            } catch (err) {
+                console.error('[VERIFY-EMAIL] Unexpected exchangeCode exception:', err);
+                showState(errorState);
+                if (errorMsgEl) errorMsgEl.innerText = 'Network error during verification.';
+            }
+            return;
+        }
+
+        // CASE 4: Active session or auto-processed hash session
+        try {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session?.user?.email_confirmed_at || session?.user?.confirmed_at) {
+                console.log('[VERIFY-EMAIL] User is already confirmed!');
+                app.handleVerificationSuccess(session.user.email);
+                return;
+            }
+        } catch (e) {
+            console.log('[VERIFY-EMAIL] Session check error:', e);
+        }
+
+        // CASE 5: Default Waiting State (User just completed signup and is waiting to open email)
+        showState(waitingState);
         const email = app.state.unverifiedEmail || sessionStorage.getItem('kt_pending_verification_email') || 'your email address';
         const emailEl = document.getElementById('verify-email-address');
         if (emailEl) emailEl.innerText = email;
-
-        const waitingState = document.getElementById('verify-waiting-state');
-        const successState = document.getElementById('verify-success-state');
-        if (waitingState) waitingState.classList.remove('hidden');
-        if (successState) successState.classList.add('hidden');
 
         app.state.isEmailVerificationSuccess = false;
         app.startEmailVerificationPolling();
@@ -3640,9 +3616,14 @@ const app = {
 
         app.stopEmailVerificationPolling();
 
+        const loadingState = document.getElementById('verify-loading-state');
         const waitingState = document.getElementById('verify-waiting-state');
+        const errorState = document.getElementById('verify-error-state');
         const successState = document.getElementById('verify-success-state');
+
+        if (loadingState) loadingState.classList.add('hidden');
         if (waitingState) waitingState.classList.add('hidden');
+        if (errorState) errorState.classList.add('hidden');
         if (successState) successState.classList.remove('hidden');
 
         const emailToUse = verifiedEmail || app.state.unverifiedEmail || sessionStorage.getItem('kt_pending_verification_email');
@@ -4188,11 +4169,16 @@ const app = {
             try {
                 console.log('[REGISTER] Starting registration for:', email);
 
+                const verifyRedirectUrl = window.location.origin.includes('korantest.my.id') 
+                    ? 'https://www.korantest.my.id/verify-email' 
+                    : `${window.location.origin}/verify-email`;
+
                 const { data, error } = await supabaseClient.auth.signUp({
                     email,
                     password,
                     options: {
-                        data: { username: username }
+                        data: { username: username },
+                        emailRedirectTo: verifyRedirectUrl
                     }
                 });
 
@@ -4277,7 +4263,7 @@ const app = {
                 // Redirect to Verify Email Waiting Room
                 setTimeout(() => {
                     console.log('[NAVIGATION] Verify Email Waiting Room');
-                    app.navigate('verify');
+                    app.navigate('verify-email');
 
                     // Reset register button for next time
                     if (registerBtn) {
@@ -4425,7 +4411,6 @@ const app = {
         app.resetAuthForms('all');
         app.syncAuthStateDisplay();
         app.navigate('dashboard');
-        await app.evaluateLeaderboardNotification(true);
 
     } 
     
@@ -4663,7 +4648,6 @@ const app = {
                 app.toast.show('Registration successful! Welcome.', 'success');
                 app.syncAuthStateDisplay();
                 app.navigate('dashboard');
-                await app.evaluateLeaderboardNotification(true);
             } catch (err) {
                 console.log('[GOOGLE LOGIN FAILED]', err);
                 app.toast.show('An error occurred during registration.', 'error');
