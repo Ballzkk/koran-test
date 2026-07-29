@@ -1228,7 +1228,12 @@
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-400 mb-1">Password</label>
-            <input type="password" id="login-pwd" required class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100 outline-none focus:border-cyan-500 transition" placeholder="••••••••">
+            <div class="relative">
+              <input type="password" id="login-pwd" required class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 pr-10 text-sm text-slate-100 outline-none focus:border-cyan-500 transition" placeholder="••••••••">
+              <button type="button" onclick="app.actions.togglePasswordVisibility('login-pwd', 'login-pwd-eye')" class="absolute right-3 top-3 text-slate-400 hover:text-slate-200">
+                <i id="login-pwd-eye" class="fa-solid fa-eye text-xs"></i>
+              </button>
+            </div>
           </div>
           <div class="flex justify-end">
             <button type="button" onclick="app.navigate('forgot-password')" class="text-xs text-cyan-400 hover:underline">Forgot password?</button>
@@ -1290,7 +1295,12 @@
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-400 mb-1">Password</label>
-            <input type="password" id="reg-pwd" required minlength="6" autocomplete="new-password" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100 outline-none focus:border-cyan-500 transition" placeholder="At least 6 characters">
+            <div class="relative">
+              <input type="password" id="reg-pwd" required minlength="6" autocomplete="new-password" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 pr-10 text-sm text-slate-100 outline-none focus:border-cyan-500 transition" placeholder="At least 6 characters">
+              <button type="button" onclick="app.actions.togglePasswordVisibility('reg-pwd', 'reg-pwd-eye')" class="absolute right-3 top-3 text-slate-400 hover:text-slate-200">
+                <i id="reg-pwd-eye" class="fa-solid fa-eye text-xs"></i>
+              </button>
+            </div>
             
             <div id="pwd-strength-container" class="mt-2 hidden space-y-1">
               <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden flex gap-1">

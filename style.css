@@ -38,6 +38,17 @@ html {
 body {
   font-family: 'Plus Jakarta Sans', sans-serif;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Disable browser-native password reveal & clear buttons to prevent duplicate visibility icons */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear,
+input[type="password"]::-webkit-contacts-auto-fill-button,
+input[type="password"]::-webkit-credentials-auto-fill-button {
+  display: none !important;
+}
+
+body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   min-height: 100%;

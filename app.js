@@ -2604,11 +2604,9 @@ const app = {
             { id: 'first_marathon', title: 'First Marathon Test', desc: 'Complete a Marathon mode test session', icon: 'fa-solid fa-person-running', category: 'getting_started', target: 1, type: 'test_mode_marathon', rarity: 'rare', unit: 'Test' },
 
             // Score
-            { id: 'score_20', title: 'Score 20', desc: 'Achieve a score of 20 points in a test session', icon: 'fa-solid fa-star', category: 'score', target: 20, type: 'best_score', rarity: 'common', unit: 'Score' },
-            { id: 'score_40', title: 'Score 40', desc: 'Achieve a score of 40 points in a test session', icon: 'fa-solid fa-medal', category: 'score', target: 40, type: 'best_score', rarity: 'common', unit: 'Score' },
-            { id: 'score_60', title: 'Score 60', desc: 'Achieve a score of 60 points in a test session', icon: 'fa-solid fa-trophy', category: 'score', target: 60, type: 'best_score', rarity: 'rare', unit: 'Score' },
-            { id: 'score_80', title: 'Score 80', desc: 'Achieve a score of 80 points in a test session', icon: 'fa-solid fa-crown', category: 'score', target: 80, type: 'best_score', rarity: 'epic', unit: 'Score' },
-            { id: 'score_100', title: 'Score 100', desc: 'Achieve a perfect score of 100 points', icon: 'fa-solid fa-gem', category: 'score', target: 100, type: 'best_score', rarity: 'legendary', unit: 'Score' },
+            { id: 'score_100', title: 'Score 100', desc: 'Achieve a score of 100 points in a test session', icon: 'fa-solid fa-star', category: 'score', target: 100, type: 'best_score', rarity: 'common', unit: 'Score' },
+            { id: 'score_500', title: 'Score 500', desc: 'Achieve a score of 500 points in a test session', icon: 'fa-solid fa-trophy', category: 'score', target: 500, type: 'best_score', rarity: 'rare', unit: 'Score' },
+            { id: 'score_1000', title: 'Score 1000', desc: 'Achieve a score of 1000 points in a test session', icon: 'fa-solid fa-gem', category: 'score', target: 1000, type: 'best_score', rarity: 'legendary', unit: 'Score' },
 
             // Testing
             { id: 'tests_10', title: '10 Tests', desc: 'Complete 10 test sessions in total', icon: 'fa-solid fa-vial', category: 'testing', target: 10, type: 'total_tests', rarity: 'common', unit: 'Tests' },
@@ -4003,20 +4001,53 @@ const app = {
         }
     },
 
+    validateEmail(email) {
+        if (!email || typeof email !== 'string' || email.trim() === '') {
+            return { valid: false, message: 'Email address is required.' };
+        }
+        const clean = email.trim();
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(clean)) {
+            return { valid: false, message: 'Please enter a valid email address.' };
+        }
+        return { valid: true, value: clean };
+    },
+
+    togglePasswordVisibility(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        if (!input || !icon) return;
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    },
+
     async handleForgotPasswordSubmit(e) {
         if (e) e.preventDefault();
 
         const emailInput = document.getElementById('forgot-email');
-        const email = (emailInput?.value || '').trim();
+        const rawEmail = emailInput?.value || '';
+        const email = rawEmail.trim();
 
+        // 1. Empty check
         if (!email) {
-            app.toast.show('Email address is required.', 'error');
+            this.toast.show('Email address is required.', 'error');
+            if (emailInput) emailInput.focus();
             return;
         }
 
-        const emailVal = app.validateEmail(email);
+        // 2. Format validation check
+        const emailVal = this.validateEmail(email);
         if (!emailVal.valid) {
-            app.toast.show(emailVal.message || 'Please enter a valid email address.', 'error');
+            this.toast.show(emailVal.message || 'Please enter a valid email address.', 'error');
+            if (emailInput) emailInput.focus();
             return;
         }
 
@@ -5456,6 +5487,8 @@ const app = {
         openEmailApp() { app.openEmailApp(); },
         changeEmailFromVerify() { app.changeEmailFromVerify(); },
         resendVerificationFromPage() { app.resendVerificationFromPage(); },
+        validateEmail(email) { return app.validateEmail(email); },
+        togglePasswordVisibility(inputId, iconId) { app.togglePasswordVisibility(inputId, iconId); },
         handleForgotPasswordSubmit(e) { app.handleForgotPasswordSubmit(e); },
         resendResetEmail() { app.resendResetEmail(); },
         openResetEmailApp() { app.openResetEmailApp(); },
