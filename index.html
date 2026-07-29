@@ -807,6 +807,47 @@
         </div>
       </div>
 
+      <!-- Security Menu Group -->
+      <div id="profile-security-section" class="space-y-3">
+        <h4 class="font-extrabold text-slate-400 text-xs uppercase tracking-wider px-1">Security</h4>
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
+          
+          <!-- Email / Password User UI -->
+          <div id="profile-email-security-ui" class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="w-9 h-9 bg-slate-800 text-cyan-400 rounded-lg flex items-center justify-center text-base">
+                <i class="fa-solid fa-lock"></i>
+              </div>
+              <div>
+                <span class="font-bold text-slate-200 text-sm block">Password</span>
+                <span class="text-xs text-slate-500 font-mono">••••••••</span>
+              </div>
+            </div>
+            <button type="button" onclick="app.actions.openChangePasswordModal()" class="bg-slate-800 border border-slate-700 hover:bg-slate-700 text-cyan-400 hover:text-cyan-300 text-xs font-extrabold px-4 py-2 rounded-lg transition">
+              Change Password
+            </button>
+          </div>
+
+          <!-- Google OAuth User UI -->
+          <div id="profile-google-security-ui" class="hidden flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+              <div class="w-9 h-9 bg-slate-800 text-cyan-400 rounded-lg flex items-center justify-center text-base">
+                <i class="fa-solid fa-shield-halved"></i>
+              </div>
+              <div>
+                <span class="font-bold text-slate-200 text-sm block">Google Account</span>
+                <span class="text-xs text-slate-400">Password is managed by your Google Account.</span>
+              </div>
+            </div>
+            <button type="button" onclick="window.open('https://myaccount.google.com/security', '_blank')" class="bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold px-3.5 py-2 rounded-lg transition flex items-center gap-1.5 flex-shrink-0">
+              <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+              <span>Manage Google Account</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
       <!-- General Menu Group -->
       <div class="space-y-3">
         <h4 class="font-extrabold text-slate-400 text-xs uppercase tracking-wider px-1">General</h4>
@@ -1190,7 +1231,7 @@
             <input type="password" id="login-pwd" required class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100 outline-none focus:border-cyan-500 transition" placeholder="••••••••">
           </div>
           <div class="flex justify-end">
-            <button type="button" onclick="app.navigate('forgot')" class="text-xs text-cyan-400 hover:underline">Forgot password?</button>
+            <button type="button" onclick="app.navigate('forgot-password')" class="text-xs text-cyan-400 hover:underline">Forgot password?</button>
           </div>
           <button type="submit" class="w-full bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold py-2.5 rounded-lg transition mt-2">Sign In</button>
         </form>
@@ -1415,6 +1456,169 @@
             <button type="button" onclick="app.actions.changeEmailFromVerify()" class="w-full text-xs text-slate-400 hover:text-slate-200 font-bold transition py-1">
               <i class="fa-solid fa-pen-to-square text-[10px]"></i>
               <span>Change Email or Try Again</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- VIEW 18: FORGOT PASSWORD PAGE -->
+    <section id="view-forgot-password" class="page-view max-w-md mx-auto hidden">
+      <div id="forgot-card" class="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl shadow-xl space-y-6">
+        
+        <!-- 1. FORM STATE -->
+        <div id="forgot-form-state" class="space-y-6">
+          <div class="text-center space-y-2">
+            <div class="w-16 h-16 mx-auto bg-cyan-500/10 text-cyan-400 rounded-2xl flex items-center justify-center text-3xl border border-cyan-500/20 shadow-lg shadow-cyan-500/10">
+              <i class="fa-solid fa-key"></i>
+            </div>
+            <h2 class="text-2xl font-extrabold text-slate-100">Forgot Password</h2>
+            <p class="text-xs text-slate-400 leading-relaxed">Enter the email address associated with your Koran Test account.</p>
+          </div>
+
+          <form onsubmit="app.actions.handleForgotPasswordSubmit(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-400 mb-1">Email Address</label>
+              <input type="email" id="forgot-email" required class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100 outline-none focus:border-cyan-500 transition" placeholder="email@example.com">
+            </div>
+
+            <div class="space-y-3 pt-2">
+              <button type="submit" id="btn-forgot-submit" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold py-2.5 px-4 rounded-xl transition shadow-lg shadow-cyan-500/20 text-sm flex items-center justify-center space-x-2">
+                <span>Send Reset Link</span>
+              </button>
+
+              <button type="button" onclick="app.navigate('login')" class="w-full text-xs text-slate-400 hover:text-slate-200 font-bold transition py-1 flex items-center justify-center space-x-1.5">
+                <i class="fa-solid fa-arrow-left text-[10px]"></i>
+                <span>Back to Login</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- 2. SENT SUCCESS STATE -->
+        <div id="forgot-sent-state" class="hidden space-y-6 text-center">
+          <div class="w-20 h-20 mx-auto bg-cyan-500/10 text-cyan-400 rounded-2xl flex items-center justify-center text-4xl border border-cyan-500/20 shadow-lg shadow-cyan-500/10">
+            <i class="fa-solid fa-paper-plane animate-bounce"></i>
+          </div>
+
+          <div class="space-y-2">
+            <h2 class="text-2xl font-extrabold text-slate-100">Reset Email Sent</h2>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              We've sent a password reset link to:<br>
+              <strong id="forgot-sent-email-display" class="text-cyan-400 font-bold break-all">user@example.com</strong>
+            </p>
+            <p class="text-xs text-slate-400">Please check your inbox and follow the instructions.</p>
+          </div>
+
+          <div class="space-y-3 pt-2">
+            <button type="button" onclick="app.actions.openResetEmailApp()" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold py-2.5 px-4 rounded-xl transition shadow-lg shadow-cyan-500/20 flex items-center justify-center space-x-2 text-sm">
+              <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+              <span>Open Email</span>
+            </button>
+
+            <div class="flex items-center justify-between bg-slate-800/40 p-2.5 rounded-xl border border-slate-800 text-xs">
+              <button type="button" id="btn-forgot-resend" onclick="app.actions.resendResetEmail()" class="text-cyan-400 font-bold hover:underline disabled:opacity-50 disabled:no-underline disabled:cursor-not-allowed">
+                Resend Reset Link
+              </button>
+              <span id="forgot-resend-cooldown" class="text-slate-400 font-mono text-[11px] hidden"></span>
+            </div>
+
+            <button type="button" onclick="app.navigate('login')" class="w-full text-xs text-slate-400 hover:text-slate-200 font-bold transition py-1 flex items-center justify-center space-x-1.5">
+              <i class="fa-solid fa-arrow-left text-[10px]"></i>
+              <span>Back to Login</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- VIEW 19: RESET PASSWORD PAGE -->
+    <section id="view-reset-password" class="page-view max-w-md mx-auto hidden">
+      <div id="reset-card" class="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl shadow-xl space-y-6">
+        
+        <!-- 1. FORM STATE -->
+        <div id="reset-form-state" class="space-y-6">
+          <div class="text-center space-y-2">
+            <div class="w-16 h-16 mx-auto bg-cyan-500/10 text-cyan-400 rounded-2xl flex items-center justify-center text-3xl border border-cyan-500/20 shadow-lg shadow-cyan-500/10">
+              <i class="fa-solid fa-lock"></i>
+            </div>
+            <h2 class="text-2xl font-extrabold text-slate-100">Create New Password</h2>
+            <p class="text-xs text-slate-400 leading-relaxed">Enter your new password below.</p>
+          </div>
+
+          <form onsubmit="app.actions.handleResetPasswordSubmit(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-400 mb-1">New Password</label>
+              <div class="relative">
+                <input type="password" id="reset-pwd" required class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 pr-10 text-sm text-slate-100 outline-none focus:border-cyan-500 transition" placeholder="••••••••">
+                <button type="button" onclick="app.actions.toggleResetPasswordVisibility('reset-pwd', 'reset-pwd-eye')" class="absolute right-3 top-3 text-slate-400 hover:text-slate-200">
+                  <i id="reset-pwd-eye" class="fa-solid fa-eye text-xs"></i>
+                </button>
+              </div>
+              
+              <!-- Password Strength Bar -->
+              <div id="reset-pwd-strength-container" class="mt-2 space-y-1 hidden">
+                <div class="flex space-x-1 h-1.5 rounded-full overflow-hidden bg-slate-800">
+                  <div id="reset-pwd-bar-1" class="h-full flex-1 bg-slate-700 transition-all duration-300"></div>
+                  <div id="reset-pwd-bar-2" class="h-full flex-1 bg-slate-700 transition-all duration-300"></div>
+                  <div id="reset-pwd-bar-3" class="h-full flex-1 bg-slate-700 transition-all duration-300"></div>
+                </div>
+                <p id="reset-pwd-strength-text" class="text-xs font-medium text-slate-400 mt-1"></p>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-400 mb-1">Confirm Password</label>
+              <div class="relative">
+                <input type="password" id="reset-confirm-pwd" required class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 pr-10 text-sm text-slate-100 outline-none focus:border-cyan-500 transition" placeholder="••••••••">
+                <button type="button" onclick="app.actions.toggleResetPasswordVisibility('reset-confirm-pwd', 'reset-confirm-pwd-eye')" class="absolute right-3 top-3 text-slate-400 hover:text-slate-200">
+                  <i id="reset-confirm-pwd-eye" class="fa-solid fa-eye text-xs"></i>
+                </button>
+              </div>
+              <p id="reset-confirm-error" class="text-xs text-rose-400 font-medium mt-1 hidden">Passwords do not match.</p>
+            </div>
+
+            <div class="space-y-3 pt-2">
+              <button type="submit" id="btn-reset-submit" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold py-2.5 px-4 rounded-xl transition shadow-lg shadow-cyan-500/20 text-sm flex items-center justify-center space-x-2">
+                <span>Update Password</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- 2. SUCCESS STATE -->
+        <div id="reset-success-state" class="hidden space-y-5 text-center py-2">
+          <div class="w-20 h-20 mx-auto bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center text-4xl border border-emerald-500/30 shadow-lg shadow-emerald-500/20 animate-bounce">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <div class="space-y-1.5">
+            <h2 class="text-2xl font-black text-slate-100">Password Updated Successfully</h2>
+            <p class="text-xs text-emerald-400 font-medium">Your password has been changed.</p>
+          </div>
+          <p class="text-xs text-slate-400">Redirecting to Login...</p>
+          <div class="flex items-center justify-center space-x-2 text-xs text-slate-400 bg-slate-950/60 py-2.5 px-4 rounded-xl border border-slate-800/80">
+            <div class="animate-spin rounded-full h-4 w-4 border-2 border-cyan-400 border-t-transparent"></div>
+            <span class="font-medium">Navigating to login page...</span>
+          </div>
+        </div>
+
+        <!-- 3. INVALID / EXPIRED LINK STATE -->
+        <div id="reset-invalid-state" class="hidden space-y-5 text-center py-2">
+          <div class="w-20 h-20 mx-auto bg-rose-500/10 text-rose-400 rounded-full flex items-center justify-center text-4xl border border-rose-500/30 shadow-lg shadow-rose-500/20">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+          <div class="space-y-2">
+            <h2 class="text-2xl font-extrabold text-slate-100">Invalid or Expired Link</h2>
+            <p id="reset-invalid-message" class="text-xs text-rose-400 leading-relaxed font-medium">The password reset link is invalid, corrupted, or has expired.</p>
+          </div>
+          <div class="space-y-3 pt-2">
+            <button type="button" onclick="app.navigate('forgot-password')" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold py-2.5 px-4 rounded-xl transition shadow-lg shadow-cyan-500/20 text-sm">
+              Request New Reset Link
+            </button>
+            <button type="button" onclick="app.navigate('login')" class="w-full text-xs text-slate-400 hover:text-slate-200 font-bold transition py-1">
+              Back to Login
             </button>
           </div>
         </div>
@@ -1770,6 +1974,81 @@
           Sign Out
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- CHANGE PASSWORD MODAL -->
+  <div id="modal-change-password" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden transition-all duration-300">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl p-6 md:p-8 space-y-6 shadow-2xl relative my-auto">
+      <button type="button" onclick="app.actions.closeChangePasswordModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-200 text-lg p-1.5 rounded-lg hover:bg-slate-800 transition">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="flex items-center space-x-3 border-b border-slate-800 pb-4">
+        <div class="w-10 h-10 bg-cyan-500/10 text-cyan-400 rounded-xl flex items-center justify-center text-lg">
+          <i class="fa-solid fa-key"></i>
+        </div>
+        <div>
+          <h3 class="text-xl font-extrabold text-slate-100">Change Password</h3>
+          <p class="text-xs text-slate-400">Update your account password securely.</p>
+        </div>
+      </div>
+
+      <form onsubmit="app.actions.handleChangePasswordSubmit(event)" class="space-y-4">
+        <!-- Current Password -->
+        <div>
+          <label class="block text-xs font-bold text-slate-400 mb-1">Current Password</label>
+          <div class="relative">
+            <input type="password" id="change-curr-pwd" required class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 pr-10 text-sm text-slate-100 outline-none focus:border-cyan-500 transition" placeholder="••••••••">
+            <button type="button" onclick="app.actions.toggleChangePasswordVisibility('change-curr-pwd', 'change-curr-pwd-eye')" class="absolute right-3 top-3 text-slate-400 hover:text-slate-200">
+              <i id="change-curr-pwd-eye" class="fa-solid fa-eye text-xs"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- New Password -->
+        <div>
+          <label class="block text-xs font-bold text-slate-400 mb-1">New Password</label>
+          <div class="relative">
+            <input type="password" id="change-new-pwd" required class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 pr-10 text-sm text-slate-100 outline-none focus:border-cyan-500 transition" placeholder="••••••••">
+            <button type="button" onclick="app.actions.toggleChangePasswordVisibility('change-new-pwd', 'change-new-pwd-eye')" class="absolute right-3 top-3 text-slate-400 hover:text-slate-200">
+              <i id="change-new-pwd-eye" class="fa-solid fa-eye text-xs"></i>
+            </button>
+          </div>
+          
+          <!-- Password Strength Bar -->
+          <div id="change-pwd-strength-container" class="mt-2 space-y-1 hidden">
+            <div class="flex space-x-1 h-1.5 rounded-full overflow-hidden bg-slate-800">
+              <div id="change-pwd-bar-1" class="h-full flex-1 bg-slate-700 transition-all duration-300"></div>
+              <div id="change-pwd-bar-2" class="h-full flex-1 bg-slate-700 transition-all duration-300"></div>
+              <div id="change-pwd-bar-3" class="h-full flex-1 bg-slate-700 transition-all duration-300"></div>
+            </div>
+            <p id="change-pwd-strength-text" class="text-xs font-medium text-slate-400 mt-1"></p>
+          </div>
+        </div>
+
+        <!-- Confirm Password -->
+        <div>
+          <label class="block text-xs font-bold text-slate-400 mb-1">Confirm New Password</label>
+          <div class="relative">
+            <input type="password" id="change-confirm-pwd" required class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 pr-10 text-sm text-slate-100 outline-none focus:border-cyan-500 transition" placeholder="••••••••">
+            <button type="button" onclick="app.actions.toggleChangePasswordVisibility('change-confirm-pwd', 'change-confirm-pwd-eye')" class="absolute right-3 top-3 text-slate-400 hover:text-slate-200">
+              <i id="change-confirm-pwd-eye" class="fa-solid fa-eye text-xs"></i>
+            </button>
+          </div>
+          <p id="change-confirm-error" class="text-xs text-rose-400 font-medium mt-1 hidden">Passwords do not match.</p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center space-x-3 pt-3">
+          <button type="button" onclick="app.actions.closeChangePasswordModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2.5 rounded-xl transition text-sm">
+            Cancel
+          </button>
+          <button type="submit" id="btn-change-pwd-submit" class="flex-1 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold py-2.5 rounded-xl transition shadow-lg shadow-cyan-500/20 text-sm flex items-center justify-center space-x-2">
+            <span>Save Password</span>
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 

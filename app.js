@@ -48,6 +48,12 @@ const app = {
         isEmailVerificationSuccess: false,
         currentView: 'home',
         isInternalHashChange: false,
+        isResendingVerification: false,
+        forgotResendCooldownSeconds: 0,
+        forgotResendInterval: null,
+        isRecoverySession: false,
+        isChangingPassword: false,
+        escChangePasswordHandler: null,
         announcementDismissed: JSON.parse(localStorage.getItem('kt_announcement_dismissed')) || false,
         historyChart: null
     },
@@ -1134,6 +1140,7 @@ const app = {
         this.editUsernameValidation.init();
         this.emailValidation.init();
         this.passwordValidation.init();
+        this.changePasswordValidation.init();
         this.onboardingUsernameValidation.init();
         this.leaderboard.generateDummyData();
         this.articles.init();
@@ -1151,6 +1158,12 @@ const app = {
             // Skip auth state changes during manual email registration
             if (app.state.isRegistering) {
                 console.log('[AUTH] onAuthStateChange skipped — registration in progress');
+                return;
+            }
+
+            if (event === 'PASSWORD_RECOVERY') {
+                app.state.isRecoverySession = true;
+                app.navigate('reset-password');
                 return;
             }
 
@@ -1195,6 +1208,14 @@ const app = {
         const path = window.location.pathname;
         const hash = window.location.hash;
         const search = window.location.search;
+
+        // Password Recovery / Reset check (query params, hash or path)
+        if (path.includes('reset-password') || hash.includes('reset-password') || search.includes('type=recovery') || hash.includes('type=recovery')) {
+            return 'reset-password';
+        }
+        if (path.includes('forgot-password') || hash.includes('forgot-password') || hash === '#forgot' || hash === '#forgot-password') {
+            return 'forgot-password';
+        }
 
         // Verify Email check (query params, hash or path)
         if (path.includes('verify-email') || hash.includes('verify-email') || search.includes('token_hash') || search.includes('type=signup') || search.includes('type=email') || (search.includes('code=') && !hash.includes('access_token='))) {
@@ -1259,10 +1280,17 @@ const app = {
     // ======================== NAVIGATION ========================
     navigate(viewId, updateHash = true) {
         if (viewId === 'verify-email' || viewId === 'verify') viewId = 'verify-email';
+        if (viewId === 'forgot' || viewId === 'forgot-password') viewId = 'forgot-password';
+        if (viewId === 'reset' || viewId === 'reset-password') viewId = 'reset-password';
 
         // Stop email verification polling if leaving verify-email view
         if (this.state.currentView === 'verify-email' && viewId !== 'verify-email') {
             this.stopEmailVerificationPolling();
+        }
+
+        // Guard: Authenticated user accessing forgot-password redirects to dashboard
+        if (this.state.user && !this.state.user.isGuest && viewId === 'forgot-password' && !this.state.isRecoverySession) {
+            viewId = 'dashboard';
         }
 
         // Guard: Onboarding protection for Google Auth
@@ -1346,6 +1374,8 @@ const app = {
             if (viewId === 'history') await this.renderHistoryStatistics();
             if (viewId === 'articles') this.articles.renderList();
             if (viewId === 'verify-email') this.initVerifyEmailView();
+            if (viewId === 'forgot-password') this.initForgotPasswordView();
+            if (viewId === 'reset-password') this.initResetPasswordView();
 
             if (viewId === 'register') this.resetAuthForms('register');
             if (viewId === 'login') {
@@ -2442,6 +2472,19 @@ const app = {
                     recentContainer.appendChild(tr);
                 });
             }
+        }
+
+        // Render Security Section (Email/Password vs Google OAuth)
+        const emailSecUi = document.getElementById('profile-email-security-ui');
+        const googleSecUi = document.getElementById('profile-google-security-ui');
+        const isGoogle = user && (user.app_metadata?.provider === 'google' || user.is_google || (user.identities && user.identities.some(i => i.provider === 'google')));
+
+        if (isGoogle) {
+            if (emailSecUi) emailSecUi.classList.add('hidden');
+            if (googleSecUi) googleSecUi.classList.remove('hidden');
+        } else {
+            if (emailSecUi) emailSecUi.classList.remove('hidden');
+            if (googleSecUi) googleSecUi.classList.add('hidden');
         }
 
         // Update Compact Achievement Summary Card & Showcase
@@ -3605,9 +3648,34 @@ const app = {
 
         // CASE 5: Default Waiting State (User just completed signup and is waiting to open email)
         showState(waitingState);
-        const email = app.state.unverifiedEmail || sessionStorage.getItem('kt_pending_verification_email') || 'your email address';
+        const email = app.state.unverifiedEmail || sessionStorage.getItem('kt_pending_verification_email');
         const emailEl = document.getElementById('verify-email-address');
-        if (emailEl) emailEl.innerText = email;
+
+        if (!email) {
+            if (emailEl) emailEl.innerText = 'Registration session not found';
+            const btn = document.getElementById('btn-verify-resend');
+            if (btn) btn.disabled = true;
+            app.toast.show('Registration session not found. Please register again.', 'warning');
+        } else {
+            if (emailEl) emailEl.innerText = email;
+        }
+
+        // Check for active resend cooldown in localStorage (persistence across reload)
+        const cooldownUntil = parseInt(localStorage.getItem('kt_resend_cooldown_until') || '0', 10);
+        const remainingSeconds = Math.ceil((cooldownUntil - Date.now()) / 1000);
+
+        if (remainingSeconds > 0) {
+            app.startVerifyPageResendCooldown(remainingSeconds);
+        } else {
+            localStorage.removeItem('kt_resend_cooldown_until');
+            const btn = document.getElementById('btn-verify-resend');
+            const textEl = document.getElementById('verify-resend-cooldown');
+            if (btn && email) btn.disabled = false;
+            if (textEl) {
+                textEl.classList.add('hidden');
+                textEl.innerText = '';
+            }
+        }
 
         app.state.isEmailVerificationSuccess = false;
         app.startEmailVerificationPolling();
@@ -3711,10 +3779,30 @@ const app = {
     },
 
     openEmailApp() {
-        try {
-            window.location.href = 'mailto:';
-        } catch (e) {
-            console.log('[OPEN EMAIL APP] Unsupported or blocked:', e);
+        const email = app.state.unverifiedEmail || sessionStorage.getItem('kt_pending_verification_email') || '';
+        const domain = email.includes('@') ? email.split('@')[1].toLowerCase() : '';
+
+        let webmailUrl = null;
+        if (domain === 'gmail.com' || domain === 'googlemail.com') {
+            webmailUrl = 'https://mail.google.com';
+        } else if (domain === 'yahoo.com' || domain === 'yahoo.co.id' || domain.includes('yahoo')) {
+            webmailUrl = 'https://mail.yahoo.com';
+        } else if (domain === 'outlook.com' || domain === 'hotmail.com' || domain === 'live.com' || domain === 'msn.com') {
+            webmailUrl = 'https://outlook.live.com';
+        } else if (domain === 'icloud.com' || domain === 'me.com') {
+            webmailUrl = 'https://www.icloud.com/mail';
+        } else if (domain === 'proton.me' || domain === 'protonmail.com') {
+            webmailUrl = 'https://mail.proton.me';
+        }
+
+        if (webmailUrl) {
+            window.open(webmailUrl, '_blank');
+        } else {
+            try {
+                window.location.href = 'mailto:';
+            } catch (e) {
+                console.log('[OPEN EMAIL APP] Fallback failed:', e);
+            }
         }
     },
 
@@ -3743,35 +3831,99 @@ const app = {
     async resendVerificationFromPage() {
         const email = app.state.unverifiedEmail || sessionStorage.getItem('kt_pending_verification_email');
         if (!email) {
-            app.toast.show('No email address found to resend.', 'error');
+            app.toast.show('Registration session not found. Please register again.', 'error');
+            const btn = document.getElementById('btn-verify-resend');
+            if (btn) btn.disabled = true;
             return;
         }
 
-        const btn = document.getElementById('btn-verify-resend');
-        if (btn && btn.disabled) return;
+        // Prevent duplicate API requests if already in progress
+        if (app.state.isResendingVerification) return;
 
-        if (btn) btn.disabled = true;
+        // Check if currently in active cooldown
+        const cooldownUntil = parseInt(localStorage.getItem('kt_resend_cooldown_until') || '0', 10);
+        const remainingSeconds = Math.ceil((cooldownUntil - Date.now()) / 1000);
+        if (remainingSeconds > 0) {
+            app.toast.show(`Please wait ${remainingSeconds} seconds before requesting another email.`, 'warning');
+            app.startVerifyPageResendCooldown(remainingSeconds);
+            return;
+        }
+
+        // Pre-resend check: Verify if email is already confirmed
+        try {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session?.user?.email_confirmed_at || session?.user?.confirmed_at) {
+                app.toast.show('Your email has already been verified.', 'info');
+                app.handleVerificationSuccess(session.user.email || email);
+                return;
+            }
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (user?.email_confirmed_at || user?.confirmed_at) {
+                app.toast.show('Your email has already been verified.', 'info');
+                app.handleVerificationSuccess(user.email || email);
+                return;
+            }
+        } catch (e) {
+            console.log('[RESEND] Pre-check verification error:', e);
+        }
+
+        const btn = document.getElementById('btn-verify-resend');
+        let originalBtnHtml = '';
+        if (btn) {
+            btn.disabled = true;
+            originalBtnHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin text-xs"></i> <span>Sending...</span>';
+        }
+
+        app.state.isResendingVerification = true;
+
+        const verifyRedirectUrl = window.location.origin.includes('korantest.my.id') 
+            ? 'https://www.korantest.my.id/verify-email' 
+            : `${window.location.origin}/verify-email`;
 
         try {
             console.log('[RESEND VERIFICATION PAGE] Sending to:', email);
             const { error } = await supabaseClient.auth.resend({
                 type: 'signup',
-                email: email
+                email: email,
+                options: {
+                    emailRedirectTo: verifyRedirectUrl
+                }
             });
+
+            app.state.isResendingVerification = false;
 
             if (error) {
                 console.error('[RESEND VERIFICATION FAILED]', error);
-                app.toast.show(error.message, 'error');
-                if (app.state.verifyPageCooldownSeconds <= 0 && btn) btn.disabled = false;
+                if (btn) btn.innerHTML = originalBtnHtml || 'Resend Verification Email';
+
+                const msg = error.message ? error.message.toLowerCase() : '';
+                if (msg.includes('rate limit') || msg.includes('too many') || error.status === 429) {
+                    app.toast.show('Too many requests. Please wait a moment before trying again.', 'warning');
+                } else if (msg.includes('already confirmed') || msg.includes('already verified')) {
+                    app.toast.show('Your email has already been verified.', 'info');
+                    app.handleVerificationSuccess(email);
+                    return;
+                } else if (msg.includes('invalid') || msg.includes('not found')) {
+                    app.toast.show('Invalid email address or registration session expired.', 'error');
+                } else {
+                    app.toast.show('Failed to send verification email. Please try again later.', 'error');
+                }
+
+                // Start cooldown to prevent rapid spam clicking
+                app.startVerifyPageResendCooldown(60);
                 return;
             }
 
-            app.toast.show('Verification email sent! Please check your inbox.', 'success');
+            if (btn) btn.innerHTML = originalBtnHtml || 'Resend Verification Email';
+            app.toast.show('Verification email sent successfully.', 'success');
             app.startVerifyPageResendCooldown(60);
         } catch (err) {
+            app.state.isResendingVerification = false;
             console.error('[RESEND VERIFICATION ERROR]', err);
-            app.toast.show('Failed to send verification email.', 'error');
-            if (app.state.verifyPageCooldownSeconds <= 0 && btn) btn.disabled = false;
+            if (btn) btn.innerHTML = originalBtnHtml || 'Resend Verification Email';
+            app.toast.show('Network error. Please check your internet connection and try again.', 'error');
+            app.startVerifyPageResendCooldown(60);
         }
     },
 
@@ -3779,6 +3931,10 @@ const app = {
         app.state.verifyPageCooldownSeconds = duration;
         const btn = document.getElementById('btn-verify-resend');
         const textEl = document.getElementById('verify-resend-cooldown');
+
+        // Store target unlock timestamp in localStorage for persistence across reloads
+        const unlockTime = Date.now() + (duration * 1000);
+        localStorage.setItem('kt_resend_cooldown_until', String(unlockTime));
 
         if (btn) btn.disabled = true;
         if (textEl) {
@@ -3789,19 +3945,457 @@ const app = {
         if (app.state.verifyPageCooldownInterval) clearInterval(app.state.verifyPageCooldownInterval);
 
         app.state.verifyPageCooldownInterval = setInterval(() => {
-            app.state.verifyPageCooldownSeconds--;
-            if (app.state.verifyPageCooldownSeconds <= 0) {
+            const cooldownUntil = parseInt(localStorage.getItem('kt_resend_cooldown_until') || '0', 10);
+            const remaining = Math.max(0, Math.ceil((cooldownUntil - Date.now()) / 1000));
+
+            app.state.verifyPageCooldownSeconds = remaining;
+
+            if (remaining <= 0) {
                 clearInterval(app.state.verifyPageCooldownInterval);
                 app.state.verifyPageCooldownInterval = null;
+                localStorage.removeItem('kt_resend_cooldown_until');
+                const hasEmail = !!(app.state.unverifiedEmail || sessionStorage.getItem('kt_pending_verification_email'));
+                if (btn && hasEmail) {
+                    btn.disabled = false;
+                    btn.innerHTML = 'Resend Verification Email';
+                }
+                if (textEl) {
+                    textEl.classList.add('hidden');
+                    textEl.innerText = '';
+                }
+            } else {
+                if (btn) btn.disabled = true;
+                if (textEl) {
+                    textEl.classList.remove('hidden');
+                    textEl.innerText = `Resend available in ${remaining}s`;
+                }
+            }
+        }, 1000);
+    },
+
+    // ======================== FORGOT & RESET PASSWORD ========================
+    initForgotPasswordView() {
+        const formState = document.getElementById('forgot-form-state');
+        const sentState = document.getElementById('forgot-sent-state');
+        if (formState) formState.classList.remove('hidden');
+        if (sentState) sentState.classList.add('hidden');
+
+        // Restore pending reset email if present
+        const savedEmail = sessionStorage.getItem('kt_pending_reset_email');
+        const emailInput = document.getElementById('forgot-email');
+        if (emailInput && savedEmail) emailInput.value = savedEmail;
+
+        // Check for active resend cooldown in localStorage
+        const cooldownUntil = parseInt(localStorage.getItem('kt_forgot_resend_cooldown_until') || '0', 10);
+        const remainingSeconds = Math.ceil((cooldownUntil - Date.now()) / 1000);
+
+        if (remainingSeconds > 0) {
+            this.startForgotResendCooldown(remainingSeconds);
+        } else {
+            localStorage.removeItem('kt_forgot_resend_cooldown_until');
+            const btn = document.getElementById('btn-forgot-resend');
+            const textEl = document.getElementById('forgot-resend-cooldown');
+            if (btn) btn.disabled = false;
+            if (textEl) {
+                textEl.classList.add('hidden');
+                textEl.innerText = '';
+            }
+        }
+    },
+
+    async handleForgotPasswordSubmit(e) {
+        if (e) e.preventDefault();
+
+        const emailInput = document.getElementById('forgot-email');
+        const email = (emailInput?.value || '').trim();
+
+        if (!email) {
+            app.toast.show('Email address is required.', 'error');
+            return;
+        }
+
+        const emailVal = app.validateEmail(email);
+        if (!emailVal.valid) {
+            app.toast.show(emailVal.message || 'Please enter a valid email address.', 'error');
+            return;
+        }
+
+        const btn = document.getElementById('btn-forgot-submit');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin text-xs"></i> <span>Sending...</span>';
+        }
+
+        const redirectUrl = window.location.origin.includes('korantest.my.id')
+            ? 'https://www.korantest.my.id/reset-password'
+            : `${window.location.origin}/reset-password`;
+
+        try {
+            console.log('[FORGOT PASSWORD] Sending reset email to:', email);
+            const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+                redirectTo: redirectUrl
+            });
+
+            if (error) {
+                console.error('[FORGOT PASSWORD ERROR]', error);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<span>Send Reset Link</span>';
+                }
+                const msg = error.message ? error.message.toLowerCase() : '';
+                if (msg.includes('rate limit') || msg.includes('too many') || error.status === 429) {
+                    app.toast.show('Too many requests. Please wait a moment before trying again.', 'warning');
+                } else {
+                    app.toast.show(error.message || 'Failed to send reset link.', 'error');
+                }
+                return;
+            }
+
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<span>Send Reset Link</span>';
+            }
+
+            sessionStorage.setItem('kt_pending_reset_email', email);
+
+            const formState = document.getElementById('forgot-form-state');
+            const sentState = document.getElementById('forgot-sent-state');
+            const emailDisplay = document.getElementById('forgot-sent-email-display');
+
+            if (emailDisplay) emailDisplay.innerText = email;
+            if (formState) formState.classList.add('hidden');
+            if (sentState) sentState.classList.remove('hidden');
+
+            app.toast.show('Password reset link sent! Please check your inbox.', 'success');
+            app.startForgotResendCooldown(60);
+        } catch (err) {
+            console.error('[FORGOT PASSWORD EXCEPTION]', err);
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<span>Send Reset Link</span>';
+            }
+            app.toast.show('Network error. Please try again.', 'error');
+        }
+    },
+
+    async resendResetEmail() {
+        const email = sessionStorage.getItem('kt_pending_reset_email') || document.getElementById('forgot-email')?.value;
+        if (!email) {
+            app.toast.show('No email address found to resend reset link.', 'error');
+            return;
+        }
+
+        const cooldownUntil = parseInt(localStorage.getItem('kt_forgot_resend_cooldown_until') || '0', 10);
+        const remainingSeconds = Math.ceil((cooldownUntil - Date.now()) / 1000);
+        if (remainingSeconds > 0) {
+            app.toast.show(`Please wait ${remainingSeconds} seconds before requesting another email.`, 'warning');
+            app.startForgotResendCooldown(remainingSeconds);
+            return;
+        }
+
+        const btn = document.getElementById('btn-forgot-resend');
+        if (btn) btn.disabled = true;
+
+        const redirectUrl = window.location.origin.includes('korantest.my.id')
+            ? 'https://www.korantest.my.id/reset-password'
+            : `${window.location.origin}/reset-password`;
+
+        try {
+            console.log('[RESEND RESET EMAIL] Resending to:', email);
+            const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+                redirectTo: redirectUrl
+            });
+
+            if (error) {
+                console.error('[RESEND RESET ERROR]', error);
+                const msg = error.message ? error.message.toLowerCase() : '';
+                if (msg.includes('rate limit') || msg.includes('too many') || error.status === 429) {
+                    app.toast.show('Too many requests. Please wait a moment before trying again.', 'warning');
+                } else {
+                    app.toast.show(error.message || 'Failed to resend reset link.', 'error');
+                }
+                app.startForgotResendCooldown(60);
+                return;
+            }
+
+            app.toast.show('Password reset link sent! Please check your inbox.', 'success');
+            app.startForgotResendCooldown(60);
+        } catch (err) {
+            console.error('[RESEND RESET EXCEPTION]', err);
+            app.toast.show('Network error. Please try again.', 'error');
+            app.startForgotResendCooldown(60);
+        }
+    },
+
+    openResetEmailApp() {
+        const email = sessionStorage.getItem('kt_pending_reset_email') || document.getElementById('forgot-email')?.value || '';
+        const domain = email.includes('@') ? email.split('@')[1].toLowerCase() : '';
+
+        let webmailUrl = null;
+        if (domain === 'gmail.com' || domain === 'googlemail.com') {
+            webmailUrl = 'https://mail.google.com';
+        } else if (domain === 'yahoo.com' || domain === 'yahoo.co.id' || domain.includes('yahoo')) {
+            webmailUrl = 'https://mail.yahoo.com';
+        } else if (domain === 'outlook.com' || domain === 'hotmail.com' || domain === 'live.com' || domain === 'msn.com') {
+            webmailUrl = 'https://outlook.live.com';
+        } else if (domain === 'icloud.com' || domain === 'me.com') {
+            webmailUrl = 'https://www.icloud.com/mail';
+        } else if (domain === 'proton.me' || domain === 'protonmail.com') {
+            webmailUrl = 'https://mail.proton.me';
+        }
+
+        if (webmailUrl) {
+            window.open(webmailUrl, '_blank');
+        } else {
+            try {
+                window.location.href = 'mailto:';
+            } catch (e) {
+                console.log('[OPEN RESET EMAIL APP] Fallback failed:', e);
+            }
+        }
+    },
+
+    startForgotResendCooldown(duration = 60) {
+        app.state.forgotResendCooldownSeconds = duration;
+        const btn = document.getElementById('btn-forgot-resend');
+        const textEl = document.getElementById('forgot-resend-cooldown');
+
+        const unlockTime = Date.now() + (duration * 1000);
+        localStorage.setItem('kt_forgot_resend_cooldown_until', String(unlockTime));
+
+        if (btn) btn.disabled = true;
+        if (textEl) {
+            textEl.classList.remove('hidden');
+            textEl.innerText = `Resend available in ${duration}s`;
+        }
+
+        if (app.state.forgotResendInterval) clearInterval(app.state.forgotResendInterval);
+
+        app.state.forgotResendInterval = setInterval(() => {
+            const cooldownUntil = parseInt(localStorage.getItem('kt_forgot_resend_cooldown_until') || '0', 10);
+            const remaining = Math.max(0, Math.ceil((cooldownUntil - Date.now()) / 1000));
+
+            app.state.forgotResendCooldownSeconds = remaining;
+
+            if (remaining <= 0) {
+                clearInterval(app.state.forgotResendInterval);
+                app.state.forgotResendInterval = null;
+                localStorage.removeItem('kt_forgot_resend_cooldown_until');
                 if (btn) btn.disabled = false;
                 if (textEl) {
                     textEl.classList.add('hidden');
                     textEl.innerText = '';
                 }
             } else {
-                if (textEl) textEl.innerText = `Resend available in ${app.state.verifyPageCooldownSeconds}s`;
+                if (btn) btn.disabled = true;
+                if (textEl) {
+                    textEl.classList.remove('hidden');
+                    textEl.innerText = `Resend available in ${remaining}s`;
+                }
             }
         }, 1000);
+    },
+
+    async initResetPasswordView() {
+        const formState = document.getElementById('reset-form-state');
+        const successState = document.getElementById('reset-success-state');
+        const invalidState = document.getElementById('reset-invalid-state');
+
+        const showResetState = (targetState) => {
+            if (formState) formState.classList.add('hidden');
+            if (successState) successState.classList.add('hidden');
+            if (invalidState) invalidState.classList.add('hidden');
+            if (targetState) targetState.classList.remove('hidden');
+        };
+
+        try {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            const hash = window.location.hash || window.location.search || '';
+            const isRecovery = hash.includes('type=recovery') || hash.includes('access_token=') || app.state.isRecoverySession || !!session;
+
+            if (isRecovery) {
+                showResetState(formState);
+                this.resetPasswordValidation.init();
+            } else {
+                showResetState(invalidState);
+            }
+        } catch (e) {
+            console.error('[RESET PASSWORD INIT ERROR]', e);
+            showResetState(invalidState);
+        }
+    },
+
+    async handleResetPasswordSubmit(e) {
+        if (e) e.preventDefault();
+
+        const newPwd = document.getElementById('reset-pwd')?.value || '';
+        const confirmPwd = document.getElementById('reset-confirm-pwd')?.value || '';
+        const errorEl = document.getElementById('reset-confirm-error');
+
+        if (newPwd.length < 8) {
+            app.toast.show('Password minimal 8 karakter.', 'error');
+            return;
+        }
+
+        if (newPwd !== confirmPwd) {
+            if (errorEl) errorEl.classList.remove('hidden');
+            app.toast.show('Password dan Konfirmasi Password tidak cocok.', 'error');
+            return;
+        } else {
+            if (errorEl) errorEl.classList.add('hidden');
+        }
+
+        const btn = document.getElementById('btn-reset-submit');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin text-xs"></i> <span>Updating Password...</span>';
+        }
+
+        try {
+            console.log('[RESET PASSWORD] Executing updateUser for new password');
+            const { data, error } = await supabaseClient.auth.updateUser({ password: newPwd });
+
+            if (error) {
+                console.error('[UPDATE PASSWORD ERROR]', error);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<span>Update Password</span>';
+                }
+                const msg = error.message ? error.message.toLowerCase() : '';
+                if (msg.includes('same as') || msg.includes('different')) {
+                    app.toast.show('Password baru tidak boleh sama dengan password lama.', 'error');
+                } else if (msg.includes('weak') || msg.includes('pwned')) {
+                    app.toast.show('Password terlalu lemah. Gunakan kombinasi huruf besar, angka, dan simbol.', 'error');
+                } else {
+                    app.toast.show(error.message || 'Gagal memperbarui password. Silakan coba lagi.', 'error');
+                }
+                return;
+            }
+
+            // Success State
+            const formState = document.getElementById('reset-form-state');
+            const successState = document.getElementById('reset-success-state');
+            if (formState) formState.classList.add('hidden');
+            if (successState) successState.classList.remove('hidden');
+
+            // Store user email for autofill on Login
+            const userEmail = data?.user?.email;
+            if (userEmail) {
+                sessionStorage.setItem('kt_post_register_email', userEmail);
+                sessionStorage.setItem('kt_verification_just_completed', 'true');
+            }
+
+            app.toast.show('Password updated successfully!', 'success');
+            app.state.isRecoverySession = false;
+
+            setTimeout(() => {
+                if (window.location.pathname.includes('reset-password')) {
+                    try {
+                        window.history.replaceState(null, '', window.location.origin + '/#login');
+                    } catch (err) {
+                        console.log('[HISTORY REPLACE ERROR]', err);
+                    }
+                }
+                app.navigate('login', true);
+            }, 2000);
+        } catch (err) {
+            console.error('[UPDATE PASSWORD EXCEPTION]', err);
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<span>Update Password</span>';
+            }
+            app.toast.show('Network error during password reset.', 'error');
+        }
+    },
+
+    toggleResetPasswordVisibility(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        if (!input || !icon) return;
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    },
+
+    resetPasswordValidation: {
+        init() {
+            const pwdInput = document.getElementById('reset-pwd');
+            const confirmInput = document.getElementById('reset-confirm-pwd');
+            if (pwdInput) {
+                pwdInput.addEventListener('input', (e) => this.handlePasswordInput(e.target.value));
+            }
+            if (confirmInput) {
+                confirmInput.addEventListener('input', () => this.checkMatch());
+            }
+        },
+        handlePasswordInput(pwd) {
+            const container = document.getElementById('reset-pwd-strength-container');
+            const textEl = document.getElementById('reset-pwd-strength-text');
+            const bar1 = document.getElementById('reset-pwd-bar-1');
+            const bar2 = document.getElementById('reset-pwd-bar-2');
+            const bar3 = document.getElementById('reset-pwd-bar-3');
+
+            if (!pwd) {
+                if (container) container.classList.add('hidden');
+                this.checkMatch();
+                return;
+            }
+
+            if (container) container.classList.remove('hidden');
+
+            let score = 0;
+            if (pwd.length >= 8) score++;
+            if (/[a-z]/.test(pwd)) score++;
+            if (/[A-Z]/.test(pwd)) score++;
+            if (/[0-9]/.test(pwd)) score++;
+            if (/[^a-zA-Z0-9]/.test(pwd)) score++;
+
+            if (pwd.length < 8 || score <= 2) {
+                if (textEl) {
+                    textEl.className = 'text-xs font-medium text-red-400 mt-1';
+                    textEl.innerText = 'Password terlalu lemah (minimal 8 karakter).';
+                }
+                if (bar1) bar1.className = 'h-full flex-1 bg-red-500 transition-all duration-300';
+                if (bar2) bar2.className = 'h-full flex-1 bg-slate-700 transition-all duration-300';
+                if (bar3) bar3.className = 'h-full flex-1 bg-slate-700 transition-all duration-300';
+            } else if (score === 3 || score === 4) {
+                if (textEl) {
+                    textEl.className = 'text-xs font-medium text-amber-400 mt-1';
+                    textEl.innerText = 'Kekuatan password cukup.';
+                }
+                if (bar1) bar1.className = 'h-full flex-1 bg-amber-500 transition-all duration-300';
+                if (bar2) bar2.className = 'h-full flex-1 bg-amber-500 transition-all duration-300';
+                if (bar3) bar3.className = 'h-full flex-1 bg-slate-700 transition-all duration-300';
+            } else if (score >= 5) {
+                if (textEl) {
+                    textEl.className = 'text-xs font-medium text-emerald-400 mt-1';
+                    textEl.innerText = 'Password kuat.';
+                }
+                if (bar1) bar1.className = 'h-full flex-1 bg-emerald-500 transition-all duration-300';
+                if (bar2) bar2.className = 'h-full flex-1 bg-emerald-500 transition-all duration-300';
+                if (bar3) bar3.className = 'h-full flex-1 bg-emerald-500 transition-all duration-300';
+            }
+
+            this.checkMatch();
+        },
+        checkMatch() {
+            const pwd = document.getElementById('reset-pwd')?.value || '';
+            const confirm = document.getElementById('reset-confirm-pwd')?.value || '';
+            const errorEl = document.getElementById('reset-confirm-error');
+
+            if (confirm && pwd !== confirm) {
+                if (errorEl) errorEl.classList.remove('hidden');
+            } else {
+                if (errorEl) errorEl.classList.add('hidden');
+            }
+        }
     },
 
     // ======================== ACTIONS ========================
@@ -4563,35 +5157,13 @@ const app = {
             }
         },
 
-        startVerifyPageResendCooldown(duration = 60) {
-            app.state.verifyPageCooldownSeconds = duration;
-            const btn = document.getElementById('btn-verify-resend');
-            const textEl = document.getElementById('verify-resend-cooldown');
-
-            if (btn) btn.disabled = true;
-            if (textEl) {
-                textEl.classList.remove('hidden');
-                textEl.innerText = `Resend available in ${app.state.verifyPageCooldownSeconds}s`;
-            }
-
-            if (app.state.verifyPageCooldownInterval) clearInterval(app.state.verifyPageCooldownInterval);
-
-            app.state.verifyPageCooldownInterval = setInterval(() => {
-                app.state.verifyPageCooldownSeconds--;
-                if (app.state.verifyPageCooldownSeconds <= 0) {
-                    clearInterval(app.state.verifyPageCooldownInterval);
-                    app.state.verifyPageCooldownInterval = null;
-                    if (btn) btn.disabled = false;
-                    if (textEl) {
-                        textEl.classList.add('hidden');
-                        textEl.innerText = '';
-                    }
-                } else {
-                    if (textEl) textEl.innerText = `Resend available in ${app.state.verifyPageCooldownSeconds}s`;
-                }
-            }, 1000);
-        },
-
+        startVerifyPageResendCooldown(duration = 60) { app.startVerifyPageResendCooldown(duration); },
+        initVerifyEmailView() { app.initVerifyEmailView(); },
+        startEmailVerificationPolling() { app.startEmailVerificationPolling(); },
+        stopEmailVerificationPolling() { app.stopEmailVerificationPolling(); },
+        handleVerificationSuccess(verifiedEmail) { app.handleVerificationSuccess(verifiedEmail); },
+        openEmailApp() { app.openEmailApp(); },
+        changeEmailFromVerify() { app.changeEmailFromVerify(); },
         startVerifyPageResendCooldown(duration = 60) { app.startVerifyPageResendCooldown(duration); },
         initVerifyEmailView() { app.initVerifyEmailView(); },
         startEmailVerificationPolling() { app.startEmailVerificationPolling(); },
@@ -4600,6 +5172,15 @@ const app = {
         openEmailApp() { app.openEmailApp(); },
         changeEmailFromVerify() { app.changeEmailFromVerify(); },
         resendVerificationFromPage() { app.resendVerificationFromPage(); },
+        handleForgotPasswordSubmit(e) { app.handleForgotPasswordSubmit(e); },
+        resendResetEmail() { app.resendResetEmail(); },
+        openResetEmailApp() { app.openResetEmailApp(); },
+        handleResetPasswordSubmit(e) { app.handleResetPasswordSubmit(e); },
+        toggleResetPasswordVisibility(inputId, iconId) { app.toggleResetPasswordVisibility(inputId, iconId); },
+        openChangePasswordModal() { app.openChangePasswordModal(); },
+        closeChangePasswordModal() { app.closeChangePasswordModal(); },
+        handleChangePasswordSubmit(e) { app.handleChangePasswordSubmit(e); },
+        toggleChangePasswordVisibility(inputId, iconId) { app.toggleChangePasswordVisibility(inputId, iconId); },
 
         startResendCooldown(duration = 60) {
             app.state.resendCooldownSeconds = duration;
