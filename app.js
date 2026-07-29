@@ -4398,6 +4398,290 @@ const app = {
         }
     },
 
+    // ======================== CHANGE PASSWORD ========================
+    openChangePasswordModal() {
+        const modal = document.getElementById('modal-change-password');
+        if (!modal) return;
+
+        // Secure wipe of input values
+        const currInput = document.getElementById('change-curr-pwd');
+        const newInput = document.getElementById('change-new-pwd');
+        const confirmInput = document.getElementById('change-confirm-pwd');
+        if (currInput) currInput.value = '';
+        if (newInput) newInput.value = '';
+        if (confirmInput) confirmInput.value = '';
+
+        // Reset validation & strength UI
+        this.changePasswordValidation.reset();
+
+        modal.classList.remove('hidden');
+        if (currInput) setTimeout(() => currInput.focus(), 150);
+
+        // Bind ESC keydown handler
+        if (this.state.escChangePasswordHandler) {
+            window.removeEventListener('keydown', this.state.escChangePasswordHandler);
+        }
+        this.state.escChangePasswordHandler = (e) => {
+            if (e.key === 'Escape') {
+                this.closeChangePasswordModal();
+            }
+        };
+        window.addEventListener('keydown', this.state.escChangePasswordHandler);
+    },
+
+    closeChangePasswordModal() {
+        const modal = document.getElementById('modal-change-password');
+        if (modal) modal.classList.add('hidden');
+
+        // Secure wipe of input values
+        const currInput = document.getElementById('change-curr-pwd');
+        const newInput = document.getElementById('change-new-pwd');
+        const confirmInput = document.getElementById('change-confirm-pwd');
+        if (currInput) currInput.value = '';
+        if (newInput) newInput.value = '';
+        if (confirmInput) confirmInput.value = '';
+
+        this.changePasswordValidation.reset();
+
+        if (this.state.escChangePasswordHandler) {
+            window.removeEventListener('keydown', this.state.escChangePasswordHandler);
+            this.state.escChangePasswordHandler = null;
+        }
+    },
+
+    async handleChangePasswordSubmit(e) {
+        if (e) e.preventDefault();
+
+        const currPwd = document.getElementById('change-curr-pwd')?.value || '';
+        const newPwd = document.getElementById('change-new-pwd')?.value || '';
+        const confirmPwd = document.getElementById('change-confirm-pwd')?.value || '';
+
+        const currInput = document.getElementById('change-curr-pwd');
+        const newInput = document.getElementById('change-new-pwd');
+        const confirmInput = document.getElementById('change-confirm-pwd');
+
+        // Validation 1: Current Password Required
+        if (!currPwd) {
+            this.toast.show('Current password is required.', 'error');
+            if (currInput) currInput.focus();
+            return;
+        }
+
+        // Validation 2: New Password Required & Length >= 8
+        if (!newPwd || newPwd.length < 8) {
+            this.toast.show('New password must be at least 8 characters.', 'error');
+            if (newInput) newInput.focus();
+            return;
+        }
+
+        // Validation 3: New Password Different from Current Password
+        if (newPwd === currPwd) {
+            this.toast.show('New password must be different from current password.', 'error');
+            if (newInput) newInput.focus();
+            return;
+        }
+
+        // Validation 4: Passwords Match
+        if (newPwd !== confirmPwd) {
+            this.toast.show('Passwords do not match.', 'error');
+            const errorEl = document.getElementById('change-confirm-error');
+            if (errorEl) errorEl.classList.remove('hidden');
+            if (confirmInput) confirmInput.focus();
+            return;
+        }
+
+        // Prevent duplicate submissions
+        if (this.state.isChangingPassword) return;
+        this.state.isChangingPassword = true;
+
+        const btn = document.getElementById('btn-change-pwd-submit');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin text-xs"></i> <span>Saving...</span>';
+        }
+
+        try {
+            const user = this.state.user;
+            const email = user?.email;
+
+            if (!email) {
+                this.toast.show('Session expired. Please sign in again.', 'error');
+                this.state.isChangingPassword = false;
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<span>Save Password</span>';
+                }
+                this.closeChangePasswordModal();
+                this.navigate('login');
+                return;
+            }
+
+            console.log('[CHANGE PWD] Re-authenticating user:', email);
+
+            // Step 1: Re-authenticate user with Current Password
+            const { error: authError } = await supabaseClient.auth.signInWithPassword({
+                email: email,
+                password: currPwd
+            });
+
+            if (authError) {
+                console.error('[CHANGE PWD RE-AUTH ERROR]', authError);
+                this.state.isChangingPassword = false;
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<span>Save Password</span>';
+                }
+                this.toast.show('Current password is incorrect.', 'error');
+                if (currInput) {
+                    currInput.value = '';
+                    currInput.focus();
+                }
+                return;
+            }
+
+            console.log('[CHANGE PWD] Re-authentication successful. Updating password...');
+
+            // Step 2: Update password via Supabase Auth API
+            const { error: updateError } = await supabaseClient.auth.updateUser({
+                password: newPwd
+            });
+
+            this.state.isChangingPassword = false;
+
+            if (updateError) {
+                console.error('[CHANGE PWD UPDATE ERROR]', updateError);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<span>Save Password</span>';
+                }
+                const msg = updateError.message ? updateError.message.toLowerCase() : '';
+                if (msg.includes('same as') || msg.includes('different')) {
+                    this.toast.show('New password must be different from current password.', 'error');
+                    if (newInput) newInput.focus();
+                } else if (msg.includes('weak') || msg.includes('pwned')) {
+                    this.toast.show('Password too weak. Please use a stronger password.', 'error');
+                    if (newInput) newInput.focus();
+                } else {
+                    this.toast.show(updateError.message || 'Failed to update password. Please try again.', 'error');
+                }
+                return;
+            }
+
+            // Success
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<span>Save Password</span>';
+            }
+
+            this.toast.show('Password changed successfully.', 'success');
+            this.closeChangePasswordModal();
+        } catch (err) {
+            console.error('[CHANGE PWD EXCEPTION]', err);
+            this.state.isChangingPassword = false;
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<span>Save Password</span>';
+            }
+            this.toast.show('Network error. Please try again.', 'error');
+        }
+    },
+
+    toggleChangePasswordVisibility(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        if (!input || !icon) return;
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    },
+
+    changePasswordValidation: {
+        init() {
+            const pwdInput = document.getElementById('change-new-pwd');
+            const confirmInput = document.getElementById('change-confirm-pwd');
+            if (pwdInput) {
+                pwdInput.addEventListener('input', (e) => this.handlePasswordInput(e.target.value));
+            }
+            if (confirmInput) {
+                confirmInput.addEventListener('input', () => this.checkMatch());
+            }
+        },
+        handlePasswordInput(pwd) {
+            const container = document.getElementById('change-pwd-strength-container');
+            const textEl = document.getElementById('change-pwd-strength-text');
+            const bar1 = document.getElementById('change-pwd-bar-1');
+            const bar2 = document.getElementById('change-pwd-bar-2');
+            const bar3 = document.getElementById('change-pwd-bar-3');
+
+            if (!pwd) {
+                if (container) container.classList.add('hidden');
+                this.checkMatch();
+                return;
+            }
+
+            if (container) container.classList.remove('hidden');
+
+            let score = 0;
+            if (pwd.length >= 8) score++;
+            if (/[a-z]/.test(pwd)) score++;
+            if (/[A-Z]/.test(pwd)) score++;
+            if (/[0-9]/.test(pwd)) score++;
+            if (/[^a-zA-Z0-9]/.test(pwd)) score++;
+
+            if (pwd.length < 8 || score <= 2) {
+                if (textEl) {
+                    textEl.className = 'text-xs font-medium text-red-400 mt-1';
+                    textEl.innerText = 'Weak (min. 8 characters)';
+                }
+                if (bar1) bar1.className = 'h-full flex-1 bg-red-500 transition-all duration-300';
+                if (bar2) bar2.className = 'h-full flex-1 bg-slate-700 transition-all duration-300';
+                if (bar3) bar3.className = 'h-full flex-1 bg-slate-700 transition-all duration-300';
+            } else if (score === 3 || score === 4) {
+                if (textEl) {
+                    textEl.className = 'text-xs font-medium text-amber-400 mt-1';
+                    textEl.innerText = 'Medium';
+                }
+                if (bar1) bar1.className = 'h-full flex-1 bg-amber-500 transition-all duration-300';
+                if (bar2) bar2.className = 'h-full flex-1 bg-amber-500 transition-all duration-300';
+                if (bar3) bar3.className = 'h-full flex-1 bg-slate-700 transition-all duration-300';
+            } else if (score >= 5) {
+                if (textEl) {
+                    textEl.className = 'text-xs font-medium text-emerald-400 mt-1';
+                    textEl.innerText = 'Strong';
+                }
+                if (bar1) bar1.className = 'h-full flex-1 bg-emerald-500 transition-all duration-300';
+                if (bar2) bar2.className = 'h-full flex-1 bg-emerald-500 transition-all duration-300';
+                if (bar3) bar3.className = 'h-full flex-1 bg-emerald-500 transition-all duration-300';
+            }
+
+            this.checkMatch();
+        },
+        checkMatch() {
+            const pwd = document.getElementById('change-new-pwd')?.value || '';
+            const confirm = document.getElementById('change-confirm-pwd')?.value || '';
+            const errorEl = document.getElementById('change-confirm-error');
+
+            if (confirm && pwd !== confirm) {
+                if (errorEl) errorEl.classList.remove('hidden');
+            } else {
+                if (errorEl) errorEl.classList.add('hidden');
+            }
+        },
+        reset() {
+            const container = document.getElementById('change-pwd-strength-container');
+            const errorEl = document.getElementById('change-confirm-error');
+            if (container) container.classList.add('hidden');
+            if (errorEl) errorEl.classList.add('hidden');
+        }
+    },
+
     // ======================== ACTIONS ========================
     actions: {
         showInfoModal(title, content) {

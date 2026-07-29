@@ -1978,7 +1978,7 @@
   </div>
 
   <!-- CHANGE PASSWORD MODAL -->
-  <div id="modal-change-password" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden transition-all duration-300">
+  <div id="modal-change-password" onclick="if (event.target === this) app.closeChangePasswordModal()" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden transition-all duration-300">
     <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl p-6 md:p-8 space-y-6 shadow-2xl relative my-auto">
       <button type="button" onclick="app.actions.closeChangePasswordModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-200 text-lg p-1.5 rounded-lg hover:bg-slate-800 transition">
         <i class="fa-solid fa-xmark"></i>
