@@ -1293,8 +1293,8 @@ const app = {
             viewId = 'login';
         }
 
-        // Synchronize browser URL hash if requested
-        if (updateHash !== false) {
+        // Synchronize browser URL hash for all application pages EXCEPT verify-email callback
+        if (updateHash !== false && viewId !== 'verify-email') {
             const targetHash = '#' + viewId;
             if (window.location.hash !== targetHash && !window.location.hash.startsWith(targetHash + '?')) {
                 this.state.isInternalHashChange = true;
@@ -3697,7 +3697,16 @@ const app = {
         app.toast.show('Email verified successfully!', 'success');
 
         setTimeout(() => {
-            app.navigate('login');
+            // Replace browser history entry from /verify-email to /#login
+            if (window.location.pathname.includes('verify-email')) {
+                const targetUrl = window.location.origin + '/#login';
+                try {
+                    window.history.replaceState(null, '', targetUrl);
+                } catch (e) {
+                    console.log('[HISTORY REPLACE ERROR]', e);
+                }
+            }
+            app.navigate('login', true);
         }, 1000);
     },
 
@@ -4228,8 +4237,8 @@ const app = {
                 console.log('[REGISTER] Starting registration for:', email);
 
                 const verifyRedirectUrl = window.location.origin.includes('korantest.my.id') 
-                    ? 'https://www.korantest.my.id/#verify-email' 
-                    : `${window.location.origin}/#verify-email`;
+                    ? 'https://www.korantest.my.id/verify-email' 
+                    : `${window.location.origin}/verify-email`;
 
                 const { data, error } = await supabaseClient.auth.signUp({
                     email,
