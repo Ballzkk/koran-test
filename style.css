@@ -1,6 +1,8 @@
 /* =========================================
-   Koran Test v2.0 - Custom Styles
-   Theme: Dark Mode (Cyan Primary)
+   Koran Test v2.0 - Premium White & Blue Design System
+   Refinement: Modern, Minimal, Consumer-Focused (Apple / Nike Training Club style)
+   Default: Light Mode (#F8FAFC bg, #FFFFFF surface, #2563EB primary blue)
+   Dark Mode: Premium Slate (#0F172A bg, #1E293B surface, #3B82F6 primary blue)
    ========================================= */
 
 /* 1. Google Font Import */
@@ -8,25 +10,63 @@
 
 /* Color Palette & Layout Variables */
 :root {
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --bg-surface: rgba(30, 41, 59, 0.5);
-  --border: #334155;
-  --primary: #22d3ee;
-  --primary-hover: #06b6d4;
-  --primary-dark: #0891b2;
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --success: #34d399;
-  --warning: #fbbf24;
-  --error: #f87171;
+  /* Light Theme Defaults (Apple / Arc / Notion Style) */
+  --bg-primary: #f7f9fc;
+  --bg-secondary: #ffffff;
+  --bg-surface: #ffffff;
+  --bg-muted: #f1f5f9;
+  --border: #e5e7eb;
+  --border-strong: #d1d5db;
+  
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-dark: #1e40af;
+  --primary-light: #dbeafe;
+  --primary-border: #93c5fd;
+  
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --error: #ef4444;
 
   /* Mobile Layout System Variables */
   --mobile-header-height: 3.5rem;
   --mobile-nav-height: 4rem;
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
-  --mobile-bottom-spacing: calc(var(--mobile-nav-height) + var(--safe-area-bottom) + 2.5rem);
+  --mobile-bottom-spacing: calc(var(--mobile-nav-height) + var(--safe-area-bottom) + 2rem);
+
+  /* Elevation & Shadows */
+  --shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.03);
+  --shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.03);
+  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -2px rgba(15, 23, 42, 0.03);
+  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.05), 0 4px 6px -4px rgba(15, 23, 42, 0.03);
+}
+
+/* Dark Mode Variable Overrides */
+.dark, body.dark, [data-theme="dark"] {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-surface: #1e293b;
+  --bg-muted: #1e293b;
+  --border: #334155;
+  --border-strong: #475569;
+  
+  --primary: #3b82f6;
+  --primary-hover: #60a5fa;
+  --primary-dark: #2563eb;
+  --primary-light: rgba(59, 130, 246, 0.15);
+  --primary-border: rgba(59, 130, 246, 0.3);
+  
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
 }
 
 /* 2. Base Styles */
@@ -36,11 +76,16 @@ html {
 }
 
 body {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-tap-highlight-color: transparent;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100%;
+  overflow-x: hidden;
+  line-height: 1.5;
 }
 
-/* Disable browser-native password reveal & clear buttons to prevent duplicate visibility icons */
+/* Password Reveal Reset */
 input[type="password"]::-ms-reveal,
 input[type="password"]::-ms-clear,
 input[type="password"]::-webkit-contacts-auto-fill-button,
@@ -48,27 +93,18 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
   display: none !important;
 }
 
-body {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  min-height: 100%;
-  overflow-x: hidden;
-}
-
 .pt-safe {
   padding-top: env(safe-area-inset-top, 0px);
-  padding-top: constant(safe-area-inset-top, 0px);
 }
 
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom, 0px);
-  padding-bottom: constant(safe-area-inset-bottom, 0px);
 }
 
-/* Mobile Main Layout Spacing & Responsive Navigation Fix */
+/* Layout Padding */
 @media (max-width: 767px) {
   main.main-content {
-    padding-top: calc(var(--mobile-header-height) + env(safe-area-inset-top, 0px) + 1.5rem) !important;
+    padding-top: calc(var(--mobile-header-height) + env(safe-area-inset-top, 0px) + 1.25rem) !important;
     padding-bottom: var(--mobile-bottom-spacing) !important;
   }
   #toast-container {
@@ -82,7 +118,6 @@ body {
   #mobile-header {
     display: block !important;
   }
-  /* Mobile nav: always show on mobile — JS controls via .hidden class */
   #mobile-nav {
     display: block !important;
   }
@@ -100,12 +135,51 @@ body {
   }
 }
 
-/* .hidden class hides #mobile-nav everywhere (including mobile) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  main.main-content {
+    padding-top: 1.5rem !important;
+    padding-bottom: 2rem !important;
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  main.main-content {
+    padding-top: 2rem !important;
+    padding-bottom: 2.5rem !important;
+  }
+}
+
 #mobile-nav.hidden {
   display: none !important;
 }
 
-/* Fullscreen Views (test-screen & admin): Hide all navigation elements */
+/* Nav Active States */
+.nav-btn {
+  transition: color 120ms ease;
+}
+.nav-btn.nav-active {
+  color: var(--primary) !important;
+  font-weight: 700;
+  position: relative;
+}
+.nav-btn.nav-active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--primary);
+  border-radius: 9999px;
+}
+
+#mobile-nav button.nav-active {
+  color: var(--primary) !important;
+}
+
+/* Fullscreen Views */
 body.hide-navs #main-topnav,
 body.hide-navs #mobile-header,
 body.hide-navs #mobile-nav,
@@ -116,28 +190,28 @@ body.hide-navs footer {
 
 ::selection {
   background-color: var(--primary);
-  color: var(--bg-primary);
+  color: #ffffff;
 }
 
-/* 8. Scrollbar Styling (Dark Theme) */
+/* 3. Scrollbar Styling */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--bg-primary);
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 10px;
+  background: var(--border-strong);
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--primary);
 }
 
-/* 6. Animations */
+/* 4. Transitions & Animations (120ms - 200ms) */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
 @keyframes slideInRight {
@@ -152,29 +226,26 @@ body.hide-navs footer {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
 }
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
 
-/* 3. Page View System */
 .page-view {
   display: none;
   opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transform: translateY(4px);
+  transition: opacity 150ms ease, transform 150ms ease;
 }
 .page-view.active {
   display: block;
   opacity: 1;
   transform: translateY(0);
+  animation: fadeIn 150ms ease forwards;
 }
 
-/* 4. Numpad Button Styles */
+/* 5. Numpad Button Styles (Standard 8px Radius, 120ms transition) */
 .numpad-btn {
-  min-width: 65px;
-  min-height: 65px;
-  transition: all 0.1s ease;
+  min-width: 64px;
+  min-height: 60px;
+  transition: all 120ms ease;
+  user-select: none;
 }
 @media (max-width: 640px) {
   .numpad-btn {
@@ -186,10 +257,10 @@ body.hide-navs footer {
   }
 }
 .numpad-btn:active {
-  transform: scale(0.92);
+  transform: scale(0.96);
 }
 
-/* 5. Toast Notification System */
+/* 6. Toast Notification System */
 .toast-container {
   position: fixed;
   top: 1rem;
@@ -216,129 +287,54 @@ body.hide-navs footer {
   }
 }
 .toast {
-  background-color: var(--bg-secondary);
+  background-color: var(--bg-surface);
   color: var(--text-primary);
+  border: 1px solid var(--border);
   border-left: 4px solid var(--primary);
-  padding: 0.875rem 1.125rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
-  animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+  animation: slideInRight 200ms ease forwards;
   pointer-events: auto;
-  min-width: 250px;
-  max-width: 380px;
+  min-width: 240px;
+  max-width: 360px;
+  font-size: 0.875rem;
 }
 .toast.toast-success { border-left-color: var(--success); }
 .toast.toast-warning { border-left-color: var(--warning); }
 .toast.toast-error { border-left-color: var(--error); }
-.toast.toast-exit { animation: slideOutRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.toast.toast-exit { animation: slideOutRight 200ms ease forwards; }
 
-/* 7. Utility Classes */
+/* 7. Utility & Badges */
 .no-select { user-select: none; }
-.animate-fade-in { animation: fadeIn 0.3s ease forwards; }
+.animate-fade-in { animation: fadeIn 150ms ease forwards; }
 .timer-warning {
   color: var(--error);
   animation: pulse-warning 1s infinite;
 }
-.dark-admin { background-color: var(--bg-primary); }
 .badge-locked {
   opacity: 0.4;
   filter: grayscale(1);
 }
 .badge-earned {
-  box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* cyan-500/30 ring + shadow */
+  border-color: var(--primary);
 }
 
-/* 9. Podium Styles for Leaderboard */
-.podium-gold {
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(217, 119, 6, 0.2));
-  border: 1px solid var(--warning);
-}
-.podium-silver {
-  background: linear-gradient(135deg, rgba(148, 163, 184, 0.2), rgba(71, 85, 105, 0.2));
-  border: 1px solid #94a3b8;
-}
-.podium-bronze {
-  background: linear-gradient(135deg, rgba(180, 83, 9, 0.2), rgba(120, 53, 15, 0.2));
-  border: 1px solid #b45309;
-}
-
-/* 10. Admin Sidebar */
-.admin-sidebar {
-  background-color: var(--bg-secondary);
-  border-right: 1px solid var(--border);
-}
-.admin-sidebar-item {
-  color: var(--text-secondary);
-  transition: all 0.2s;
-  padding: 0.75rem 1rem;
-  border-radius: 0.375rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-.admin-sidebar-item:hover {
-  color: var(--primary);
-  background-color: rgba(34, 211, 238, 0.05);
-}
-.admin-sidebar-item.active {
-  color: var(--primary);
-  background-color: rgba(34, 211, 238, 0.1);
-  font-weight: 500;
-}
-
-/* 11. Article Card hover effect */
-.article-card {
-  transition: transform 0.2s ease;
-  overflow: hidden;
-}
-.article-card:hover {
-  transform: scale(1.02);
-}
-.article-card-image {
-  transition: transform 0.3s ease;
-}
-.article-card:hover .article-card-image {
-  transform: scale(1.05);
-}
-
-/* 12. Tab active indicator */
+/* 8. Tab Button Styles */
 .tab-btn {
   color: var(--text-secondary);
-  border-bottom: 2px solid transparent;
-  transition: all 0.2s ease;
-  padding: 0.75rem 1rem;
-  font-weight: 500;
+  transition: all 120ms ease;
+  font-weight: 600;
 }
 .tab-btn:hover {
-  color: var(--primary);
-}
-.tab-btn.active {
-  color: var(--primary);
-  border-bottom-color: var(--primary);
+  color: var(--text-primary);
 }
 
-/* 13. Custom Thin Dark Theme Scrollbar */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.6);
-  border-radius: 9999px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(51, 65, 85, 0.8);
-  border-radius: 9999px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(6, 182, 212, 0.6);
-}
-
-/* 14. Modal & Notification UI Enhancements */
+/* 9. Modal Refinement (200ms transition) */
 @keyframes modalPopIn {
   0% {
     opacity: 0;
-    transform: scale(0.96) translateY(8px);
+    transform: scale(0.98) translateY(6px);
   }
   100% {
     opacity: 1;
@@ -347,10 +343,23 @@ body.hide-navs footer {
 }
 
 .modal-card {
-  animation: modalPopIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: modalPopIn 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.toast {
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+@media (max-width: 375px) {
+  #showcase-picker-grid {
+    height: 260px !important;
+  }
+}
+
+#lb-table-body tr td,
+#lb-table-body tr th {
+  white-space: nowrap;
+}
+
+.truncate-safe {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }

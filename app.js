@@ -537,20 +537,20 @@ const app = {
 
             if (!iconContainer || !textContainer || !inputEl) return;
 
-            inputEl.classList.remove('border-emerald-500/50', 'border-red-500/50', 'border-slate-700');
+            inputEl.classList.remove('border-emerald-500/50', 'border-red-500/50', 'border-slate-200 dark:border-slate-700');
 
             if (state === 'empty') {
                 iconContainer.classList.add('hidden');
                 iconContainer.innerHTML = '';
                 textContainer.className = 'text-xs text-slate-500 mt-1';
                 textContainer.innerText = message;
-                inputEl.classList.add('border-slate-700');
+                inputEl.classList.add('border-slate-200', 'dark:border-slate-700');
             } else if (state === 'checking') {
                 iconContainer.classList.remove('hidden');
-                iconContainer.innerHTML = '<i class="fa-solid fa-spinner animate-spin text-slate-400"></i>';
-                textContainer.className = 'text-xs text-slate-400 mt-1';
+                iconContainer.innerHTML = '<i class="fa-solid fa-spinner animate-spin text-slate-500 dark:text-slate-400"></i>';
+                textContainer.className = 'text-xs text-slate-500 dark:text-slate-400 mt-1';
                 textContainer.innerText = message;
-                inputEl.classList.add('border-slate-700');
+                inputEl.classList.add('border-slate-200', 'dark:border-slate-700');
             } else if (state === 'available') {
                 iconContainer.classList.remove('hidden');
                 iconContainer.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-400"></i>';
@@ -690,20 +690,20 @@ const app = {
 
             if (!iconContainer || !textContainer || !inputEl) return;
 
-            inputEl.classList.remove('border-emerald-500/50', 'border-red-500/50', 'border-slate-700');
+            inputEl.classList.remove('border-emerald-500/50', 'border-red-500/50', 'border-slate-200 dark:border-slate-700');
 
             if (state === 'empty') {
                 iconContainer.classList.add('hidden');
                 iconContainer.innerHTML = '';
                 textContainer.className = 'text-xs text-slate-500 mt-1';
                 textContainer.innerText = message;
-                inputEl.classList.add('border-slate-700');
+                inputEl.classList.add('border-slate-200', 'dark:border-slate-700');
             } else if (state === 'checking') {
                 iconContainer.classList.remove('hidden');
-                iconContainer.innerHTML = '<i class="fa-solid fa-spinner animate-spin text-slate-400"></i>';
-                textContainer.className = 'text-xs text-slate-400 mt-1';
+                iconContainer.innerHTML = '<i class="fa-solid fa-spinner animate-spin text-slate-500 dark:text-slate-400"></i>';
+                textContainer.className = 'text-xs text-slate-500 dark:text-slate-400 mt-1';
                 textContainer.innerText = message;
-                inputEl.classList.add('border-slate-700');
+                inputEl.classList.add('border-slate-200', 'dark:border-slate-700');
             } else if (state === 'available') {
                 iconContainer.classList.remove('hidden');
                 iconContainer.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-400"></i>';
@@ -841,20 +841,20 @@ const app = {
 
             if (!iconContainer || !textContainer || !inputEl) return;
 
-            inputEl.classList.remove('border-emerald-500/50', 'border-red-500/50', 'border-slate-700');
+            inputEl.classList.remove('border-emerald-500/50', 'border-red-500/50', 'border-slate-200 dark:border-slate-700');
 
             if (state === 'empty') {
                 iconContainer.classList.add('hidden');
                 iconContainer.innerHTML = '';
                 textContainer.className = 'text-xs text-slate-500 mt-1';
                 textContainer.innerText = message;
-                inputEl.classList.add('border-slate-700');
+                inputEl.classList.add('border-slate-200', 'dark:border-slate-700');
             } else if (state === 'checking') {
                 iconContainer.classList.remove('hidden');
-                iconContainer.innerHTML = '<i class="fa-solid fa-spinner animate-spin text-slate-400"></i>';
-                textContainer.className = 'text-xs text-slate-400 mt-1';
+                iconContainer.innerHTML = '<i class="fa-solid fa-spinner animate-spin text-slate-500 dark:text-slate-400"></i>';
+                textContainer.className = 'text-xs text-slate-500 dark:text-slate-400 mt-1';
                 textContainer.innerText = message;
-                inputEl.classList.add('border-slate-700');
+                inputEl.classList.add('border-slate-200', 'dark:border-slate-700');
             } else if (state === 'available') {
                 iconContainer.classList.remove('hidden');
                 iconContainer.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-400"></i>';
@@ -1060,20 +1060,20 @@ const app = {
 
             if (!iconContainer || !textContainer || !inputEl) return;
 
-            inputEl.classList.remove('border-emerald-500/50', 'border-red-500/50', 'border-slate-700');
+            inputEl.classList.remove('border-emerald-500/50', 'border-red-500/50', 'border-slate-200 dark:border-slate-700');
 
             if (state === 'empty') {
                 iconContainer.classList.add('hidden');
                 iconContainer.innerHTML = '';
                 textContainer.className = 'text-xs text-slate-500 mt-1';
                 textContainer.innerText = message;
-                inputEl.classList.add('border-slate-700');
+                inputEl.classList.add('border-slate-200', 'dark:border-slate-700');
             } else if (state === 'checking') {
                 iconContainer.classList.remove('hidden');
-                iconContainer.innerHTML = '<i class="fa-solid fa-spinner animate-spin text-slate-400"></i>';
-                textContainer.className = 'text-xs text-slate-400 mt-1';
+                iconContainer.innerHTML = '<i class="fa-solid fa-spinner animate-spin text-slate-500 dark:text-slate-400"></i>';
+                textContainer.className = 'text-xs text-slate-500 dark:text-slate-400 mt-1';
                 textContainer.innerText = message;
-                inputEl.classList.add('border-slate-700');
+                inputEl.classList.add('border-slate-200', 'dark:border-slate-700');
             } else if (state === 'available') {
                 iconContainer.classList.remove('hidden');
                 iconContainer.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-400"></i>';
@@ -1136,6 +1136,7 @@ const app = {
 
         this.syncAuthStateDisplay();
         this.bindGlobalProtection();
+        this.theme.init();
         this.usernameValidation.init();
         this.editUsernameValidation.init();
         this.emailValidation.init();
@@ -1248,6 +1249,49 @@ const app = {
         return null;
     },
 
+    // ======================== THEME SYSTEM ========================
+    theme: {
+        current: 'light',
+        init() {
+            const saved = localStorage.getItem('kt_theme') || 'light';
+            this.set(saved);
+        },
+        set(mode) {
+            this.current = mode;
+            localStorage.setItem('kt_theme', mode);
+            const html = document.documentElement;
+            if (mode === 'dark') {
+                html.classList.add('dark');
+            } else {
+                html.classList.remove('dark');
+            }
+            this.updateUI();
+        },
+        toggle() {
+            const next = this.current === 'dark' ? 'light' : 'dark';
+            this.set(next);
+        },
+        updateUI() {
+            const btns = document.querySelectorAll('.theme-toggle-btn');
+            btns.forEach(btn => {
+                const icon = btn.querySelector('i');
+                if (icon) {
+                    if (this.current === 'dark') {
+                        icon.className = 'fa-solid fa-sun text-amber-400';
+                        btn.setAttribute('title', 'Switch to Light Mode');
+                    } else {
+                        icon.className = 'fa-solid fa-moon text-slate-600 dark:text-slate-300';
+                        btn.setAttribute('title', 'Switch to Dark Mode');
+                    }
+                }
+            });
+            const textEl = document.getElementById('theme-toggle-status');
+            if (textEl) {
+                textEl.innerText = this.current === 'dark' ? 'Dark Mode' : 'Light Mode';
+            }
+        }
+    },
+
     // ======================== TOAST SYSTEM ========================
     toast: {
         show(message, type = 'info', duration = 3500) {
@@ -1255,19 +1299,19 @@ const app = {
             if (!container) return;
 
             const toast = document.createElement('div');
-            let borderColor = 'border-l-cyan-400';
+            let borderColor = 'border-l-blue-500';
             let icon = 'fa-circle-info';
-            let iconColor = 'text-cyan-400';
+            let iconColor = 'text-blue-500';
 
-            if (type === 'success') { borderColor = 'border-l-emerald-400'; icon = 'fa-circle-check'; iconColor = 'text-emerald-400'; }
-            else if (type === 'warning') { borderColor = 'border-l-amber-400'; icon = 'fa-triangle-exclamation'; iconColor = 'text-amber-400'; }
-            else if (type === 'error') { borderColor = 'border-l-red-400'; icon = 'fa-circle-xmark'; iconColor = 'text-red-400'; }
+            if (type === 'success') { borderColor = 'border-l-emerald-500'; icon = 'fa-circle-check'; iconColor = 'text-emerald-500'; }
+            else if (type === 'warning') { borderColor = 'border-l-amber-500'; icon = 'fa-triangle-exclamation'; iconColor = 'text-amber-500'; }
+            else if (type === 'error') { borderColor = 'border-l-red-500'; icon = 'fa-circle-xmark'; iconColor = 'text-red-500'; }
 
-            toast.className = `toast bg-slate-800 border border-slate-700 border-l-4 ${borderColor} rounded-lg px-4 py-3 flex items-center space-x-3 shadow-xl min-w-[280px] max-w-[380px]`;
+            toast.className = `toast bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 border-l-4 ${borderColor} rounded-xl px-4 py-3 flex items-center space-x-3 shadow-md min-w-[280px] max-w-[380px]`;
             toast.innerHTML = `
                 <i class="fa-solid ${icon} ${iconColor}"></i>
-                <span class="text-sm text-slate-200 flex-1">${message}</span>
-                <button onclick="this.parentElement.remove()" class="text-slate-500 hover:text-slate-300"><i class="fa-solid fa-xmark text-xs"></i></button>
+                <span class="text-sm text-slate-800 dark:text-slate-200 font-medium flex-1">${message}</span>
+                <button onclick="this.parentElement.remove()" class="text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><i class="fa-solid fa-xmark text-xs"></i></button>
             `;
             container.appendChild(toast);
 
@@ -1785,7 +1829,7 @@ const app = {
         const displayNameEscaped = this.escapeHtml(displayName);
 
         if (user.isGuest) {
-            if (greetingEl) greetingEl.innerHTML = `Welcome, <span class="text-cyan-400">${displayNameEscaped}</span> 👋`;
+            if (greetingEl) greetingEl.innerHTML = `Welcome, <span class="text-blue-400">${displayNameEscaped}</span> 👋`;
             if (statusEl) statusEl.innerText = 'Sign in or register to record scores and join the National Leaderboard.';
             if (substatusEl) substatusEl.innerText = '';
             return;
@@ -1818,14 +1862,14 @@ const app = {
 
         // CASE 1: User has never completed a Standard Test
         if (!currentRank || userBestScore <= 0) {
-            if (greetingEl) greetingEl.innerHTML = `Welcome, <span class="text-cyan-400">${displayNameEscaped}</span> 👋`;
+            if (greetingEl) greetingEl.innerHTML = `Welcome, <span class="text-blue-400">${displayNameEscaped}</span> 👋`;
             if (statusEl) statusEl.innerText = 'Complete your first Standard Test to join the leaderboard.';
             if (substatusEl) substatusEl.innerText = '';
             return;
         }
 
         // Default Greeting for returning users
-        if (greetingEl) greetingEl.innerHTML = `Welcome back, <span class="text-cyan-400">${displayNameEscaped}</span> 👋`;
+        if (greetingEl) greetingEl.innerHTML = `Welcome back, <span class="text-blue-400">${displayNameEscaped}</span> 👋`;
 
         let statusText = '';
         let substatusText = '';
@@ -1903,9 +1947,9 @@ const app = {
 
         // ---- Desktop nav highlight ----
         document.querySelectorAll('#desktop-nav-guest .nav-btn, #desktop-nav-auth .nav-btn').forEach(btn => {
-            btn.classList.remove('text-cyan-400');
-            if (!btn.classList.contains('bg-cyan-500')) {
-                btn.classList.add('text-slate-400');
+            btn.classList.remove('text-blue-400');
+            if (!btn.classList.contains('bg-blue-500')) {
+                btn.classList.add('text-slate-500', 'dark:text-slate-400');
             }
         });
 
@@ -1931,14 +1975,14 @@ const app = {
         if (desktopBtnId) {
             const btn = document.getElementById(desktopBtnId);
             if (btn) {
-                btn.classList.remove('text-slate-400');
-                btn.classList.add('text-cyan-400');
+                btn.classList.remove('text-slate-500', 'dark:text-slate-400');
+                btn.classList.add('text-blue-400');
             }
         }
 
         // ---- Mobile nav highlight (Single Unified Mapping) ----
         document.querySelectorAll('#mobile-nav button').forEach(btn => {
-            btn.classList.remove('text-cyan-400');
+            btn.classList.remove('text-blue-400');
             btn.classList.add('text-slate-500');
         });
 
@@ -1966,7 +2010,7 @@ const app = {
             const btn = document.getElementById(mobileBtnId);
             if (btn) {
                 btn.classList.remove('text-slate-500');
-                btn.classList.add('text-cyan-400');
+                btn.classList.add('text-blue-400');
             }
         }
 
@@ -2228,13 +2272,13 @@ const app = {
             const safeDate = this.escapeHtml(h.date || '—');
 
             const row = document.createElement('tr');
-            row.className = 'hover:bg-slate-800/50 transition border-b border-slate-800/50';
+            row.className = 'hover:bg-slate-100 dark:bg-slate-800/50 transition border-b border-slate-200 dark:border-slate-800/50';
             row.innerHTML = `
-                <td class="p-3 font-medium text-slate-100">${safeDate}</td>
-                <td class="p-3"><span class="bg-cyan-500/10 text-cyan-400 text-[10px] px-2 py-0.5 rounded font-bold">${safeMode}</span></td>
-                <td class="p-3 text-center font-extrabold text-cyan-400">${currentScore}</td>
+                <td class="p-3 font-medium text-slate-900 dark:text-slate-100">${safeDate}</td>
+                <td class="p-3"><span class="bg-blue-500/10 text-blue-400 text-[10px] px-2 py-0.5 rounded font-bold">${safeMode}</span></td>
+                <td class="p-3 text-center font-extrabold text-blue-400">${currentScore}</td>
                 <td class="p-3 text-center text-emerald-400 font-bold">${h.accuracy || 0}%</td>
-                <td class="p-3 text-center text-slate-400">${h.consistency != null ? h.consistency : 100}%</td>
+                <td class="p-3 text-center text-slate-500 dark:text-slate-400">${h.consistency != null ? h.consistency : 100}%</td>
             `;
             tbody.appendChild(row);
         });
@@ -2479,17 +2523,17 @@ const app = {
             } else {
                 recent.forEach(h => {
                     const tr = document.createElement('tr');
-                    tr.className = 'hover:bg-slate-800/40 transition';
+                    tr.className = 'hover:bg-slate-100 dark:bg-slate-800/40 transition';
                     const safeMode = this.escapeHtml(h.mode || 'Standard Test');
                     const scoreVal = h.score !== undefined ? h.score : (h.total_answered || h.totalAnswered || 0);
                     const accVal = h.accuracy || 0;
                     const dateStr = this.escapeHtml(h.created_at ? new Date(h.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : (h.date || '—'));
 
                     tr.innerHTML = `
-                        <td class="p-3 font-semibold text-slate-200">${safeMode}</td>
-                        <td class="p-3 font-extrabold text-cyan-400 text-right">${scoreVal} pts</td>
+                        <td class="p-3 font-semibold text-slate-800 dark:text-slate-200">${safeMode}</td>
+                        <td class="p-3 font-extrabold text-blue-400 text-right">${scoreVal} pts</td>
                         <td class="p-3 text-emerald-400 text-right">${accVal}%</td>
-                        <td class="p-3 text-slate-400 text-right text-xs">${dateStr}</td>
+                        <td class="p-3 text-slate-500 dark:text-slate-400 text-right text-xs">${dateStr}</td>
                     `;
                     recentContainer.appendChild(tr);
                 });
@@ -2596,15 +2640,15 @@ const app = {
         rarityStyles: {
             common: {
                 label: 'Common',
-                badgeClass: 'text-slate-400 bg-slate-800/80 border-slate-700/60',
-                iconBg: 'bg-slate-800/60 text-slate-300 border-slate-700/50',
-                accentColor: 'text-slate-400'
+                badgeClass: 'text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700/60',
+                iconBg: 'bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700/50',
+                accentColor: 'text-slate-500 dark:text-slate-400'
             },
             rare: {
                 label: 'Rare',
-                badgeClass: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30',
-                iconBg: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30 shadow-[0_0_10px_rgba(6,182,212,0.15)]',
-                accentColor: 'text-cyan-400'
+                badgeClass: 'text-blue-400 bg-blue-500/10 border-blue-500/30',
+                iconBg: 'bg-blue-500/10 text-blue-400 border-blue-500/30 shadow-[0_0_10px_rgba(6,182,212,0.15)]',
+                accentColor: 'text-blue-400'
             },
             epic: {
                 label: 'Epic',
@@ -2891,8 +2935,8 @@ const app = {
                         <button onclick="app.achievements.render('${cat.id}')" 
                                 class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap border ${
                                     isActive
-                                        ? 'bg-cyan-500 text-slate-950 border-cyan-400 shadow-md shadow-cyan-500/20'
-                                        : 'bg-slate-900 hover:bg-slate-800 text-slate-400 border-slate-800'
+                                        ? 'bg-blue-500 text-slate-950 border-blue-400 shadow-md shadow-blue-500/20'
+                                        : 'bg-white dark:bg-slate-900 hover:bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800'
                                 }">
                             ${cat.label}
                         </button>
@@ -2912,15 +2956,15 @@ const app = {
 
                 return `
                     <div onclick="app.achievements.openDetailModal('${item.id}')" 
-                         class="bg-slate-900 border rounded-2xl p-4 cursor-pointer transition flex flex-col justify-between group relative overflow-hidden ${
+                         class="bg-white dark:bg-slate-900 border rounded-2xl p-4 cursor-pointer transition flex flex-col justify-between group relative overflow-hidden ${
                              isUnlocked
-                                 ? 'border-slate-800 hover:border-cyan-500/60 shadow-lg'
-                                 : 'border-slate-800/80 opacity-60 hover:opacity-85'
+                                 ? 'border-slate-200 dark:border-slate-800 hover:border-blue-500/60 shadow-lg'
+                                 : 'border-slate-200 dark:border-slate-800/80 opacity-60 hover:opacity-85'
                          }">
                         <!-- Status indicator -->
                         <div class="absolute top-3 right-3 text-xs">
                             ${isUnlocked 
-                                ? '<span class="text-cyan-400"><i class="fa-solid fa-circle-check"></i></span>'
+                                ? '<span class="text-blue-400"><i class="fa-solid fa-circle-check"></i></span>'
                                 : '<span class="text-slate-600"><i class="fa-solid fa-lock"></i></span>'
                             }
                         </div>
@@ -2928,31 +2972,31 @@ const app = {
                         <!-- Content Top -->
                         <div class="space-y-3">
                             <div class="w-12 h-12 rounded-xl border flex items-center justify-center text-xl transition group-hover:scale-105 ${
-                                isUnlocked ? rarity.iconBg : 'bg-slate-800/40 text-slate-600 border-slate-800'
+                                isUnlocked ? rarity.iconBg : 'bg-slate-100 dark:bg-slate-800/40 text-slate-600 border-slate-200 dark:border-slate-800'
                             }">
                                 <i class="${item.icon}"></i>
                             </div>
                             <div>
                                 <span class="inline-block text-[9px] font-extrabold px-2 py-0.5 rounded uppercase tracking-wider mb-1 ${
-                                    isUnlocked ? rarity.badgeClass : 'text-slate-500 bg-slate-800/50 border border-slate-700/40'
+                                    isUnlocked ? rarity.badgeClass : 'text-slate-500 bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/40'
                                 }">
                                     ${rarity.label}
                                 </span>
                                 <h4 class="font-bold text-sm leading-snug transition ${
-                                    isUnlocked ? 'text-slate-100 group-hover:text-cyan-400' : 'text-slate-500'
+                                    isUnlocked ? 'text-slate-900 dark:text-slate-100 group-hover:text-blue-400' : 'text-slate-500'
                                 }">${item.title}</h4>
                                 <p class="text-[11px] text-slate-500 mt-1 line-clamp-2 leading-relaxed">${item.desc}</p>
                             </div>
                         </div>
 
                         <!-- Progress Bottom -->
-                        <div class="mt-4 pt-3 border-t border-slate-800/60 space-y-1.5">
+                        <div class="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800/60 space-y-1.5">
                             <div class="flex justify-between items-center text-[10px]">
                                 <span class="text-slate-500 font-semibold">${item.current} / ${item.target} ${item.unit}</span>
-                                <span class="font-bold ${isUnlocked ? 'text-cyan-400' : 'text-slate-500'}">${item.percentage}%</span>
+                                <span class="font-bold ${isUnlocked ? 'text-blue-400' : 'text-slate-500'}">${item.percentage}%</span>
                             </div>
-                            <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                                <div class="${isUnlocked ? 'bg-cyan-500' : 'bg-slate-700'} h-1.5 rounded-full transition-all duration-500" style="width: ${item.percentage}%"></div>
+                            <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                                <div class="${isUnlocked ? 'bg-blue-500' : 'bg-slate-700'} h-1.5 rounded-full transition-all duration-500" style="width: ${item.percentage}%"></div>
                             </div>
                         </div>
                     </div>
@@ -2992,11 +3036,11 @@ const app = {
             if (progText) progText.innerText = `${item.current} / ${item.target} ${item.unit} (${item.percentage}%)`;
             if (progBar) {
                 progBar.style.width = `${item.percentage}%`;
-                progBar.className = `${item.unlocked ? 'bg-cyan-500' : 'bg-slate-700'} h-2 rounded-full transition-all duration-300`;
+                progBar.className = `${item.unlocked ? 'bg-blue-500' : 'bg-slate-700'} h-2 rounded-full transition-all duration-300`;
             }
             if (statusEl) {
                 statusEl.innerText = item.unlocked ? 'Unlocked' : 'Locked';
-                statusEl.className = `font-bold ${item.unlocked ? 'text-cyan-400' : 'text-slate-500'}`;
+                statusEl.className = `font-bold ${item.unlocked ? 'text-blue-400' : 'text-slate-500'}`;
             }
 
             modal.classList.remove('hidden');
@@ -3179,8 +3223,8 @@ const app = {
         pickerCategory: 'all',
 
         circularRarityStyles: {
-            common: 'bg-slate-800/80 text-slate-300 border-slate-700/60 shadow-[0_0_8px_rgba(148,163,184,0.15)]',
-            rare: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/40 shadow-[0_0_12px_rgba(6,182,212,0.25)]',
+            common: 'bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700/60 shadow-[0_0_8px_rgba(148,163,184,0.15)]',
+            rare: 'bg-blue-500/15 text-blue-400 border-blue-500/40 shadow-[0_0_12px_rgba(6,182,212,0.25)]',
             epic: 'bg-purple-500/15 text-purple-400 border-purple-500/40 shadow-[0_0_12px_rgba(168,85,247,0.25)]',
             legendary: 'bg-amber-500/15 text-amber-400 border-amber-500/40 shadow-[0_0_14px_rgba(245,158,11,0.3)]'
         },
@@ -3213,11 +3257,11 @@ const app = {
                 // Empty State
                 container.className = "w-full";
                 container.innerHTML = `
-                    <div class="w-full text-center py-4 px-4 bg-slate-950/60 border border-slate-800/80 rounded-xl space-y-2">
+                    <div class="w-full text-center py-4 px-4 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 rounded-xl space-y-2">
                         <div class="text-2xl">🏆</div>
-                        <p class="text-xs font-extrabold text-slate-200">No Achievement Showcase</p>
-                        <p class="text-[11px] text-slate-400">Choose up to four achievements to personalize your profile.</p>
-                        <button onclick="app.achievements.openShowcaseModal()" class="text-xs font-extrabold text-cyan-400 hover:text-cyan-300 transition inline-flex items-center gap-1 mt-1 focus:outline-none focus:ring-2 focus:ring-cyan-400 rounded">
+                        <p class="text-xs font-extrabold text-slate-800 dark:text-slate-200">No Achievement Showcase</p>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Choose up to four achievements to personalize your profile.</p>
+                        <button onclick="app.achievements.openShowcaseModal()" class="text-xs font-extrabold text-blue-400 hover:text-blue-300 transition inline-flex items-center gap-1 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded">
                             Choose Showcase →
                         </button>
                     </div>
@@ -3226,7 +3270,7 @@ const app = {
                 // Render up to 4 selected showcase achievement circular badges
                 const selectedItems = validSelectedIds.map(id => evaluated.find(a => a.id === id)).filter(Boolean);
 
-                container.className = "bg-slate-950/60 border border-slate-800/80 p-4 rounded-xl flex items-center justify-between w-full";
+                container.className = "bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 p-4 rounded-xl flex items-center justify-between w-full";
                 container.innerHTML = `
                     <div class="flex-1 flex items-center justify-center gap-4 sm:gap-5 my-1">
                         ${selectedItems.map(item => {
@@ -3235,13 +3279,13 @@ const app = {
                                 <div onclick="app.toast.show('🏆 ${item.title}: ${item.desc} | Target: ${item.target} ${item.unit}', 'info', 3000)" 
                                      title="${item.title}\n${item.desc}\nTarget: ${item.target} ${item.unit}\nRarity: ${item.rarity.toUpperCase()}" 
                                      tabindex="0" role="button" aria-label="${item.title}"
-                                     class="w-12 h-12 sm:w-13 sm:h-13 rounded-full border flex items-center justify-center text-xl cursor-pointer transition-all duration-300 transform hover:scale-110 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-cyan-400 ${circStyle}">
+                                     class="w-12 h-12 sm:w-13 sm:h-13 rounded-full border flex items-center justify-center text-xl cursor-pointer transition-all duration-300 transform hover:scale-110 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-400 ${circStyle}">
                                     <i class="${item.icon}"></i>
                                 </div>
                             `;
                         }).join('')}
                     </div>
-                    <button onclick="app.achievements.openShowcaseModal()" aria-label="Edit Showcase" class="text-xs font-bold text-slate-400 hover:text-cyan-400 transition p-1.5 rounded-lg hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-400">
+                    <button onclick="app.achievements.openShowcaseModal()" aria-label="Edit Showcase" class="text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-blue-400 transition p-1.5 rounded-lg hover:bg-slate-100 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400">
                         <i class="fa-solid fa-pen-to-square text-sm"></i>
                     </button>
                 `;
@@ -3333,15 +3377,15 @@ const app = {
                                  ondragover="app.achievements.handleDragOver(event)"
                                  ondrop="app.achievements.handleDrop(event, ${i})"
                                  title="Slot ${i + 1}: ${item.title} (Drag to reorder)" 
-                                 class="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full border flex items-center justify-center text-sm sm:text-base cursor-grab active:cursor-grabbing transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-cyan-400 ${circStyle}">
+                                 class="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full border flex items-center justify-center text-sm sm:text-base cursor-grab active:cursor-grabbing transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-400 ${circStyle}">
                                 <i class="${item.icon}"></i>
-                                <span class="absolute -top-1 -right-1 bg-cyan-500 text-slate-950 text-[9px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center shadow-md">${i + 1}</span>
+                                <span class="absolute -top-1 -right-1 bg-blue-500 text-slate-950 text-[9px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center shadow-md">${i + 1}</span>
                             </div>
                         `;
                     }
                 } else {
                     previewHtml += `
-                        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-dashed border-slate-800/80 text-slate-600 text-sm font-bold flex items-center justify-center">
+                        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-dashed border-slate-200 dark:border-slate-800/80 text-slate-600 text-sm font-bold flex items-center justify-center">
                             +
                         </div>
                     `;
@@ -3381,10 +3425,10 @@ const app = {
                     const isActive = cat.id === this.pickerCategory;
                     return `
                         <button onclick="app.achievements.renderShowcasePicker('${cat.id}')" 
-                                class="px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition whitespace-nowrap border shrink-0 focus:outline-none focus:ring-2 focus:ring-cyan-400 ${
+                                class="px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition whitespace-nowrap border shrink-0 focus:outline-none focus:ring-2 focus:ring-blue-400 ${
                                     isActive
-                                        ? 'bg-cyan-500 text-slate-950 border-cyan-400 shadow-sm shadow-cyan-500/20'
-                                        : 'bg-slate-950 hover:bg-slate-800 text-slate-400 border-slate-800'
+                                        ? 'bg-blue-500 text-slate-950 border-blue-400 shadow-sm shadow-blue-500/20'
+                                        : 'bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800'
                                 }">
                             ${cat.label}
                         </button>
@@ -3414,24 +3458,24 @@ const app = {
                          aria-selected="${isSelected}"
                          aria-disabled="${!isUnlocked}"
                          onkeydown="${isUnlocked ? `if(event.key==='Enter'||event.key===' '){event.preventDefault();app.achievements.toggleShowcaseSelection('${item.id}');}` : ''}"
-                         class="bg-slate-900/90 border rounded-xl p-3 flex flex-col justify-between transition-all duration-200 select-none relative overflow-hidden group h-[108px] w-full min-w-0 focus:outline-none focus:ring-2 focus:ring-cyan-400 ${
+                         class="bg-white dark:bg-slate-900/90 border rounded-xl p-3 flex flex-col justify-between transition-all duration-200 select-none relative overflow-hidden group h-[108px] w-full min-w-0 focus:outline-none focus:ring-2 focus:ring-blue-400 ${
                              isUnlocked
                                  ? (isSelected
-                                     ? 'border-cyan-400 bg-cyan-500/10 ring-1 ring-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.2)] cursor-pointer scale-[1.01]'
-                                     : 'border-slate-800 hover:border-cyan-500/50 hover:bg-slate-800/80 cursor-pointer hover:-translate-y-0.5')
-                                 : 'border-slate-800/70 bg-slate-950/60 opacity-75 hover:opacity-90 cursor-not-allowed'
+                                     ? 'border-blue-400 bg-blue-500/10 ring-1 ring-blue-400 shadow-[0_0_12px_rgba(6,182,212,0.2)] cursor-pointer scale-[1.01]'
+                                     : 'border-slate-200 dark:border-slate-800 hover:border-blue-500/50 hover:bg-slate-100 dark:bg-slate-800/80 cursor-pointer hover:-translate-y-0.5')
+                                 : 'border-slate-200 dark:border-slate-800/70 bg-slate-50 dark:bg-slate-950/60 opacity-75 hover:opacity-90 cursor-not-allowed'
                          }">
                         
                         <!-- Top Row: Icon, Rarity Badge & Selection Indicator -->
                         <div class="flex items-center justify-between gap-1.5">
                             <div class="flex items-center space-x-2 min-w-0">
                                 <div class="w-8 h-8 rounded-lg border flex items-center justify-center text-base transition group-hover:scale-105 shrink-0 ${
-                                    isUnlocked ? rarity.iconBg : 'bg-slate-800/60 text-slate-500 border-slate-700/60'
+                                    isUnlocked ? rarity.iconBg : 'bg-slate-100 dark:bg-slate-800/60 text-slate-500 border-slate-200 dark:border-slate-700/60'
                                 }">
                                     <i class="${item.icon}"></i>
                                 </div>
                                 <span class="inline-block text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0 ${
-                                    isUnlocked ? rarity.badgeClass : 'text-slate-400 bg-slate-800/70 border border-slate-700/50'
+                                    isUnlocked ? rarity.badgeClass : 'text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/50'
                                 }">
                                     ${rarity.label}
                                 </span>
@@ -3440,8 +3484,8 @@ const app = {
                             <div class="shrink-0">
                                 ${isUnlocked ? (
                                     isSelected 
-                                        ? `<span class="bg-cyan-500 text-slate-950 text-[10px] font-black px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-sm">${orderBadge} <i class="fa-solid fa-circle-check text-[9px]"></i></span>`
-                                        : '<span class="text-slate-600 group-hover:text-slate-400 text-xs"><i class="fa-regular fa-circle"></i></span>'
+                                        ? `<span class="bg-blue-500 text-slate-950 text-[10px] font-black px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-sm">${orderBadge} <i class="fa-solid fa-circle-check text-[9px]"></i></span>`
+                                        : '<span class="text-slate-600 group-hover:text-slate-500 dark:text-slate-400 text-xs"><i class="fa-regular fa-circle"></i></span>'
                                 ) : (
                                     '<span class="text-slate-500 text-xs"><i class="fa-solid fa-lock text-[10px]"></i></span>'
                                 )}
@@ -3450,15 +3494,15 @@ const app = {
 
                         <!-- Title -->
                         <h4 class="font-extrabold text-xs leading-tight truncate mt-1 ${
-                            isUnlocked ? (isSelected ? 'text-cyan-300' : 'text-slate-100') : 'text-slate-400'
+                            isUnlocked ? (isSelected ? 'text-blue-300' : 'text-slate-900 dark:text-slate-100') : 'text-slate-500 dark:text-slate-400'
                         }">${item.title}</h4>
 
                         <!-- Bottom Progress & Requirement -->
-                        <div class="pt-1.5 border-t border-slate-800/80 flex items-center justify-between text-[10px]">
-                            <span class="text-slate-400 font-semibold truncate max-w-[85px]">
+                        <div class="pt-1.5 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between text-[10px]">
+                            <span class="text-slate-500 dark:text-slate-400 font-semibold truncate max-w-[85px]">
                                 ${item.target} ${item.unit}
                             </span>
-                            <span class="font-extrabold ${isUnlocked ? 'text-cyan-400' : 'text-slate-400'}">
+                            <span class="font-extrabold ${isUnlocked ? 'text-blue-400' : 'text-slate-500 dark:text-slate-400'}">
                                 ${item.current}/${item.target} (${item.percentage}%)
                             </span>
                         </div>
@@ -6055,27 +6099,50 @@ const app = {
             const descEl = document.getElementById('lb-header-description');
             const championContainer = document.getElementById('lb-champion-container');
             const tableHeading = document.getElementById('lb-table-heading');
+            const tableThead = document.querySelector('#view-leaderboard table thead');
+
+            const activeClass = "flex-1 sm:flex-none px-4 sm:px-6 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors duration-120 bg-blue-600 text-white dark:bg-blue-500 dark:text-slate-950 flex items-center justify-center gap-1.5 shadow-xs";
+            const inactiveClass = "flex-1 sm:flex-none px-4 sm:px-6 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors duration-120 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 flex items-center justify-center gap-1.5";
 
             if (mode === 'marathon') {
-                if (stdBtn) stdBtn.className = "px-6 py-2 rounded-xl text-sm font-extrabold transition text-slate-400 hover:text-slate-200";
-                if (marBtn) marBtn.className = "px-6 py-2 rounded-xl text-sm font-extrabold transition bg-cyan-500 text-slate-950 shadow-sm flex items-center gap-2";
+                if (stdBtn) stdBtn.className = inactiveClass;
+                if (marBtn) marBtn.className = activeClass;
                 if (subtabsContainer) subtabsContainer.classList.add('hidden');
-                if (titleEl) titleEl.innerHTML = 'Hall of Fame';
+                if (titleEl) titleEl.innerHTML = '<i class="fa-solid fa-building-columns text-blue-600 dark:text-blue-400 mr-2 text-lg"></i> Hall of Fame';
                 if (subtitleEl) subtitleEl.innerText = 'Best Marathon Performance Ever';
                 if (descEl) {
                     descEl.classList.remove('hidden');
                     descEl.innerText = 'The highest achievement in Marathon Test.';
                 }
+                if (tableThead) {
+                    tableThead.innerHTML = `
+                        <tr>
+                            <th class="p-3.5 w-16 text-center">Rank</th>
+                            <th class="p-3.5">User</th>
+                            <th class="p-3.5 text-right">Score</th>
+                        </tr>
+                    `;
+                }
                 this.stopWeeklyCountdown();
             } else {
-                if (stdBtn) stdBtn.className = "px-6 py-2 rounded-xl text-sm font-extrabold transition bg-cyan-500 text-slate-950 shadow-sm flex items-center gap-2";
-                if (marBtn) marBtn.className = "px-6 py-2 rounded-xl text-sm font-extrabold transition text-slate-400 hover:text-slate-200";
+                if (stdBtn) stdBtn.className = activeClass;
+                if (marBtn) marBtn.className = inactiveClass;
                 if (subtabsContainer) subtabsContainer.classList.remove('hidden');
                 if (championContainer) championContainer.classList.add('hidden');
                 if (tableHeading) tableHeading.classList.add('hidden');
-                if (titleEl) titleEl.innerHTML = '<i class="fa-solid fa-trophy text-cyan-400 mr-3"></i> Leaderboard';
+                if (titleEl) titleEl.innerHTML = '<i class="fa-solid fa-trophy text-blue-600 dark:text-blue-400 mr-2 text-lg"></i> Leaderboard';
                 if (subtitleEl) subtitleEl.innerText = 'Top performers based on their highest Standard Test score.';
                 if (descEl) descEl.classList.add('hidden');
+                if (tableThead) {
+                    tableThead.innerHTML = `
+                        <tr>
+                            <th class="p-3.5 w-16 text-center">Rank</th>
+                            <th class="p-3.5">User</th>
+                            <th class="p-3.5 text-right">Score</th>
+                            <th class="p-3.5 text-center">Accuracy</th>
+                        </tr>
+                    `;
+                }
                 if (this.currentTab === 'weekly') {
                     this.startWeeklyCountdown();
                 }
@@ -6089,14 +6156,17 @@ const app = {
             const globalTab = document.getElementById('lb-tab-global');
             const weeklyTab = document.getElementById('lb-tab-weekly');
 
+            const activeTabClass = "tab-btn flex-1 sm:flex-none bg-blue-600 text-white dark:bg-blue-500 dark:text-slate-950 px-4 py-1.5 rounded text-xs sm:text-sm font-semibold transition-colors duration-120";
+            const inactiveTabClass = "tab-btn flex-1 sm:flex-none text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 px-4 py-1.5 rounded text-xs sm:text-sm font-semibold transition-colors duration-120";
+
             if (globalTab && weeklyTab) {
                 if (tab === 'weekly') {
-                    weeklyTab.className = "tab-btn bg-cyan-500 text-slate-950 px-5 py-2 rounded-lg text-sm font-extrabold transition";
-                    globalTab.className = "tab-btn text-slate-400 hover:text-slate-200 px-5 py-2 rounded-lg text-sm font-extrabold transition";
+                    weeklyTab.className = activeTabClass;
+                    globalTab.className = inactiveTabClass;
                     this.startWeeklyCountdown();
                 } else {
-                    globalTab.className = "tab-btn bg-cyan-500 text-slate-950 px-5 py-2 rounded-lg text-sm font-extrabold transition";
-                    weeklyTab.className = "tab-btn text-slate-400 hover:text-slate-200 px-5 py-2 rounded-lg text-sm font-extrabold transition";
+                    globalTab.className = activeTabClass;
+                    weeklyTab.className = inactiveTabClass;
                     this.stopWeeklyCountdown();
                 }
             }
@@ -6126,11 +6196,11 @@ const app = {
 
             if (tbody) {
                 tbody.innerHTML = Array(5).fill(0).map(() => `
-                    <tr class="animate-pulse border-b border-slate-800/50">
-                        <td class="p-4 text-center"><div class="h-4 w-6 bg-slate-800 rounded mx-auto"></div></td>
-                        <td class="p-4"><div class="flex items-center space-x-3"><div class="w-7 h-7 bg-slate-800 rounded-full"></div><div class="h-4 w-28 bg-slate-800 rounded"></div></div></td>
-                        <td class="p-4"><div class="h-4 w-12 bg-slate-800 rounded ml-auto"></div></td>
-                        <td class="p-4"><div class="h-4 w-12 bg-slate-800 rounded mx-auto"></div></td>
+                    <tr class="animate-pulse border-b border-slate-100 dark:border-slate-800/50">
+                        <td class="p-3.5 text-center"><div class="h-4 w-6 bg-slate-200 dark:bg-slate-800 rounded mx-auto"></div></td>
+                        <td class="p-3.5"><div class="flex items-center space-x-3"><div class="w-7 h-7 bg-slate-200 dark:bg-slate-800 rounded-full"></div><div class="h-4 w-28 bg-slate-200 dark:bg-slate-800 rounded"></div></div></td>
+                        <td class="p-3.5"><div class="h-4 w-12 bg-slate-200 dark:bg-slate-800 rounded ml-auto"></div></td>
+                        <td class="p-3.5"><div class="h-4 w-12 bg-slate-200 dark:bg-slate-800 rounded mx-auto"></div></td>
                     </tr>
                 `).join('');
             }
@@ -6144,8 +6214,8 @@ const app = {
                     tbody.innerHTML = `
                         <tr>
                             <td colspan="4" class="p-8 text-center space-y-3">
-                                <div class="text-amber-400 font-bold text-base"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Failed to load leaderboard.</div>
-                                <button onclick="app.leaderboard.render()" class="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs rounded-lg transition shadow-md">
+                                <div class="text-amber-600 dark:text-amber-400 font-semibold text-sm"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Failed to load leaderboard.</div>
+                                <button onclick="app.leaderboard.render()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-slate-950 font-semibold text-xs rounded-lg transition-colors duration-120 shadow-xs">
                                     <i class="fa-solid fa-rotate-right mr-1"></i> Retry
                                 </button>
                             </td>
@@ -6173,11 +6243,11 @@ const app = {
 
             if (tbody) {
                 tbody.innerHTML = Array(5).fill(0).map(() => `
-                    <tr class="animate-pulse border-b border-slate-800/50">
-                        <td class="p-4 text-center"><div class="h-4 w-6 bg-slate-800 rounded mx-auto"></div></td>
-                        <td class="p-4"><div class="flex items-center space-x-3"><div class="w-7 h-7 bg-slate-800 rounded-full"></div><div class="h-4 w-28 bg-slate-800 rounded"></div></div></td>
-                        <td class="p-4"><div class="h-4 w-12 bg-slate-800 rounded ml-auto"></div></td>
-                        <td class="p-4"><div class="h-4 w-12 bg-slate-800 rounded mx-auto"></div></td>
+                    <tr class="animate-pulse border-b border-slate-100 dark:border-slate-800/50">
+                        <td class="p-3.5 text-center"><div class="h-4 w-6 bg-slate-200 dark:bg-slate-800 rounded mx-auto"></div></td>
+                        <td class="p-3.5"><div class="flex items-center space-x-3"><div class="w-7 h-7 bg-slate-200 dark:bg-slate-800 rounded-full"></div><div class="h-4 w-28 bg-slate-200 dark:bg-slate-800 rounded"></div></div></td>
+                        <td class="p-3.5"><div class="h-4 w-12 bg-slate-200 dark:bg-slate-800 rounded ml-auto"></div></td>
+                        <td class="p-3.5"><div class="h-4 w-12 bg-slate-200 dark:bg-slate-800 rounded mx-auto"></div></td>
                     </tr>
                 `).join('');
             }
@@ -6191,8 +6261,8 @@ const app = {
                     tbody.innerHTML = `
                         <tr>
                             <td colspan="4" class="p-8 text-center space-y-3">
-                                <div class="text-amber-400 font-bold text-base"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Failed to load Weekly Leaderboard.</div>
-                                <button onclick="app.leaderboard.render()" class="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs rounded-lg transition shadow-md">
+                                <div class="text-amber-600 dark:text-amber-400 font-semibold text-sm"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Failed to load Weekly Leaderboard.</div>
+                                <button onclick="app.leaderboard.render()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-slate-950 font-semibold text-xs rounded-lg transition-colors duration-120 shadow-xs">
                                     <i class="fa-solid fa-rotate-right mr-1"></i> Retry
                                 </button>
                             </td>
@@ -6208,11 +6278,11 @@ const app = {
                 if (tbody) {
                     tbody.innerHTML = `
                         <tr>
-                            <td colspan="4" class="p-10 text-center space-y-3">
-                                <div class="text-4xl">🏆</div>
-                                <h3 class="text-base font-extrabold text-slate-200">No test results yet this week</h3>
-                                <p class="text-xs text-slate-400 max-w-xs mx-auto">Be the first player to claim the #1 spot on this week's leaderboard!</p>
-                                <button onclick="app.navigate('test-menu')" class="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs rounded-xl transition shadow-lg shadow-cyan-500/20 inline-flex items-center gap-2 mt-2">
+                            <td colspan="4" class="p-8 sm:p-10 text-center space-y-3">
+                                <div class="text-3xl">🏆</div>
+                                <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">No test results yet this week</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 max-w-xs mx-auto leading-relaxed">Be the first player to claim the #1 spot on this week's leaderboard!</p>
+                                <button onclick="app.navigate('test-menu')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-slate-950 font-semibold text-xs rounded-lg transition-colors duration-120 shadow-xs inline-flex items-center gap-1.5 mt-1">
                                     <i class="fa-solid fa-play"></i> Start Test
                                 </button>
                             </td>
@@ -6246,11 +6316,10 @@ const app = {
 
             if (tbody) {
                 tbody.innerHTML = Array(5).fill(0).map(() => `
-                    <tr class="animate-pulse border-b border-slate-800/50">
-                        <td class="p-4 text-center"><div class="h-4 w-6 bg-slate-800 rounded mx-auto"></div></td>
-                        <td class="p-4"><div class="flex items-center space-x-3"><div class="w-7 h-7 bg-slate-800 rounded-full"></div><div class="h-4 w-28 bg-slate-800 rounded"></div></div></td>
-                        <td class="p-4"><div class="h-4 w-12 bg-slate-800 rounded ml-auto"></div></td>
-                        <td class="p-4"><div class="h-4 w-12 bg-slate-800 rounded mx-auto"></div></td>
+                    <tr class="animate-pulse border-b border-slate-100 dark:border-slate-800/50">
+                        <td class="p-3.5 text-center"><div class="h-4 w-6 bg-slate-200 dark:bg-slate-800 rounded mx-auto"></div></td>
+                        <td class="p-3.5"><div class="flex items-center space-x-3"><div class="w-7 h-7 bg-slate-200 dark:bg-slate-800 rounded-full"></div><div class="h-4 w-28 bg-slate-200 dark:bg-slate-800 rounded"></div></div></td>
+                        <td class="p-3.5"><div class="h-4 w-12 bg-slate-200 dark:bg-slate-800 rounded ml-auto"></div></td>
                     </tr>
                 `).join('');
             }
@@ -6263,9 +6332,9 @@ const app = {
                 if (tbody) {
                     tbody.innerHTML = `
                         <tr>
-                            <td colspan="4" class="p-8 text-center space-y-3">
-                                <div class="text-amber-400 font-bold text-base"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Failed to load Marathon Hall of Fame.</div>
-                                <button onclick="app.leaderboard.render()" class="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs rounded-lg transition shadow-md">
+                            <td colspan="3" class="p-8 text-center space-y-3">
+                                <div class="text-amber-600 dark:text-amber-400 font-semibold text-sm"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Failed to load Marathon Hall of Fame.</div>
+                                <button onclick="app.leaderboard.render()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-slate-950 font-semibold text-xs rounded-lg transition-colors duration-120 shadow-xs">
                                     <i class="fa-solid fa-rotate-right mr-1"></i> Retry
                                 </button>
                             </td>
@@ -6281,12 +6350,12 @@ const app = {
                 if (tbody) {
                     tbody.innerHTML = `
                         <tr>
-                            <td colspan="4" class="p-10 text-center space-y-4">
-                                <h3 class="text-xl font-extrabold text-slate-100">Hall of Fame</h3>
-                                <p class="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+                            <td colspan="3" class="p-8 sm:p-10 text-center space-y-3">
+                                <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Hall of Fame</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">
                                     No Marathon records have been created yet. Be the first to complete a Marathon Test and claim your place in the Hall of Fame.
                                 </p>
-                                <button onclick="app.actions.triggerTestIntent('Marathon Test', 900)" class="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold text-xs rounded-xl transition shadow-sm inline-flex items-center gap-2 mt-2">
+                                <button onclick="app.actions.triggerTestIntent('Marathon Test', 900)" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-slate-950 font-semibold text-xs rounded-lg transition-colors duration-120 shadow-xs inline-flex items-center gap-1.5 mt-1">
                                     <i class="fa-solid fa-play"></i> Start Marathon Test
                                 </button>
                             </td>
@@ -6313,13 +6382,13 @@ const app = {
                 if (consEl) consEl.innerText = `${champion.consistency}%`;
                 if (dateEl) {
                     const d = champion.created_at ? new Date(champion.created_at) : new Date();
-                    dateEl.innerText = `Completed ${d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+                    dateEl.innerText = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
                 }
                 app.renderAvatar('lb-champion-avatar', champion);
                 championContainer.onclick = () => this.onRowClick(champion.id);
             }
 
-            // Top Rankings starting from #2
+            // Top Rankings starting from Rank #2
             if (tableHeading) {
                 tableHeading.classList.remove('hidden');
                 tableHeading.innerText = 'Top Rankings';
@@ -6336,22 +6405,25 @@ const app = {
             if (!tbody) return;
             tbody.innerHTML = '';
 
+            const isMarathon = this.currentMode === 'marathon';
+            const colSpan = isMarathon ? 3 : 4;
+
             if (top100.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="4" class="p-8 text-center text-slate-500 italic">
+                        <td colspan="${colSpan}" class="p-8 text-center text-slate-500 dark:text-slate-400 text-xs italic">
                             ${emptyMessage}
                         </td>
                     </tr>
                 `;
             } else {
-                const tableItems = top100.length > 3 ? top100.slice(3) : top100;
+                const tableItems = (top100.length > 3 && !isMarathon) ? top100.slice(3) : top100;
                 tableItems.forEach((entry) => {
                     const row = document.createElement('tr');
                     const isCurrentUser = app.state.user && !app.state.user.isGuest && entry.id === app.state.user.id;
 
-                    row.className = `hover:bg-slate-800/60 active:bg-slate-800 transition border-b border-slate-800/50 cursor-pointer ${
-                        isCurrentUser ? 'bg-cyan-500/10 border-l-4 border-cyan-400 font-bold' : ''
+                    row.className = `hover:bg-slate-50 dark:hover:bg-slate-800/60 active:bg-slate-100 dark:active:bg-slate-100 dark:bg-slate-800 transition-colors duration-120 border-b border-slate-100 dark:border-slate-800/50 cursor-pointer ${
+                        isCurrentUser ? 'bg-blue-50/80 dark:bg-blue-500/10 border-l-4 border-blue-600 dark:border-blue-400 font-bold' : ''
                     }`;
                     row.onclick = () => app.leaderboard.onRowClick(entry.id);
 
@@ -6364,28 +6436,41 @@ const app = {
                         : null;
 
                     const avatarHtml = safeAvatarUrl
-                        ? `<img src="${safeAvatarUrl}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">`
-                        : `<div class="w-8 h-8 bg-cyan-500/20 text-cyan-400 font-bold rounded-full flex items-center justify-center text-xs border border-cyan-500/30 flex-shrink-0">${rawName.charAt(0).toUpperCase()}</div>`;
+                        ? `<img src="${safeAvatarUrl}" alt="Avatar" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover flex-shrink-0">`
+                        : `<div class="w-7 h-7 sm:w-8 sm:h-8 bg-blue-50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 font-bold rounded-full flex items-center justify-center text-xs border border-blue-200 dark:border-blue-500/30 flex-shrink-0">${rawName.charAt(0).toUpperCase()}</div>`;
 
-                    let rankDisplay = `#${entry.rank}`;
-                    if (entry.rank === 1) rankDisplay = '🥇 #1';
-                    else if (entry.rank === 2) rankDisplay = '🥈 #2';
-                    else if (entry.rank === 3) rankDisplay = '🥉 #3';
-
-                    row.innerHTML = `
-                        <td class="p-4 font-extrabold text-slate-400 text-sm text-center">${rankDisplay}</td>
-                        <td class="p-4">
-                            <div class="flex items-center space-x-3">
-                                ${avatarHtml}
-                                <div class="flex flex-col">
-                                    <span class="text-sm font-extrabold ${isCurrentUser ? 'text-cyan-300' : 'text-slate-100'}">${effectiveName} ${isCurrentUser ? '(You)' : ''}</span>
-                                    <span class="text-[11px] text-slate-500 font-mono">@${safeUsername}</span>
+                    if (isMarathon) {
+                        row.innerHTML = `
+                            <td class="p-3.5 sm:p-4 font-semibold text-slate-500 dark:text-slate-400 text-xs sm:text-sm text-center">#${entry.rank}</td>
+                            <td class="p-3.5 sm:p-4">
+                                <div class="flex items-center space-x-3">
+                                    ${avatarHtml}
+                                    <span class="text-xs sm:text-sm font-semibold truncate ${isCurrentUser ? 'text-blue-700 dark:text-blue-300' : 'text-slate-900 dark:text-slate-100'}">${effectiveName} ${isCurrentUser ? '(You)' : ''}</span>
                                 </div>
-                            </div>
-                        </td>
-                        <td class="p-4 font-extrabold text-cyan-400 text-sm text-right">${entry.score}</td>
-                        <td class="p-4 text-emerald-400 text-sm text-center font-bold">${entry.accuracy}%</td>
-                    `;
+                            </td>
+                            <td class="p-3.5 sm:p-4 font-extrabold text-blue-600 dark:text-blue-400 text-xs sm:text-sm text-right font-mono">${(entry.score || 0).toLocaleString()}</td>
+                        `;
+                    } else {
+                        let rankDisplay = `#${entry.rank}`;
+                        if (entry.rank === 1) rankDisplay = '🥇 #1';
+                        else if (entry.rank === 2) rankDisplay = '🥈 #2';
+                        else if (entry.rank === 3) rankDisplay = '🥉 #3';
+
+                        row.innerHTML = `
+                            <td class="p-3 sm:p-3.5 font-bold text-slate-500 dark:text-slate-400 text-xs sm:text-sm text-center">${rankDisplay}</td>
+                            <td class="p-3 sm:p-3.5">
+                                <div class="flex items-center space-x-2.5 sm:space-x-3">
+                                    ${avatarHtml}
+                                    <div class="flex flex-col min-w-0">
+                                        <span class="text-xs sm:text-sm font-semibold truncate ${isCurrentUser ? 'text-blue-700 dark:text-blue-300' : 'text-slate-900 dark:text-slate-100'}">${effectiveName} ${isCurrentUser ? '(You)' : ''}</span>
+                                        <span class="text-[10px] sm:text-[11px] text-slate-500 font-mono truncate">@${safeUsername}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="p-3 sm:p-3.5 font-extrabold text-blue-600 dark:text-blue-400 text-xs sm:text-sm text-right">${entry.score}</td>
+                            <td class="p-3 sm:p-3.5 text-emerald-600 dark:text-emerald-400 text-xs sm:text-sm text-center font-medium">${entry.accuracy}%</td>
+                        `;
+                    }
                     tbody.appendChild(row);
                 });
             }
@@ -6402,7 +6487,7 @@ const app = {
 
             const foundIndex = dataset.findIndex(p => p.id === app.state.user.id);
             const el = (id, val) => { const e = document.getElementById(id); if (e) e.innerText = val; };
-            const subLabel = document.querySelector('#lb-your-position p.text-xs.text-slate-400');
+            const subLabel = yourPos.querySelector('p.text-xs');
 
             yourPos.classList.remove('hidden');
             app.renderAvatar('lb-your-avatar', app.state.user);
@@ -6638,9 +6723,9 @@ const app = {
                     date: '20 Jul 2026',
                     excerpt: 'Pelajari strategi dan teknik terbaik untuk menghadapi tes koran dalam seleksi kerja. Dari persiapan mental hingga teknik menghitung cepat.',
                     content: `<p>Tes Pauli dan Kraepelin merupakan salah satu instrumen psikotes yang paling umum digunakan dalam proses rekrutmen kerja di Indonesia. Tes ini dirancang untuk mengukur kemampuan konsentrasi, kecepatan kerja, ketelitian, dan daya tahan mental seseorang.</p>
-                    <h3 class="text-lg font-bold text-slate-100 mt-6 mb-2">Apa Itu Tes Koran?</h3>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100 mt-6 mb-2">Apa Itu Tes Koran?</h3>
                     <p>Tes Koran mendapatkan namanya karena lembar soalnya yang menyerupai halaman koran — berisi deretan angka-angka yang harus dijumlahkan secara berurutan. Peserta diminta menjumlahkan dua angka yang berdekatan secara vertikal dan menuliskan angka satuan dari hasil penjumlahan tersebut.</p>
-                    <h3 class="text-lg font-bold text-slate-100 mt-6 mb-2">Tips Menghadapi Tes</h3>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100 mt-6 mb-2">Tips Menghadapi Tes</h3>
                     <ul class="list-disc list-inside space-y-1"><li>Jaga ritme pengerjaan yang konsisten</li><li>Fokus pada ketelitian, bukan hanya kecepatan</li><li>Latihan rutin minimal 3x seminggu</li><li>Istirahat cukup sebelum hari tes</li><li>Hindari panik saat menemui kesalahan</li></ul>`
                 },
                 {
@@ -6649,11 +6734,11 @@ const app = {
                     date: '18 Jul 2026',
                     excerpt: 'Hindari kesalahan-kesalahan fatal ini agar performa tes koran Anda optimal dan grafik perkembangan tetap stabil.',
                     content: `<p>Banyak peserta tes koran melakukan kesalahan yang sebenarnya bisa dihindari dengan persiapan yang tepat. Berikut adalah lima kesalahan yang paling umum ditemui:</p>
-                    <h3 class="text-lg font-bold text-slate-100 mt-6 mb-2">1. Terlalu Fokus pada Kecepatan</h3>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100 mt-6 mb-2">1. Terlalu Fokus pada Kecepatan</h3>
                     <p>Banyak peserta berpikir bahwa semakin cepat mengerjakan semakin baik. Padahal, penilai juga memantau konsistensi dan ketelitian Anda.</p>
-                    <h3 class="text-lg font-bold text-slate-100 mt-6 mb-2">2. Tidak Berlatih Sebelumnya</h3>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100 mt-6 mb-2">2. Tidak Berlatih Sebelumnya</h3>
                     <p>Tes koran membutuhkan kebiasaan motorik. Tanpa latihan, Anda akan kehilangan waktu untuk adaptasi saat hari tes.</p>
-                    <h3 class="text-lg font-bold text-slate-100 mt-6 mb-2">3. Panik Saat Salah</h3>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100 mt-6 mb-2">3. Panik Saat Salah</h3>
                     <p>Kesalahan kecil bisa membuat peserta panik dan merusak ritme pengerjaan selanjutnya. Tetap tenang dan lanjutkan ke soal berikutnya.</p>`
                 },
                 {
@@ -6662,11 +6747,11 @@ const app = {
                     date: '15 Jul 2026',
                     excerpt: 'Pahami arti dari setiap metrik hasil tes Kraepelin: kecepatan, ketelitian, konsistensi, dan grafik perkembangan performa.',
                     content: `<p>Setelah mengerjakan tes Kraepelin, Anda akan menerima beberapa metrik utama yang mencerminkan performa Anda selama pengerjaan:</p>
-                    <h3 class="text-lg font-bold text-slate-100 mt-6 mb-2">Kecepatan (Speed)</h3>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100 mt-6 mb-2">Kecepatan (Speed)</h3>
                     <p>Menunjukkan berapa banyak soal yang berhasil Anda jawab dalam durasi tes. Semakin tinggi angka ini, semakin cepat tempo kerja Anda.</p>
-                    <h3 class="text-lg font-bold text-slate-100 mt-6 mb-2">Ketelitian (Accuracy)</h3>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100 mt-6 mb-2">Ketelitian (Accuracy)</h3>
                     <p>Persentase jawaban yang benar dari total soal yang dijawab. Idealnya di atas 90% untuk menunjukkan ketelitian yang baik.</p>
-                    <h3 class="text-lg font-bold text-slate-100 mt-6 mb-2">Konsistensi (Consistency)</h3>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100 mt-6 mb-2">Konsistensi (Consistency)</h3>
                     <p>Mengukur seberapa stabil performa Anda dari awal hingga akhir tes. Grafik yang naik-turun menunjukkan ketidakstabilan fokus.</p>`
                 },
                 {
@@ -6675,11 +6760,11 @@ const app = {
                     date: '12 Jul 2026',
                     excerpt: 'Kesiapan mental sama pentingnya dengan latihan teknis. Pelajari cara mengelola stres dan membangun kepercayaan diri sebelum psikotes.',
                     content: `<p>Persiapan mental sering kali diabaikan oleh banyak peserta psikotes. Padahal, kondisi mental yang baik sangat berpengaruh terhadap performa Anda saat tes.</p>
-                    <h3 class="text-lg font-bold text-slate-100 mt-6 mb-2">Tidur yang Cukup</h3>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100 mt-6 mb-2">Tidur yang Cukup</h3>
                     <p>Pastikan Anda tidur minimal 7-8 jam sebelum hari tes. Kurang tidur akan menurunkan konsentrasi dan kecepatan motorik Anda secara signifikan.</p>
-                    <h3 class="text-lg font-bold text-slate-100 mt-6 mb-2">Teknik Pernapasan</h3>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100 mt-6 mb-2">Teknik Pernapasan</h3>
                     <p>Latih teknik pernapasan 4-7-8 sebelum tes dimulai: hirup napas selama 4 detik, tahan 7 detik, hembuskan selama 8 detik. Ini membantu menenangkan sistem saraf.</p>
-                    <h3 class="text-lg font-bold text-slate-100 mt-6 mb-2">Visualisasi Positif</h3>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100 mt-6 mb-2">Visualisasi Positif</h3>
                     <p>Bayangkan diri Anda mengerjakan tes dengan lancar dan percaya diri. Teknik ini terbukti meningkatkan performa dalam berbagai situasi yang menuntut fokus tinggi.</p>`
                 }
             ];
@@ -6690,15 +6775,15 @@ const app = {
             if (!grid) return;
 
             grid.innerHTML = this.data.map((article, i) => `
-                <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden group cursor-pointer" onclick="app.articles.viewDetail(${i})">
-                    <div class="h-40 bg-slate-800 overflow-hidden">
-                        <div class="w-full h-full bg-gradient-to-br ${['from-cyan-500/20 to-purple-500/20', 'from-emerald-500/20 to-cyan-500/20', 'from-amber-500/20 to-red-500/20', 'from-indigo-500/20 to-pink-500/20'][i]} group-hover:scale-105 transition-transform duration-300 flex items-center justify-center">
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden group cursor-pointer" onclick="app.articles.viewDetail(${i})">
+                    <div class="h-40 bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                        <div class="w-full h-full bg-gradient-to-br ${['from-blue-500/20 to-purple-500/20', 'from-emerald-500/20 to-blue-500/20', 'from-amber-500/20 to-red-500/20', 'from-indigo-500/20 to-pink-500/20'][i]} group-hover:scale-105 transition-transform duration-300 flex items-center justify-center">
                             <i class="fa-solid ${['fa-book-open', 'fa-triangle-exclamation', 'fa-chart-line', 'fa-brain'][i]} text-3xl text-slate-600"></i>
                         </div>
                     </div>
                     <div class="p-4 space-y-2">
                         <span class="text-[10px] text-slate-500 font-bold uppercase">${article.date}</span>
-                        <h4 class="font-bold text-sm text-slate-100 group-hover:text-cyan-400 transition">${article.title}</h4>
+                        <h4 class="font-bold text-sm text-slate-900 dark:text-slate-100 group-hover:text-blue-400 transition">${article.title}</h4>
                         <p class="text-xs text-slate-500 line-clamp-2">${article.excerpt}</p>
                     </div>
                 </div>
