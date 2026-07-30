@@ -537,7 +537,7 @@ const app = {
 
             if (!iconContainer || !textContainer || !inputEl) return;
 
-            inputEl.classList.remove('border-emerald-500/50', 'border-red-500/50', 'border-slate-200 dark:border-slate-700');
+            inputEl.classList.remove('border-emerald-500/50', 'border-red-500/50', 'border-slate-200', 'dark:border-slate-700');
 
             if (state === 'empty') {
                 iconContainer.classList.add('hidden');
@@ -690,7 +690,7 @@ const app = {
 
             if (!iconContainer || !textContainer || !inputEl) return;
 
-            inputEl.classList.remove('border-emerald-500/50', 'border-red-500/50', 'border-slate-200 dark:border-slate-700');
+            inputEl.classList.remove('border-emerald-500/50', 'border-red-500/50', 'border-slate-200', 'dark:border-slate-700');
 
             if (state === 'empty') {
                 iconContainer.classList.add('hidden');
@@ -841,7 +841,7 @@ const app = {
 
             if (!iconContainer || !textContainer || !inputEl) return;
 
-            inputEl.classList.remove('border-emerald-500/50', 'border-red-500/50', 'border-slate-200 dark:border-slate-700');
+            inputEl.classList.remove('border-emerald-500/50', 'border-red-500/50', 'border-slate-200', 'dark:border-slate-700');
 
             if (state === 'empty') {
                 iconContainer.classList.add('hidden');
@@ -1060,7 +1060,7 @@ const app = {
 
             if (!iconContainer || !textContainer || !inputEl) return;
 
-            inputEl.classList.remove('border-emerald-500/50', 'border-red-500/50', 'border-slate-200 dark:border-slate-700');
+            inputEl.classList.remove('border-emerald-500/50', 'border-red-500/50', 'border-slate-200', 'dark:border-slate-700');
 
             if (state === 'empty') {
                 iconContainer.classList.add('hidden');
