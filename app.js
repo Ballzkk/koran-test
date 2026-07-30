@@ -3319,6 +3319,18 @@ const app = {
             this.pickerCategory = 'all';
 
             this.renderShowcasePicker();
+
+            const catContainer = document.getElementById('showcase-picker-categories');
+            if (catContainer && !catContainer._wheelAttached) {
+                catContainer._wheelAttached = true;
+                catContainer.addEventListener('wheel', (e) => {
+                    if (e.deltaY !== 0) {
+                        catContainer.scrollLeft += e.deltaY;
+                        e.preventDefault();
+                    }
+                }, { passive: false });
+            }
+
             modal.classList.remove('hidden');
         },
 
@@ -3377,15 +3389,15 @@ const app = {
                                  ondragover="app.achievements.handleDragOver(event)"
                                  ondrop="app.achievements.handleDrop(event, ${i})"
                                  title="Slot ${i + 1}: ${item.title} (Drag to reorder)" 
-                                 class="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full border flex items-center justify-center text-sm sm:text-base cursor-grab active:cursor-grabbing transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-400 ${circStyle}">
+                                 class="relative w-8 h-8 rounded-full border flex items-center justify-center text-xs cursor-grab active:cursor-grabbing transition-transform duration-150 hover:scale-105 ${circStyle}">
                                 <i class="${item.icon}"></i>
-                                <span class="absolute -top-1 -right-1 bg-blue-500 text-slate-950 text-[9px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center shadow-md">${i + 1}</span>
+                                <span class="absolute -top-1 -right-1 bg-blue-600 text-white dark:bg-blue-500 dark:text-slate-950 text-[8px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center shadow-xs">${i + 1}</span>
                             </div>
                         `;
                     }
                 } else {
                     previewHtml += `
-                        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-dashed border-slate-200 dark:border-slate-800/80 text-slate-600 text-sm font-bold flex items-center justify-center">
+                        <div class="w-8 h-8 rounded-full border border-dashed border-slate-300 dark:border-slate-700 text-slate-400 text-xs font-medium flex items-center justify-center">
                             +
                         </div>
                     `;
@@ -3425,10 +3437,10 @@ const app = {
                     const isActive = cat.id === this.pickerCategory;
                     return `
                         <button onclick="app.achievements.renderShowcasePicker('${cat.id}')" 
-                                class="px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition whitespace-nowrap border shrink-0 focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+                                class="px-3 py-1 rounded-lg text-xs font-medium transition-colors duration-120 whitespace-nowrap border shrink-0 ${
                                     isActive
-                                        ? 'bg-blue-500 text-slate-950 border-blue-400 shadow-sm shadow-blue-500/20'
-                                        : 'bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800'
+                                        ? 'bg-blue-600 text-white dark:bg-blue-500 dark:text-slate-950 border-blue-600 dark:border-blue-500 shadow-xs font-semibold'
+                                        : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
                                 }">
                             ${cat.label}
                         </button>
@@ -3458,53 +3470,47 @@ const app = {
                          aria-selected="${isSelected}"
                          aria-disabled="${!isUnlocked}"
                          onkeydown="${isUnlocked ? `if(event.key==='Enter'||event.key===' '){event.preventDefault();app.achievements.toggleShowcaseSelection('${item.id}');}` : ''}"
-                         class="bg-white dark:bg-slate-900/90 border rounded-xl p-3 flex flex-col justify-between transition-all duration-200 select-none relative overflow-hidden group h-[108px] w-full min-w-0 focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+                         class="bg-white dark:bg-slate-900 border rounded-xl p-3 flex flex-col justify-between transition-all duration-150 select-none relative overflow-hidden group min-h-[95px] w-full min-w-0 ${
                              isUnlocked
                                  ? (isSelected
-                                     ? 'border-blue-400 bg-blue-500/10 ring-1 ring-blue-400 shadow-[0_0_12px_rgba(6,182,212,0.2)] cursor-pointer scale-[1.01]'
-                                     : 'border-slate-200 dark:border-slate-800 hover:border-blue-500/50 hover:bg-slate-100 dark:bg-slate-800/80 cursor-pointer hover:-translate-y-0.5')
-                                 : 'border-slate-200 dark:border-slate-800/70 bg-slate-50 dark:bg-slate-950/60 opacity-75 hover:opacity-90 cursor-not-allowed'
+                                     ? 'border-blue-500 dark:border-blue-400 bg-blue-50/40 dark:bg-blue-500/10 ring-1 ring-blue-500/50 shadow-xs cursor-pointer'
+                                     : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer')
+                                 : 'border-slate-200/60 dark:border-slate-800/60 bg-slate-50/60 dark:bg-slate-950/40 opacity-50 cursor-not-allowed'
                          }">
                         
-                        <!-- Top Row: Icon, Rarity Badge & Selection Indicator -->
+                        <!-- Top Row: Icon & Selection Indicator -->
                         <div class="flex items-center justify-between gap-1.5">
-                            <div class="flex items-center space-x-2 min-w-0">
-                                <div class="w-8 h-8 rounded-lg border flex items-center justify-center text-base transition group-hover:scale-105 shrink-0 ${
-                                    isUnlocked ? rarity.iconBg : 'bg-slate-100 dark:bg-slate-800/60 text-slate-500 border-slate-200 dark:border-slate-700/60'
-                                }">
-                                    <i class="${item.icon}"></i>
-                                </div>
-                                <span class="inline-block text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0 ${
-                                    isUnlocked ? rarity.badgeClass : 'text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/50'
-                                }">
-                                    ${rarity.label}
-                                </span>
+                            <div class="w-7 h-7 rounded-md border flex items-center justify-center text-xs shrink-0 ${
+                                isUnlocked ? rarity.iconBg : 'bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-700'
+                            }">
+                                <i class="${item.icon}"></i>
                             </div>
 
                             <div class="shrink-0">
                                 ${isUnlocked ? (
                                     isSelected 
-                                        ? `<span class="bg-blue-500 text-slate-950 text-[10px] font-black px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-sm">${orderBadge} <i class="fa-solid fa-circle-check text-[9px]"></i></span>`
-                                        : '<span class="text-slate-600 group-hover:text-slate-500 dark:text-slate-400 text-xs"><i class="fa-regular fa-circle"></i></span>'
+                                        ? `<span class="bg-blue-600 text-white dark:bg-blue-500 dark:text-slate-950 text-[10px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-xs">${orderBadge} <i class="fa-solid fa-check text-[8px]"></i></span>`
+                                        : '<span class="text-slate-300 dark:text-slate-600 group-hover:text-blue-500 text-xs"><i class="fa-regular fa-circle"></i></span>'
                                 ) : (
-                                    '<span class="text-slate-500 text-xs"><i class="fa-solid fa-lock text-[10px]"></i></span>'
+                                    '<span class="text-slate-300 dark:text-slate-600 text-xs"><i class="fa-solid fa-lock text-[9px]"></i></span>'
                                 )}
                             </div>
                         </div>
 
-                        <!-- Title -->
-                        <h4 class="font-extrabold text-xs leading-tight truncate mt-1 ${
-                            isUnlocked ? (isSelected ? 'text-blue-300' : 'text-slate-900 dark:text-slate-100') : 'text-slate-500 dark:text-slate-400'
-                        }">${item.title}</h4>
-
-                        <!-- Bottom Progress & Requirement -->
-                        <div class="pt-1.5 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between text-[10px]">
-                            <span class="text-slate-500 dark:text-slate-400 font-semibold truncate max-w-[85px]">
-                                ${item.target} ${item.unit}
-                            </span>
-                            <span class="font-extrabold ${isUnlocked ? 'text-blue-400' : 'text-slate-500 dark:text-slate-400'}">
-                                ${item.current}/${item.target} (${item.percentage}%)
-                            </span>
+                        <!-- Title & Progress -->
+                        <div class="mt-1.5 space-y-0.5">
+                            <h4 class="font-bold text-xs leading-tight truncate ${
+                                isUnlocked ? (isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-slate-900 dark:text-slate-100') : 'text-slate-400 dark:text-slate-500'
+                            }">${item.title}</h4>
+                            
+                            <div class="flex items-center justify-between text-[10px]">
+                                <span class="text-slate-400 font-normal truncate max-w-[85px]">
+                                    ${item.target} ${item.unit}
+                                </span>
+                                <span class="font-medium ${isUnlocked ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}">
+                                    ${item.current}/${item.target}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 `;
