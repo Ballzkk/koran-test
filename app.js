@@ -1195,8 +1195,9 @@ const app = {
         // Auto-refresh leaderboard single source of truth on page focus
         window.addEventListener('focus', () => {
             if (app.state.user && !app.state.user.isGuest) {
-                app.getLeaderboardData('alltime', true);
-                app.getLeaderboardData('weekly', true);
+                app.getLeaderboardData('alltime', true, 'standard');
+                app.getLeaderboardData('weekly', true, 'standard');
+                app.getLeaderboardData('alltime', true, 'marathon');
                 if (app.state.currentView === 'leaderboard' && app.leaderboard) {
                     app.leaderboard.render();
                 }
@@ -1622,13 +1623,17 @@ const app = {
         };
     },
 
-    async getLeaderboardData(timeframe = 'alltime', forceRefresh = false) {
-        const cacheKey = `lb_cache_${timeframe}`;
+    async getLeaderboardData(timeframe = 'alltime', forceRefresh = false, modeType = 'standard') {
+        const cacheKey = `lb_cache_${modeType}_${timeframe}`;
         if (!forceRefresh && this.state[cacheKey] && (Date.now() - this.state[cacheKey].timestamp < 15000)) {
             return this.state[cacheKey].data;
         }
 
-        console.log('[LEADERBOARD SINGLE SOURCE QUERY]', timeframe);
+        console.log('[LEADERBOARD SINGLE SOURCE QUERY]', modeType, timeframe);
+
+        const modeFilter = (modeType === 'marathon')
+            ? ['Marathon Test', 'Marathon', 'marathon', 'marathon_test']
+            : ['Standard Test', 'Standard', 'standard', 'standard_test'];
 
         try {
             let query = supabaseClient
@@ -1650,7 +1655,7 @@ const app = {
                         avatar_url
                     )
                 `)
-                .in('mode', ['Standard Test', 'Standard', 'standard', 'standard_test']);
+                .in('mode', modeFilter);
 
             if (timeframe === 'weekly') {
                 const weekRange = this.getCurrentWeekRangeWIB();
@@ -1684,7 +1689,8 @@ const app = {
                     score: Math.round(row.score || 0),
                     accuracy: row.accuracy || 0,
                     consistency: row.consistency !== undefined ? row.consistency : 100,
-                    created_at: row.created_at
+                    created_at: row.created_at,
+                    mode: row.mode
                 };
 
                 if (!userBestMap.has(uid)) {
@@ -1726,21 +1732,26 @@ const app = {
             const rankedData = sortedList.map((item, i) => ({
                 ...item,
                 rank: i + 1,
-                best_standard_score: item.score,
-                best_standard_accuracy: item.accuracy,
-                best_standard_consistency: item.consistency,
-                best_standard_test_date: item.created_at
+                best_score: item.score,
+                best_accuracy: item.accuracy,
+                best_consistency: item.consistency,
+                best_test_date: item.created_at
             }));
 
             // Sync user rank & statistics in state if user is logged in
             if (this.state.user && !this.state.user.isGuest) {
                 const userMatch = rankedData.find(r => r.id === this.state.user.id);
                 if (userMatch) {
-                    this.state.user.rank = `#${userMatch.rank}`;
-                    this.state.user.best_standard_score = userMatch.score;
-                    this.state.user.best_standard_accuracy = userMatch.accuracy;
-                    this.state.user.best_standard_consistency = userMatch.consistency;
-                    this.state.user.best_standard_test_date = userMatch.created_at;
+                    if (modeType === 'marathon') {
+                        this.state.user.marathon_rank = `#${userMatch.rank}`;
+                        this.state.user.best_marathon_score = userMatch.score;
+                    } else {
+                        this.state.user.rank = `#${userMatch.rank}`;
+                        this.state.user.best_standard_score = userMatch.score;
+                        this.state.user.best_standard_accuracy = userMatch.accuracy;
+                        this.state.user.best_standard_consistency = userMatch.consistency;
+                        this.state.user.best_standard_test_date = userMatch.created_at;
+                    }
                 }
             }
 
@@ -2384,9 +2395,10 @@ const app = {
 
         // Fetch single source of truth Leaderboard Rank & Statistics
         let rankText = '#—';
+        let marRankText = '#—';
         if (!user.isGuest) {
             try {
-                const allRanked = await this.getLeaderboardData('alltime');
+                const allRanked = await this.getLeaderboardData('alltime', false, 'standard');
                 const userMatch = allRanked.find(r => r.id === user.id);
                 if (userMatch) {
                     rankText = '#' + userMatch.rank;
@@ -2395,12 +2407,22 @@ const app = {
                     user.best_standard_accuracy = userMatch.accuracy;
                     user.best_standard_consistency = userMatch.consistency;
                 }
+
+                const marRanked = await this.getLeaderboardData('alltime', false, 'marathon');
+                const marUserMatch = marRanked.find(r => r.id === user.id);
+                if (marUserMatch) {
+                    marRankText = '#' + marUserMatch.rank;
+                    user.marathon_rank = marRankText;
+                    user.best_marathon_score = marUserMatch.score;
+                }
             } catch (e) {
-                console.error('Error fetching profile rank:', e);
+                console.error('Error fetching profile ranks:', e);
             }
         }
         el('profile-rank', rankText);
         el('profile-bestscore', (user.best_standard_score || 0) > 0 ? `${user.best_standard_score} pts` : '0');
+        el('profile-marathon-rank', marRankText);
+        el('profile-marathon-score', (user.best_marathon_score || 0) > 0 ? `${user.best_marathon_score} pts` : '0');
 
         // 2. Fetch test_results from Supabase database for average accuracy & consistency across all tests
         let totalTests = 0;
@@ -2614,11 +2636,17 @@ const app = {
             { id: 'tests_50', title: '50 Tests', desc: 'Complete 50 test sessions in total', icon: 'fa-solid fa-microscope', category: 'testing', target: 50, type: 'total_tests', rarity: 'epic', unit: 'Tests' },
             { id: 'tests_100', title: '100 Tests', desc: 'Complete 100 test sessions in total', icon: 'fa-solid fa-chart-line', category: 'testing', target: 100, type: 'total_tests', rarity: 'legendary', unit: 'Tests' },
 
-            // Ranking
+            // Ranking (Standard)
             { id: 'rank_100', title: 'Top 100 Rank', desc: 'Reach Top 100 on the Global Leaderboard', icon: 'fa-solid fa-ranking-star', category: 'ranking', target: 100, type: 'rank_le', rarity: 'common', unit: 'Rank' },
             { id: 'rank_50', title: 'Top 50 Rank', desc: 'Reach Top 50 on the Global Leaderboard', icon: 'fa-solid fa-award', category: 'ranking', target: 50, type: 'rank_le', rarity: 'rare', unit: 'Rank' },
             { id: 'rank_10', title: 'Top 10 Rank', desc: 'Reach Top 10 on the Global Leaderboard', icon: 'fa-solid fa-crown', category: 'ranking', target: 10, type: 'rank_le', rarity: 'epic', unit: 'Rank' },
             { id: 'rank_1', title: 'Rank #1 Champion', desc: 'Claim the #1 Champion spot on the Leaderboard', icon: 'fa-solid fa-trophy', category: 'ranking', target: 1, type: 'rank_le', rarity: 'legendary', unit: 'Rank' },
+
+            // Ranking (Marathon Hall of Fame)
+            { id: 'marathon_rank_100', title: 'Marathon Top 100', desc: 'Reach Top 100 on the Marathon Hall of Fame', icon: 'fa-solid fa-building-columns', category: 'marathon', target: 100, type: 'marathon_rank_le', rarity: 'common', unit: 'Rank' },
+            { id: 'marathon_rank_50', title: 'Marathon Top 50', desc: 'Reach Top 50 on the Marathon Hall of Fame', icon: 'fa-solid fa-award', category: 'marathon', target: 50, type: 'marathon_rank_le', rarity: 'rare', unit: 'Rank' },
+            { id: 'marathon_rank_10', title: 'Marathon Top 10', desc: 'Reach Top 10 on the Marathon Hall of Fame', icon: 'fa-solid fa-crown', category: 'marathon', target: 10, type: 'marathon_rank_le', rarity: 'epic', unit: 'Rank' },
+            { id: 'marathon_rank_1', title: 'Marathon Champion', desc: 'Claim the #1 Champion spot on the Marathon Hall of Fame', icon: 'fa-solid fa-trophy', category: 'marathon', target: 1, type: 'marathon_rank_le', rarity: 'legendary', unit: 'Rank' },
 
             // Accuracy
             { id: 'acc_80', title: '80% Accuracy', desc: 'Achieve 80% or higher test accuracy', icon: 'fa-solid fa-bullseye', category: 'accuracy', target: 80, type: 'best_accuracy', rarity: 'common', unit: '%' },
@@ -2751,6 +2779,9 @@ const app = {
             const rawRank = user?.rank ? String(user.rank).replace('#', '') : '9999';
             const userRank = totalTests > 0 ? (parseInt(rawRank) || 9999) : 9999;
 
+            const rawMarathonRank = user?.marathon_rank ? String(user.marathon_rank).replace('#', '') : '9999';
+            const marathonUserRank = totalTests > 0 ? (parseInt(rawMarathonRank) || 9999) : 9999;
+
             // Accuracy: only from actual test results, never from profile defaults
             const historyAcc = history.map(h => parseFloat(h.accuracy) || 0);
             const bestAcc = historyAcc.length > 0
@@ -2786,6 +2817,9 @@ const app = {
                 } else if (item.type === 'rank_le') {
                     current = userRank > 0 && userRank <= 1000 ? userRank : 0;
                     unlocked = userRank > 0 && userRank <= item.target;
+                } else if (item.type === 'marathon_rank_le') {
+                    current = marathonUserRank > 0 && marathonUserRank <= 1000 ? marathonUserRank : 0;
+                    unlocked = marathonUserRank > 0 && marathonUserRank <= item.target;
                 } else if (item.type === 'best_accuracy') {
                     current = Math.round(bestAcc);
                     unlocked = current >= item.target;
@@ -2800,6 +2834,8 @@ const app = {
                 let percentage = 0;
                 if (item.type === 'rank_le') {
                     percentage = unlocked ? 100 : (userRank <= 1000 ? Math.max(0, Math.round(((1000 - userRank) / (1000 - item.target)) * 100)) : 0);
+                } else if (item.type === 'marathon_rank_le') {
+                    percentage = unlocked ? 100 : (marathonUserRank <= 1000 ? Math.max(0, Math.round(((1000 - marathonUserRank) / (1000 - item.target)) * 100)) : 0);
                 } else {
                     percentage = Math.min(100, Math.round((current / item.target) * 100));
                 }
@@ -4032,9 +4068,16 @@ const app = {
     async handleForgotPasswordSubmit(e) {
         if (e) e.preventDefault();
 
-        const emailInput = document.getElementById('forgot-email');
+        const emailInput = document.querySelector('#view-forgot-password #forgot-email') || document.getElementById('forgot-email');
         const rawEmail = emailInput?.value || '';
         const email = rawEmail.trim();
+        const emailVal = this.validateEmail(email);
+
+        console.log('[FORGOT PASSWORD]');
+        console.log('Email Input Element:', emailInput);
+        console.log('Raw Value:', rawEmail);
+        console.log('Trimmed Value:', email);
+        console.log('Validation Result:', !email ? 'Empty' : (!emailVal.valid ? 'Invalid' : 'Valid'));
 
         // 1. Empty check
         if (!email) {
@@ -4044,12 +4087,13 @@ const app = {
         }
 
         // 2. Format validation check
-        const emailVal = this.validateEmail(email);
         if (!emailVal.valid) {
             this.toast.show(emailVal.message || 'Please enter a valid email address.', 'error');
             if (emailInput) emailInput.focus();
             return;
         }
+
+        console.log('[FORGOT PASSWORD] Sending Reset Email...');
 
         const btn = document.getElementById('btn-forgot-submit');
         if (btn) {
@@ -5074,8 +5118,9 @@ const app = {
                     }
 
                     // Force refresh single source of truth Leaderboard data
-                    await app.getLeaderboardData('alltime', true);
-                    await app.getLeaderboardData('weekly', true);
+                    await app.getLeaderboardData('alltime', true, 'standard');
+                    await app.getLeaderboardData('weekly', true, 'standard');
+                    await app.getLeaderboardData('alltime', true, 'marathon');
                     if (app.state.currentView === 'leaderboard' && app.leaderboard) {
                         await app.leaderboard.render();
                     }
@@ -5489,6 +5534,7 @@ const app = {
         resendVerificationFromPage() { app.resendVerificationFromPage(); },
         validateEmail(email) { return app.validateEmail(email); },
         togglePasswordVisibility(inputId, iconId) { app.togglePasswordVisibility(inputId, iconId); },
+        switchLeaderboardMode(mode) { app.leaderboard.switchMode(mode); },
         handleForgotPasswordSubmit(e) { app.handleForgotPasswordSubmit(e); },
         resendResetEmail() { app.resendResetEmail(); },
         openResetEmailApp() { app.openResetEmailApp(); },
@@ -5910,12 +5956,13 @@ const app = {
         }
     },
 
-    // ======================== LEADERBOARD (ALL TIME & WEEKLY) ========================
+    // ======================== LEADERBOARD (ALL TIME & WEEKLY & MARATHON HALL OF FAME) ========================
     leaderboard: {
         dummyData: [],
         top100Cache: [],
         selectedProfile: null,
-        currentTab: 'alltime',
+        currentMode: 'standard', // 'standard' | 'marathon'
+        currentTab: 'alltime',   // 'alltime' | 'weekly'
 
         weeklyCountdownTimer: null,
 
@@ -5969,7 +6016,7 @@ const app = {
 
                 if (diffMs <= 0) {
                     timerEl.innerText = "Resetting now...";
-                    app.getLeaderboardData('weekly', true).then(() => {
+                    app.getLeaderboardData('weekly', true, 'standard').then(() => {
                         if (app.state.currentView === 'leaderboard' && app.leaderboard.currentTab === 'weekly') {
                             app.leaderboard.renderWeekly();
                         }
@@ -5998,6 +6045,45 @@ const app = {
             if (banner) banner.classList.add('hidden');
         },
 
+        switchMode(mode) {
+            this.currentMode = mode;
+            const stdBtn = document.getElementById('lb-mode-standard');
+            const marBtn = document.getElementById('lb-mode-marathon');
+            const subtabsContainer = document.getElementById('lb-subtabs-container');
+            const titleEl = document.getElementById('lb-header-title');
+            const subtitleEl = document.getElementById('lb-header-subtitle');
+            const descEl = document.getElementById('lb-header-description');
+            const championContainer = document.getElementById('lb-champion-container');
+            const tableHeading = document.getElementById('lb-table-heading');
+
+            if (mode === 'marathon') {
+                if (stdBtn) stdBtn.className = "px-6 py-2 rounded-xl text-sm font-extrabold transition text-slate-400 hover:text-slate-200";
+                if (marBtn) marBtn.className = "px-6 py-2 rounded-xl text-sm font-extrabold transition bg-cyan-500 text-slate-950 shadow-sm flex items-center gap-2";
+                if (subtabsContainer) subtabsContainer.classList.add('hidden');
+                if (titleEl) titleEl.innerHTML = 'Hall of Fame';
+                if (subtitleEl) subtitleEl.innerText = 'Best Marathon Performance Ever';
+                if (descEl) {
+                    descEl.classList.remove('hidden');
+                    descEl.innerText = 'The highest achievement in Marathon Test.';
+                }
+                this.stopWeeklyCountdown();
+            } else {
+                if (stdBtn) stdBtn.className = "px-6 py-2 rounded-xl text-sm font-extrabold transition bg-cyan-500 text-slate-950 shadow-sm flex items-center gap-2";
+                if (marBtn) marBtn.className = "px-6 py-2 rounded-xl text-sm font-extrabold transition text-slate-400 hover:text-slate-200";
+                if (subtabsContainer) subtabsContainer.classList.remove('hidden');
+                if (championContainer) championContainer.classList.add('hidden');
+                if (tableHeading) tableHeading.classList.add('hidden');
+                if (titleEl) titleEl.innerHTML = '<i class="fa-solid fa-trophy text-cyan-400 mr-3"></i> Leaderboard';
+                if (subtitleEl) subtitleEl.innerText = 'Top performers based on their highest Standard Test score.';
+                if (descEl) descEl.classList.add('hidden');
+                if (this.currentTab === 'weekly') {
+                    this.startWeeklyCountdown();
+                }
+            }
+
+            this.render();
+        },
+
         switchTab(tab) {
             this.currentTab = tab;
             const globalTab = document.getElementById('lb-tab-global');
@@ -6019,16 +6105,19 @@ const app = {
         },
 
         async render() {
-            if (this.currentTab === 'weekly') {
-                await this.renderWeekly();
+            if (this.currentMode === 'marathon') {
+                await this.renderMarathon();
             } else {
-                await this.renderAllTime();
+                if (this.currentTab === 'weekly') {
+                    await this.renderWeekly();
+                } else {
+                    await this.renderAllTime();
+                }
             }
         },
 
         async renderAllTime() {
-            console.log('[LEADERBOARD]');
-            console.log('[LEADERBOARD QUERY - SINGLE SOURCE OF TRUTH]');
+            console.log('[LEADERBOARD STANDARD ALL TIME - SINGLE SOURCE OF TRUTH]');
             this.stopWeeklyCountdown();
 
             const tbody = document.getElementById('lb-table-body');
@@ -6048,7 +6137,7 @@ const app = {
 
             let rankedAll = [];
             try {
-                rankedAll = await app.getLeaderboardData('alltime', true);
+                rankedAll = await app.getLeaderboardData('alltime', true, 'standard');
             } catch (err) {
                 console.error('[LEADERBOARD ERROR]', err);
                 if (tbody) {
@@ -6095,7 +6184,7 @@ const app = {
 
             let rankedWeekly = [];
             try {
-                rankedWeekly = await app.getLeaderboardData('weekly', true);
+                rankedWeekly = await app.getLeaderboardData('weekly', true, 'standard');
             } catch (err) {
                 console.error('[WEEKLY LEADERBOARD ERROR]', err);
                 if (tbody) {
@@ -6140,6 +6229,106 @@ const app = {
             this.renderPodium(top100);
             this.renderTable(top100, "No Weekly Leaderboard data available yet.");
             await this.renderUserRankCard(rankedWeekly, 'weekly');
+        },
+
+        async renderMarathon() {
+            console.log('[MARATHON HALL OF FAME - SINGLE SOURCE OF TRUTH]');
+            this.stopWeeklyCountdown();
+
+            const tbody = document.getElementById('lb-table-body');
+            const podiumContainer = document.getElementById('lb-podium-container');
+            const championContainer = document.getElementById('lb-champion-container');
+            const subtabsContainer = document.getElementById('lb-subtabs-container');
+            const tableHeading = document.getElementById('lb-table-heading');
+
+            if (subtabsContainer) subtabsContainer.classList.add('hidden');
+            if (podiumContainer) podiumContainer.classList.add('hidden');
+
+            if (tbody) {
+                tbody.innerHTML = Array(5).fill(0).map(() => `
+                    <tr class="animate-pulse border-b border-slate-800/50">
+                        <td class="p-4 text-center"><div class="h-4 w-6 bg-slate-800 rounded mx-auto"></div></td>
+                        <td class="p-4"><div class="flex items-center space-x-3"><div class="w-7 h-7 bg-slate-800 rounded-full"></div><div class="h-4 w-28 bg-slate-800 rounded"></div></div></td>
+                        <td class="p-4"><div class="h-4 w-12 bg-slate-800 rounded ml-auto"></div></td>
+                        <td class="p-4"><div class="h-4 w-12 bg-slate-800 rounded mx-auto"></div></td>
+                    </tr>
+                `).join('');
+            }
+
+            let rankedMarathon = [];
+            try {
+                rankedMarathon = await app.getLeaderboardData('alltime', true, 'marathon');
+            } catch (err) {
+                console.error('[MARATHON HALL OF FAME ERROR]', err);
+                if (tbody) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="p-8 text-center space-y-3">
+                                <div class="text-amber-400 font-bold text-base"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Failed to load Marathon Hall of Fame.</div>
+                                <button onclick="app.leaderboard.render()" class="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs rounded-lg transition shadow-md">
+                                    <i class="fa-solid fa-rotate-right mr-1"></i> Retry
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }
+                return;
+            }
+
+            if (rankedMarathon.length === 0) {
+                if (championContainer) championContainer.classList.add('hidden');
+                if (tableHeading) tableHeading.classList.add('hidden');
+                if (tbody) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="p-10 text-center space-y-4">
+                                <h3 class="text-xl font-extrabold text-slate-100">Hall of Fame</h3>
+                                <p class="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+                                    No Marathon records have been created yet. Be the first to complete a Marathon Test and claim your place in the Hall of Fame.
+                                </p>
+                                <button onclick="app.actions.triggerTestIntent('Marathon Test', 900)" class="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold text-xs rounded-xl transition shadow-sm inline-flex items-center gap-2 mt-2">
+                                    <i class="fa-solid fa-play"></i> Start Marathon Test
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }
+                await this.renderUserRankCard([], 'marathon');
+                return;
+            }
+
+            // Featured Champion (#1 Player)
+            const champion = rankedMarathon[0];
+            if (championContainer) {
+                championContainer.classList.remove('hidden');
+                const nameEl = document.getElementById('lb-champion-name');
+                const scoreEl = document.getElementById('lb-champion-score');
+                const accEl = document.getElementById('lb-champion-acc');
+                const consEl = document.getElementById('lb-champion-cons');
+                const dateEl = document.getElementById('lb-champion-date');
+
+                if (nameEl) nameEl.innerText = champion.display_name || champion.username || 'Champion';
+                if (scoreEl) scoreEl.innerText = (champion.score || 0).toLocaleString();
+                if (accEl) accEl.innerText = `${champion.accuracy}%`;
+                if (consEl) consEl.innerText = `${champion.consistency}%`;
+                if (dateEl) {
+                    const d = champion.created_at ? new Date(champion.created_at) : new Date();
+                    dateEl.innerText = `Completed ${d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+                }
+                app.renderAvatar('lb-champion-avatar', champion);
+                championContainer.onclick = () => this.onRowClick(champion.id);
+            }
+
+            // Top Rankings starting from #2
+            if (tableHeading) {
+                tableHeading.classList.remove('hidden');
+                tableHeading.innerText = 'Top Rankings';
+            }
+
+            const topRankings = rankedMarathon.slice(1, 100);
+            this.top100Cache = rankedMarathon.slice(0, 100);
+            this.renderTable(topRankings, "No additional Marathon rankings yet.");
+            await this.renderUserRankCard(rankedMarathon, 'marathon');
         },
 
         renderTable(top100, emptyMessage) {

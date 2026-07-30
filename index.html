@@ -412,7 +412,7 @@
             <h3 class="font-bold text-slate-100 text-lg mb-1">Marathon Test</h3>
             <p class="text-slate-500 text-xs">Mental endurance and long-term consistency test.</p>
           </div>
-          <button onclick="app.actions.triggerTestIntent('Marathon Test', 900)" class="w-full bg-cyan-500 text-slate-950 font-bold py-2.5 rounded-lg hover:bg-cyan-600 transition text-sm">Select Mode</button>
+          <button onclick="app.actions.triggerTestIntent('Marathon Test', 30)" class="w-full bg-cyan-500 text-slate-950 font-bold py-2.5 rounded-lg hover:bg-cyan-600 transition text-sm">Select Mode</button>
         </div>
       </div>
     </section>
@@ -587,11 +587,25 @@
     <!-- VIEW 6: LEADERBOARD -->
     <section id="view-leaderboard" class="page-view space-y-8 hidden">
       <div class="text-center space-y-2">
-        <h2 class="text-2xl md:text-3xl font-extrabold text-slate-100 flex items-center justify-center"><i class="fa-solid fa-trophy text-cyan-400 mr-3"></i> Leaderboard</h2>
-        <p class="text-sm text-slate-400">Top performers based on their highest Standard Test score.</p>
+        <h2 id="lb-header-title" class="text-2xl md:text-3xl font-extrabold text-slate-100 flex items-center justify-center"><i class="fa-solid fa-trophy text-cyan-400 mr-3"></i> Leaderboard</h2>
+        <p id="lb-header-subtitle" class="text-sm text-slate-400">Top performers based on their highest Standard Test score.</p>
+        <p id="lb-header-description" class="text-xs text-slate-500 hidden italic">The highest achievement in Marathon Test.</p>
       </div>
 
+      <!-- Mode Selector Tabs: Standard vs Marathon -->
       <div class="flex justify-center">
+        <div class="flex space-x-1.5 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 shadow-lg">
+          <button id="lb-mode-standard" onclick="app.leaderboard.switchMode('standard')" class="px-6 py-2.5 rounded-xl text-sm font-extrabold transition bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20 flex items-center gap-2">
+            <i class="fa-solid fa-stopwatch"></i> Standard Test
+          </button>
+          <button id="lb-mode-marathon" onclick="app.leaderboard.switchMode('marathon')" class="px-6 py-2.5 rounded-xl text-sm font-extrabold transition text-slate-400 hover:text-slate-200 flex items-center gap-2">
+            <i class="fa-solid fa-building-columns"></i> Marathon Test
+          </button>
+        </div>
+      </div>
+
+      <!-- Sub-Tabs: All Time vs Weekly (For Standard Test) -->
+      <div id="lb-subtabs-container" class="flex justify-center">
         <div class="flex space-x-1 bg-slate-900 p-1 rounded-xl border border-slate-800 w-fit">
           <button id="lb-tab-global" onclick="app.leaderboard.switchTab('alltime')" class="tab-btn bg-cyan-500 text-slate-950 px-5 py-2 rounded-lg text-sm font-extrabold transition">All Time</button>
           <button id="lb-tab-weekly" onclick="app.leaderboard.switchTab('weekly')" class="tab-btn text-slate-400 hover:text-slate-200 px-5 py-2 rounded-lg text-sm font-extrabold transition">Weekly</button>
@@ -612,7 +626,42 @@
         </p>
       </div>
 
-      <!-- Top 3 Avatar-focused Podium -->
+      <!-- Dedicated Marathon Champion Section (Hall of Fame) -->
+      <div id="lb-champion-container" class="hidden max-w-2xl mx-auto transition-all duration-200">
+        <div class="bg-slate-900/90 border border-slate-800 p-6 md:p-8 rounded-2xl shadow-sm space-y-6">
+          <div class="flex items-center justify-between border-b border-slate-800/80 pb-4">
+            <div class="flex items-center space-x-3">
+              <div id="lb-champion-avatar" class="w-12 h-12 bg-cyan-500/10 text-cyan-400 font-bold rounded-full flex items-center justify-center text-lg border border-cyan-500/20 overflow-hidden flex-shrink-0">?</div>
+              <div>
+                <div class="flex items-center space-x-2">
+                  <h3 id="lb-champion-name" class="text-xl md:text-2xl font-extrabold text-slate-100">—</h3>
+                  <span class="text-xs text-amber-400 flex items-center gap-1" title="Hall of Fame Champion"><i class="fa-solid fa-crown"></i></span>
+                </div>
+                <p id="lb-champion-date" class="text-xs text-slate-400 mt-0.5">—</p>
+              </div>
+            </div>
+            <span class="text-xs font-bold text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-3 py-1 rounded-full uppercase tracking-wider">Champion</span>
+          </div>
+
+          <!-- Champion Stats Grid: 3 columns on desktop, stacked on mobile -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center sm:text-left">
+            <div class="bg-slate-950/60 border border-slate-800/80 p-4 rounded-xl space-y-1">
+              <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Score</p>
+              <p id="lb-champion-score" class="text-2xl md:text-3xl font-black text-cyan-400 tracking-tight">—</p>
+            </div>
+            <div class="bg-slate-950/60 border border-slate-800/80 p-4 rounded-xl space-y-1">
+              <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Accuracy</p>
+              <p id="lb-champion-acc" class="text-xl md:text-2xl font-extrabold text-slate-100">—</p>
+            </div>
+            <div class="bg-slate-950/60 border border-slate-800/80 p-4 rounded-xl space-y-1">
+              <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Consistency</p>
+              <p id="lb-champion-cons" class="text-xl md:text-2xl font-extrabold text-slate-100">—</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top 3 Avatar-focused Podium (Standard Test) -->
       <div id="lb-podium-container" class="grid grid-cols-3 gap-3 max-w-lg mx-auto items-end pt-4">
         <!-- 2nd Place -->
         <div id="lb-podium-2" class="text-center space-y-2 cursor-pointer transition transform hover:scale-105 active:scale-95" onclick="app.leaderboard.onRowClickByRank(2)">
@@ -680,6 +729,9 @@
         </div>
       </div>
 
+      <!-- Table Section Heading -->
+      <h3 id="lb-table-heading" class="max-w-3xl mx-auto font-extrabold text-slate-100 text-lg hidden">Top Rankings</h3>
+
       <!-- Leaderboard Table Container -->
       <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden max-w-3xl mx-auto shadow-xl">
         <div class="overflow-x-auto">
@@ -737,6 +789,18 @@
         <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl text-center col-span-2 md:col-span-1">
           <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Total Tests</p>
           <p id="profile-totaltests" class="text-lg font-black text-slate-100">-</p>
+        </div>
+      </div>
+
+      <!-- Marathon Hall of Fame Stats Group -->
+      <div class="grid grid-cols-2 gap-3">
+        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl text-center">
+          <p class="text-[10px] text-cyan-400 font-bold uppercase mb-1">🏛 Hall of Fame Rank</p>
+          <p id="profile-marathon-rank" class="text-lg font-black text-slate-100">-</p>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl text-center">
+          <p class="text-[10px] text-cyan-400 font-bold uppercase mb-1">Best Marathon Score</p>
+          <p id="profile-marathon-score" class="text-lg font-black text-cyan-400">-</p>
         </div>
       </div>
 
@@ -1346,23 +1410,6 @@
       </div>
     </section>
 
-    <!-- VIEW 15: FORGOT -->
-    <section id="view-forgot" class="page-view max-w-md mx-auto hidden">
-      <div class="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl shadow-xl space-y-5">
-         <div class="flex items-center justify-between mb-2">
-          <h2 class="text-2xl font-extrabold text-slate-100">Reset Password</h2>
-          <button onclick="app.navigate('login')" class="text-slate-500 hover:text-slate-300"><i class="fa-solid fa-arrow-left"></i></button>
-        </div>
-        <p class="text-sm text-slate-400">Enter your email to receive a password reset link.</p>
-        <form onsubmit="event.preventDefault(); app.actions.resetPassword();" class="space-y-4">
-          <div>
-            <label class="block text-xs font-bold text-slate-400 mb-1">Email</label>
-            <input type="email" id="forgot-email" required class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100 outline-none focus:border-cyan-500 transition" placeholder="email@example.com">
-          </div>
-          <button type="submit" class="w-full bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold py-2.5 rounded-lg transition mt-2">Send Link</button>
-        </form>
-      </div>
-    </section>
 
     <!-- VIEW 16: DEDICATED VERIFY EMAIL PAGE -->
     <section id="view-verify-email" class="page-view max-w-md mx-auto hidden">
