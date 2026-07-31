@@ -1241,6 +1241,15 @@ const app = {
             }
 
             route = route.trim();
+
+            // Hash Route: #/u/{username} or #u/{username}
+            if (route.startsWith('u/')) {
+                const parts = route.split('/');
+                if (parts.length >= 2 && parts[1]) {
+                    return 'public-profile:' + parts[1];
+                }
+            }
+
             if (route !== '') {
                 return route;
             }
@@ -1324,6 +1333,15 @@ const app = {
 
     // ======================== NAVIGATION ========================
     navigate(viewId, updateHash = true) {
+        let publicProfileUsername = null;
+        if (typeof viewId === 'string' && viewId.startsWith('public-profile:')) {
+            publicProfileUsername = viewId.split('public-profile:')[1];
+            viewId = 'public-profile';
+        } else if (typeof viewId === 'string' && (viewId.startsWith('u/') || viewId.startsWith('/u/'))) {
+            publicProfileUsername = viewId.replace(/^\/?u\//, '');
+            viewId = 'public-profile';
+        }
+
         if (viewId === 'verify-email' || viewId === 'verify') viewId = 'verify-email';
         if (viewId === 'forgot' || viewId === 'forgot-password') viewId = 'forgot-password';
         if (viewId === 'reset' || viewId === 'reset-password') viewId = 'reset-password';
@@ -1355,7 +1373,7 @@ const app = {
             viewId = 'dashboard';
         }
         // Guest user Dashboard / Protected Views -> Login redirection
-        if ((!this.state.user || this.state.user.isGuest) && (viewId === 'dashboard' || viewId === 'profile' || viewId === 'edit-profile' || viewId === 'achievements' || viewId === 'history')) {
+        if ((!this.state.user || this.state.user.isGuest) && (viewId === 'dashboard' || viewId === 'profile' || viewId === 'edit-profile' || (viewId === 'achievements' && this.achievements.mode !== 'public') || viewId === 'history')) {
             viewId = 'login';
         }
 
@@ -1368,7 +1386,10 @@ const app = {
 
         // Synchronize browser URL hash for all application pages EXCEPT verify-email callback
         if (updateHash !== false && viewId !== 'verify-email') {
-            const targetHash = '#' + viewId;
+            let targetHash = '#' + viewId;
+            if (viewId === 'public-profile' && publicProfileUsername) {
+                targetHash = '#/u/' + publicProfileUsername;
+            }
             if (window.location.hash !== targetHash && !window.location.hash.startsWith(targetHash + '?')) {
                 this.state.isInternalHashChange = true;
                 window.location.hash = targetHash;
@@ -1407,10 +1428,14 @@ const app = {
             this.syncAuthStateDisplay();
             this.updateActiveNav(viewId);
 
-            // Store current view
+            // Store current & previous view
+            if (this.state.currentView && this.state.currentView !== viewId) {
+                this.state.previousView = this.state.currentView;
+            }
             this.state.currentView = viewId;
 
             // Render data for specific views
+            if (viewId === 'public-profile') await this.renderPublicProfile(publicProfileUsername);
             if (viewId === 'dashboard') await this.renderDashboard();
             if (viewId === 'leaderboard') this.leaderboard.render();
             if (viewId === 'profile') await this.renderProfile();
@@ -1463,6 +1488,130 @@ const app = {
             // Scroll to top
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }, 150);
+    },
+
+    goBackFromPublicProfile() {
+        if (this.state.previousView === 'leaderboard' || (window.location.hash && window.location.hash.includes('leaderboard'))) {
+            this.navigate('leaderboard');
+        } else if (window.history.length > 1 && document.referrer) {
+            window.history.back();
+        } else {
+            this.navigate('leaderboard');
+        }
+    },
+
+    async sharePublicProfile() {
+        const username = this.state.activePublicProfileUsername || (this.getRouteFromHash() && this.getRouteFromHash().startsWith('public-profile:') ? this.getRouteFromHash().split('public-profile:')[1] : null);
+
+        if (!username) {
+            this.toast.show('Gagal membagikan profil. Username tidak ditemukan.', 'warning');
+            return;
+        }
+
+        // Dynamically build clean profile URL without hardcoding domain
+        const origin = window.location.origin;
+        let pathname = window.location.pathname;
+        if (!pathname.endsWith('/')) {
+            pathname += '/';
+        }
+        const shareUrl = `${origin}${pathname}#/u/${username}`;
+
+        try {
+            if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                await navigator.clipboard.writeText(shareUrl);
+                this.toast.show('Profile link copied successfully.', 'success');
+            } else {
+                this.fallbackCopyTextToClipboard(shareUrl);
+            }
+        } catch (err) {
+            console.warn('[SHARE PROFILE] Clipboard API error, executing fallback:', err);
+            this.fallbackCopyTextToClipboard(shareUrl);
+        }
+    },
+
+    fallbackCopyTextToClipboard(text) {
+        try {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.top = '0';
+            textArea.style.left = '0';
+            textArea.style.width = '2em';
+            textArea.style.height = '2em';
+            textArea.style.padding = '0';
+            textArea.style.border = 'none';
+            textArea.style.outline = 'none';
+            textArea.style.boxShadow = 'none';
+            textArea.style.background = 'transparent';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            const successful = document.execCommand('copy');
+            document.body.removeChild(textArea);
+
+            if (successful) {
+                this.toast.show('Profile link copied successfully.', 'success');
+            } else {
+                this.toast.show('Gagal menyalin link profil.', 'warning');
+            }
+        } catch (err) {
+            console.error('[SHARE PROFILE] Fallback copy failed:', err);
+            this.toast.show('Gagal menyalin link profil.', 'warning');
+        }
+    },
+
+    async openPublicAchievementsFromCurrentProfile() {
+        const username = this.state.activePublicProfileUsername || (this.getRouteFromHash() && this.getRouteFromHash().startsWith('public-profile:') ? this.getRouteFromHash().split('public-profile:')[1] : null);
+
+        if (!username) {
+            this.toast.show('Gagal memuat pencapaian profil.', 'warning');
+            return;
+        }
+
+        const cleanUsername = username.trim().toLowerCase();
+
+        // 1. Fetch Profile Data from Supabase profiles table
+        let profile = null;
+        try {
+            const { data } = await supabaseClient
+                .from('profiles')
+                .select('*')
+                .ilike('username', cleanUsername)
+                .maybeSingle();
+            profile = data;
+        } catch (err) {
+            console.error('Error fetching profile for achievements viewer:', err);
+        }
+
+        if (!profile) {
+            this.toast.show('Profil tidak ditemukan.', 'warning');
+            return;
+        }
+
+        // 2. Fetch User Test Results from Supabase test_results table
+        let tests = [];
+        try {
+            const { data } = await supabaseClient
+                .from('test_results')
+                .select('*')
+                .eq('user_id', profile.id)
+                .order('created_at', { ascending: false });
+            tests = data || [];
+        } catch (err) {
+            console.error('Error fetching test results for achievements viewer:', err);
+        }
+
+        // Configure Public Read-Only Mode on app.achievements
+        this.achievements.mode = 'public';
+        this.achievements.publicProfileData = {
+            profile: profile,
+            tests: tests,
+            username: profile.username || 'user',
+            displayName: profile.display_name && profile.display_name.trim() ? profile.display_name.trim() : (profile.username || 'User')
+        };
+
+        this.navigate('achievements');
     },
 
     async renderDashboard() {
@@ -2052,6 +2201,94 @@ const app = {
         }
     },
 
+    // ======================== SHARED NAVIGATION CONFIGURATION (HASH ROUTING) ========================
+    navigationConfig: {
+        guest: [
+            { id: 'nav-home', label: 'Home', target: 'home', icon: 'fa-solid fa-house', isButton: false },
+            { id: 'nav-tests', label: 'Tests', target: 'test-menu', icon: 'fa-solid fa-clipboard-list', isButton: false },
+            { id: 'nav-learn', label: 'Learn', target: 'articles', icon: 'fa-solid fa-book-open', isButton: false },
+            { id: 'nav-login', label: 'Login', target: 'account', icon: 'fa-solid fa-right-to-bracket', isButton: true }
+        ],
+        authenticated: [
+            { id: 'nav-dashboard', label: 'Dashboard', target: 'dashboard', icon: 'fa-solid fa-house-user', isButton: false },
+            { id: 'nav-tests', label: 'Tests', target: 'test-menu', icon: 'fa-solid fa-clipboard-list', isButton: false },
+            { id: 'nav-leaderboard', label: 'Leaderboard', target: 'leaderboard', icon: 'fa-solid fa-trophy', isButton: false },
+            { id: 'nav-profile', label: 'Profile', target: 'account', icon: 'fa-solid fa-user', isButton: false }
+        ]
+    },
+
+    renderNavigation(currentViewId) {
+        const isAuthed = this.state.user !== null && !this.state.user.isGuest;
+        const config = isAuthed ? this.navigationConfig.authenticated : this.navigationConfig.guest;
+        const activeView = currentViewId || this.state.currentView || this.getRouteFromHash() || (isAuthed ? 'dashboard' : 'home');
+
+        // Normalize view aliases
+        const normalizedActiveView = (activeView === 'account') ? (isAuthed ? 'profile' : 'login') : activeView;
+
+        // 1. Render Desktop Navigation
+        const desktopContainer = document.getElementById('desktop-nav-container');
+        if (desktopContainer) {
+            let desktopHTML = '';
+            config.forEach(item => {
+                const itemNormalizedTarget = (item.target === 'account') ? (isAuthed ? 'profile' : 'login') : item.target;
+                const isActive = normalizedActiveView === itemNormalizedTarget || (item.target === 'test-menu' && (normalizedActiveView === 'test-screen' || normalizedActiveView === 'test-menu'));
+
+                if (item.isButton) {
+                    desktopHTML += `
+                        <button id="d-${item.id}" onclick="app.navigate('${item.target}')" class="nav-btn bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-slate-950 font-semibold text-sm px-4 py-2 rounded-lg transition-colors duration-120 shadow-xs">
+                            ${item.label}
+                        </button>
+                    `;
+                } else {
+                    const colorClass = isActive ? 'text-blue-500 dark:text-blue-400 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 font-semibold';
+                    desktopHTML += `
+                        <button id="d-${item.id}" onclick="app.navigate('${item.target}')" class="nav-btn transition-colors duration-120 text-sm ${colorClass}">
+                            ${item.label}
+                        </button>
+                    `;
+                }
+            });
+
+            // Always add theme toggle button to desktop navigation
+            desktopHTML += `
+                <button onclick="app.theme.toggle()" class="theme-toggle-btn p-2 rounded-lg text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-120 flex items-center justify-center" aria-label="Toggle theme">
+                    <i class="fa-solid ${this.theme?.current === 'dark' ? 'fa-sun text-amber-400' : 'fa-moon'}"></i>
+                </button>
+            `;
+
+            desktopContainer.innerHTML = desktopHTML;
+        }
+
+        // 2. Render Mobile Navigation
+        const mobileContainer = document.getElementById('mobile-nav-container');
+        if (mobileContainer) {
+            let mobileHTML = '';
+            config.forEach(item => {
+                const itemNormalizedTarget = (item.target === 'account') ? (isAuthed ? 'profile' : 'login') : item.target;
+                const isActive = normalizedActiveView === itemNormalizedTarget || (item.target === 'test-menu' && (normalizedActiveView === 'test-screen' || normalizedActiveView === 'test-menu'));
+                const activeClass = isActive ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400';
+
+                mobileHTML += `
+                    <button id="m-${item.id}" onclick="app.navigate('${item.target}')" class="flex-1 flex flex-col items-center transition-colors duration-120 py-1.5 min-h-[52px] ${activeClass}">
+                        <i class="${item.icon} text-base mb-0.5"></i>
+                        <span class="text-[10px] font-semibold">${item.label}</span>
+                    </button>
+                `;
+            });
+            mobileContainer.innerHTML = mobileHTML;
+        }
+
+        console.log('[NAV SYNC] Rendered Navigation:', {
+            authState: isAuthed ? 'Authenticated' : 'Guest',
+            activeView: normalizedActiveView,
+            items: config.map(i => i.label)
+        });
+    },
+
+    updateActiveNav(viewId) {
+        this.renderNavigation(viewId);
+    },
+
     // ======================== MOBILE NAV VISIBILITY ========================
     // Uses window.innerWidth + inline style to bypass CSS media query / Tailwind CDN conflicts.
     // Mobile breakpoint: < 768px
@@ -2090,18 +2327,8 @@ const app = {
         }
         this.renderAvatar('mobile-header-avatar', this.state.user);
 
-        // ---- Desktop top nav: toggle guest / auth panels ----
-        const desktopGuest = document.getElementById('desktop-nav-guest');
-        const desktopAuth  = document.getElementById('desktop-nav-auth');
-        if (desktopGuest && desktopAuth) {
-            if (isAuthed) {
-                desktopGuest.classList.add('hidden');
-                desktopAuth.classList.remove('hidden');
-            } else {
-                desktopGuest.classList.remove('hidden');
-                desktopAuth.classList.add('hidden');
-            }
-        }
+        // Render synchronized navigation for both Desktop and Mobile from shared config
+        this.renderNavigation();
 
         // ---- Mobile bottom nav: Always active on mobile viewports ----
         const mobileNav = document.getElementById('mobile-nav');
@@ -2573,6 +2800,360 @@ const app = {
         }
     },
 
+    // ======================== PROFILE VISIBILITY SERVICE ========================
+    profileVisibilityService: {
+        resolveProfileVisibility(profileVisibility, viewer) {
+            let resolvedVisibility = 'public';
+            if (profileVisibility && typeof profileVisibility === 'string') {
+                const norm = profileVisibility.trim().toLowerCase();
+                if (norm === 'private') {
+                    resolvedVisibility = 'private';
+                } else {
+                    resolvedVisibility = 'public';
+                }
+            }
+
+            let viewerType = 'guest';
+            if (viewer && !viewer.isGuest) {
+                viewerType = 'authenticated';
+            }
+
+            return {
+                resolvedVisibility: resolvedVisibility,
+                viewerType: viewerType
+            };
+        },
+
+        checkAccess(targetProfile, currentViewer) {
+            if (!targetProfile) {
+                return {
+                    canView: false,
+                    reason: 'not_found',
+                    viewerType: 'guest',
+                    resolvedVisibility: 'public',
+                    isOwner: false
+                };
+            }
+
+            const rawVis = targetProfile.visibility;
+            let resolvedVisibility = 'public';
+            if (rawVis && typeof rawVis === 'string' && rawVis.trim().toLowerCase() === 'private') {
+                resolvedVisibility = 'private';
+            }
+
+            let viewerType = 'guest';
+            let isOwner = false;
+
+            if (currentViewer && !currentViewer.isGuest) {
+                viewerType = 'authenticated';
+                const viewerId = currentViewer.id;
+                const viewerUsername = currentViewer.username ? currentViewer.username.trim().toLowerCase() : '';
+                const targetId = targetProfile.id;
+                const targetUsername = targetProfile.username ? targetProfile.username.trim().toLowerCase() : '';
+
+                if ((viewerId && targetId && String(viewerId) === String(targetId)) ||
+                    (viewerUsername && targetUsername && viewerUsername === targetUsername)) {
+                    isOwner = true;
+                    viewerType = 'owner';
+                }
+            }
+
+            let canView = false;
+            let reason = 'public';
+
+            if (resolvedVisibility === 'public') {
+                canView = true;
+                reason = isOwner ? 'owner' : 'public';
+            } else if (resolvedVisibility === 'private') {
+                if (isOwner) {
+                    canView = true;
+                    reason = 'private_owner';
+                } else {
+                    canView = false;
+                    reason = 'private';
+                }
+            }
+
+            return {
+                canView: canView,
+                reason: reason,
+                viewerType: viewerType,
+                resolvedVisibility: resolvedVisibility,
+                isOwner: isOwner
+            };
+        }
+    },
+
+    async renderPublicProfile(username) {
+        const loadingEl = document.getElementById('pubprof-loading');
+        const notfoundEl = document.getElementById('pubprof-notfound');
+        const privateEl = document.getElementById('pubprof-private-state');
+        const contentEl = document.getElementById('pubprof-content');
+
+        if (loadingEl) loadingEl.classList.remove('hidden');
+        if (notfoundEl) notfoundEl.classList.add('hidden');
+        if (privateEl) privateEl.classList.add('hidden');
+        if (contentEl) contentEl.classList.add('hidden');
+
+        if (!username || typeof username !== 'string' || !username.trim()) {
+            if (loadingEl) loadingEl.classList.add('hidden');
+            if (notfoundEl) notfoundEl.classList.remove('hidden');
+            return;
+        }
+
+        const cleanUsername = username.trim().toLowerCase();
+        this.state.activePublicProfileUsername = cleanUsername;
+
+        try {
+            // 1. Fetch Profile Data from Supabase profiles table
+            const { data: profile, error: profErr } = await supabaseClient
+                .from('profiles')
+                .select('*')
+                .ilike('username', cleanUsername)
+                .maybeSingle();
+
+            if (profErr || !profile) {
+                console.warn('[PUBLIC PROFILE] User not found:', cleanUsername, profErr);
+                const titleEl = document.getElementById('pubprof-err-title');
+                const descEl = document.getElementById('pubprof-err-desc');
+                if (titleEl) titleEl.innerText = 'Profile Not Found';
+                if (descEl) descEl.innerText = 'The requested profile could not be found.';
+                if (loadingEl) loadingEl.classList.add('hidden');
+                if (notfoundEl) notfoundEl.classList.remove('hidden');
+                return;
+            }
+
+            // 2. Delegate access decision to Profile Visibility Service
+            const access = this.profileVisibilityService.checkAccess(profile, this.state.user);
+
+            // Handle Private Access Denial
+            if (!access.canView) {
+                if (loadingEl) loadingEl.classList.add('hidden');
+                if (privateEl) privateEl.classList.remove('hidden');
+                return;
+            }
+
+            // 3. Configure Owner Banner & Guest CTA
+            const ownerBannerEl = document.getElementById('pubprof-owner-banner');
+            const ownerIconEl = document.getElementById('pubprof-owner-icon');
+            const ownerTextEl = document.getElementById('pubprof-owner-text');
+
+            if (ownerBannerEl) {
+                if (access.isOwner) {
+                    ownerBannerEl.classList.remove('hidden');
+                    if (access.reason === 'private_owner') {
+                        if (ownerIconEl) ownerIconEl.className = 'fa-solid fa-lock text-amber-500 text-sm';
+                        if (ownerTextEl) ownerTextEl.innerText = 'Private Profile • Only visible to you (the owner).';
+                    } else {
+                        if (ownerIconEl) ownerIconEl.className = 'fa-solid fa-user-check text-blue-600 dark:text-blue-400 text-sm';
+                        if (ownerTextEl) ownerTextEl.innerText = 'This is your Public Profile.';
+                    }
+                } else {
+                    ownerBannerEl.classList.add('hidden');
+                }
+            }
+
+            // Toggle Guest CTA
+            const visitorUser = this.state.user;
+            const isVisitorAuthed = visitorUser !== null && !visitorUser.isGuest;
+            const guestCtaEl = document.getElementById('pubprof-guest-cta');
+            if (guestCtaEl) {
+                if (!isVisitorAuthed) {
+                    guestCtaEl.classList.remove('hidden');
+                } else {
+                    guestCtaEl.classList.add('hidden');
+                }
+            }
+
+            // 3. Fetch User Test Results from Supabase test_results table
+            let tests = [];
+            try {
+                const { data: testData } = await supabaseClient
+                    .from('test_results')
+                    .select('*')
+                    .eq('user_id', profile.id)
+                    .order('created_at', { ascending: false });
+                tests = testData || [];
+            } catch (err) {
+                console.error('[PUBLIC PROFILE] Error fetching test results:', err);
+            }
+
+            // 4. Render Profile Header
+            const displayName = profile.display_name && profile.display_name.trim() ? profile.display_name : profile.username;
+            const displayUsername = '@' + profile.username;
+
+            const nameEl = document.getElementById('pubprof-displayname');
+            const userEl = document.getElementById('pubprof-username');
+            const joinEl = document.getElementById('pubprof-joindate');
+
+            if (nameEl) nameEl.innerText = displayName;
+            if (userEl) userEl.innerText = displayUsername;
+
+            if (joinEl) {
+                if (profile.created_at) {
+                    const d = new Date(profile.created_at);
+                    const monthYear = d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                    joinEl.innerText = `Joined ${monthYear}`;
+                } else {
+                    joinEl.innerText = 'Joined 2026';
+                }
+            }
+
+            // Render Avatar
+            this.renderAvatar('pubprof-avatar', profile);
+
+            // 5. Calculate & Render Core Statistics
+            const stdTests = tests.filter(t => (t.mode || '').toLowerCase().includes('standard'));
+            const marTests = tests.filter(t => (t.mode || '').toLowerCase().includes('marathon'));
+
+            // Best Standard Score
+            let bestStdScore = profile.best_standard_score != null ? profile.best_standard_score : 0;
+            if (!bestStdScore && stdTests.length > 0) {
+                bestStdScore = Math.max(...stdTests.map(t => t.score || 0));
+            }
+
+            // Best Marathon Score
+            let bestMarScore = 0;
+            if (marTests.length > 0) {
+                bestMarScore = Math.max(...marTests.map(t => t.score || 0));
+            }
+
+            // Total Tests Completed
+            const totalTestsCount = tests.length;
+
+            // Average Accuracy
+            let avgAcc = 0;
+            if (tests.length > 0) {
+                const totalAcc = tests.reduce((acc, t) => acc + (parseFloat(t.accuracy) || 0), 0);
+                avgAcc = Math.round(totalAcc / tests.length);
+            } else if (profile.best_standard_accuracy != null) {
+                avgAcc = Math.round(profile.best_standard_accuracy);
+            }
+
+            // Average Consistency
+            let avgCons = 0;
+            if (tests.length > 0) {
+                const totalCons = tests.reduce((acc, t) => acc + (parseFloat(t.consistency) || 0), 0);
+                avgCons = Math.round(totalCons / tests.length);
+            } else if (profile.best_standard_consistency != null) {
+                avgCons = Math.round(profile.best_standard_consistency);
+            }
+
+            const bestStdEl = document.getElementById('pubprof-best-std');
+            const bestMarEl = document.getElementById('pubprof-best-mar');
+            const totalTestsEl = document.getElementById('pubprof-total-tests');
+            const avgAccEl = document.getElementById('pubprof-avg-acc');
+            const avgConsEl = document.getElementById('pubprof-avg-cons');
+
+            if (bestStdEl) bestStdEl.innerText = bestStdScore ? `${bestStdScore} pts` : '-';
+            if (bestMarEl) bestMarEl.innerText = bestMarScore ? `${bestMarScore} pts` : '-';
+            if (totalTestsEl) totalTestsEl.innerText = totalTestsCount || '0';
+            if (avgAccEl) avgAccEl.innerText = avgAcc ? `${avgAcc}%` : '-';
+            if (avgConsEl) avgConsEl.innerText = avgCons ? `${avgCons}%` : '-';
+
+            // 6. Calculate & Render Achievements Summary
+            const evaluatedAchievements = this.achievements ? this.achievements.getEvaluatedListForUser(profile, tests) : [];
+            const unlockedCount = evaluatedAchievements.filter(a => a.unlocked).length;
+            const totalCount = evaluatedAchievements.length || 24;
+
+            const summaryEl = document.getElementById('pubprof-achievements-summary');
+            const barEl = document.getElementById('pubprof-achievements-bar');
+
+            if (summaryEl) summaryEl.innerText = `${unlockedCount} / ${totalCount} Unlocked`;
+            if (barEl) {
+                const pct = totalCount > 0 ? Math.round((unlockedCount / totalCount) * 100) : 0;
+                barEl.style.width = `${pct}%`;
+            }
+
+            // 7. Calculate & Render Showcase (Maximum 4 Achievements)
+            const showcaseGrid = document.getElementById('pubprof-showcase-grid');
+            if (showcaseGrid) {
+                let showcaseIds = [];
+                if (Array.isArray(profile.achievement_showcase) && profile.achievement_showcase.length > 0) {
+                    showcaseIds = profile.achievement_showcase.slice(0, 4);
+                } else {
+                    const unlocked = evaluatedAchievements.filter(a => a.unlocked);
+                    showcaseIds = (unlocked.length > 0 ? unlocked : evaluatedAchievements).slice(0, 4).map(a => a.id);
+                }
+
+                const showcaseItems = showcaseIds.map(id => evaluatedAchievements.find(a => a.id === id)).filter(Boolean).slice(0, 4);
+
+                if (showcaseItems.length === 0) {
+                    showcaseGrid.innerHTML = `
+                        <div class="col-span-full py-4 text-center text-xs text-slate-500 italic">
+                            No showcase achievements selected yet.
+                        </div>
+                    `;
+                } else {
+                    showcaseGrid.innerHTML = showcaseItems.map(item => {
+                        const rarityStyle = this.achievements?.rarityStyles[item.rarity] || this.achievements?.rarityStyles.common;
+                        const isUnlocked = item.unlocked;
+                        const opacityClass = isUnlocked ? '' : 'opacity-50 grayscale';
+
+                        return `
+                            <div class="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 p-3 rounded-lg flex items-center space-x-3 ${opacityClass}">
+                                <div class="w-10 h-10 rounded-lg flex items-center justify-center text-sm shrink-0 border ${rarityStyle.iconBg}">
+                                    <i class="${item.icon}"></i>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">${item.title}</p>
+                                    <span class="inline-block text-[9px] font-bold px-1.5 py-0.2 rounded border ${rarityStyle.badgeClass} uppercase tracking-wider">
+                                        ${rarityStyle.label}
+                                    </span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            }
+
+            // 8. Render Recent Results (Top 5 Most Recent Sessions)
+            const recentContainer = document.getElementById('pubprof-recent-results');
+            if (recentContainer) {
+                const recent5 = tests.slice(0, 5);
+                if (recent5.length === 0) {
+                    recentContainer.innerHTML = `
+                        <div class="py-4 text-center text-xs text-slate-500 italic">
+                            No test results yet.
+                        </div>
+                    `;
+                } else {
+                    recentContainer.innerHTML = recent5.map(t => {
+                        const modeLabel = this.escapeHtml(t.mode || 'Standard Test');
+                        const scoreVal = t.score !== undefined ? t.score : (t.total_answered || 0);
+                        const dateStr = t.created_at ? new Date(t.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }) : 'Recently';
+
+                        return `
+                            <div class="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-800 text-xs">
+                                <div class="flex items-center space-x-2.5">
+                                    <i class="fa-solid fa-file-signature text-blue-500"></i>
+                                    <span class="font-semibold text-slate-800 dark:text-slate-200">${modeLabel}</span>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <span class="font-extrabold text-blue-600 dark:text-blue-400">${scoreVal} pts</span>
+                                    <span class="text-[10px] text-slate-400 font-mono">${dateStr}</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            }
+
+            // Hide loader and reveal content
+            if (loadingEl) loadingEl.classList.add('hidden');
+            if (contentEl) contentEl.classList.remove('hidden');
+
+        } catch (err) {
+            console.error('[PUBLIC PROFILE] Exception rendering profile:', err);
+            const titleEl = document.getElementById('pubprof-err-title');
+            const descEl = document.getElementById('pubprof-err-desc');
+            if (titleEl) titleEl.innerText = 'Unable to Load Profile';
+            if (descEl) descEl.innerText = 'A network or server error occurred while retrieving profile data.';
+            if (loadingEl) loadingEl.classList.add('hidden');
+            if (notfoundEl) notfoundEl.classList.remove('hidden');
+        }
+    },
+
     renderEditProfile() {
         const user = this.state.user;
         if (!user) return;
@@ -2582,6 +3163,11 @@ const app = {
         setVal('edit-displayname', user.displayName || '');
         setVal('edit-bio', user.bio || '');
         setVal('edit-email', user.email || '');
+
+        const visibilitySelect = document.getElementById('edit-visibility');
+        if (visibilitySelect) {
+            visibilitySelect.value = (user.visibility && user.visibility.trim().toLowerCase() === 'private') ? 'private' : 'public';
+        }
 
         this.renderAvatar('edit-avatar-preview', user);
 
@@ -2626,6 +3212,8 @@ const app = {
     },
 
     achievements: {
+        mode: 'personal', // 'personal' or 'public'
+        publicProfileData: null, // { profile, tests, username, displayName }
         activeCategory: 'all',
         categories: [
             { id: 'all', label: 'All' },
@@ -2774,7 +3362,24 @@ const app = {
             });
         },
 
+        goBack() {
+            if (this.mode === 'public' && this.publicProfileData && this.publicProfileData.username) {
+                const targetUsername = this.publicProfileData.username;
+                this.mode = 'personal';
+                this.publicProfileData = null;
+                app.navigate('u/' + targetUsername);
+            } else {
+                this.mode = 'personal';
+                this.publicProfileData = null;
+                app.navigate('profile');
+            }
+        },
+
         getEvaluatedList() {
+            if (this.mode === 'public' && this.publicProfileData && this.publicProfileData.profile) {
+                return this.getEvaluatedListForUser(this.publicProfileData.profile, this.publicProfileData.tests || []);
+            }
+
             const user = app.state.user;
             const history = app.state.history || [];
             const totalTests = history.length;
@@ -2915,6 +3520,28 @@ const app = {
             const counterText = document.getElementById('achievements-counter-text');
             const percentageText = document.getElementById('achievements-percentage-text');
             const progressBar = document.getElementById('achievements-progress-bar');
+
+            const backText = document.getElementById('achievements-back-text');
+            const headerTitle = document.getElementById('achievements-header-title');
+            const headerSub = document.getElementById('achievements-header-subtitle');
+
+            const isPublic = this.mode === 'public' && this.publicProfileData;
+
+            if (backText) backText.innerText = isPublic ? 'Public Profile' : 'Profile';
+            if (headerTitle) {
+                if (isPublic) {
+                    headerTitle.innerText = `${this.publicProfileData.displayName}'s Achievements`;
+                } else {
+                    headerTitle.innerText = 'Achievements';
+                }
+            }
+            if (headerSub) {
+                if (isPublic) {
+                    headerSub.innerText = `Viewing achievements for @${this.publicProfileData.username} • Read-Only`;
+                } else {
+                    headerSub.innerText = 'Track your progress and unlock milestones.';
+                }
+            }
 
             if (!grid) return;
 
@@ -5748,6 +6375,8 @@ const app = {
             const rawUsername = document.getElementById('edit-username')?.value;
             const rawDisplayName = document.getElementById('edit-displayname')?.value;
             const rawBio = document.getElementById('edit-bio')?.value;
+            const rawVisibility = document.getElementById('edit-visibility')?.value || 'public';
+            const newVisibility = rawVisibility === 'private' ? 'private' : 'public';
 
             // Validate Username
             const uValidation = app.validateUsername(rawUsername);
@@ -5790,7 +6419,8 @@ const app = {
                     const updatePayload = {
                         username: newUsername,
                         display_name: newDisplayName,
-                        bio: newBio
+                        bio: newBio,
+                        visibility: newVisibility
                     };
                     if (isUsernameChanged) {
                         const nowIso = new Date().toISOString();
@@ -5825,6 +6455,7 @@ const app = {
             user.username = newUsername;
             user.displayName = newDisplayName;
             user.bio = newBio;
+            user.visibility = newVisibility;
             user.name = newDisplayName || newUsername;
 
             const avatarUrl = user.avatarUrl || user.avatar_url || null;
@@ -6468,8 +7099,8 @@ const app = {
                                 <div class="flex items-center space-x-2.5 sm:space-x-3">
                                     ${avatarHtml}
                                     <div class="flex flex-col min-w-0">
-                                        <span class="text-xs sm:text-sm font-semibold truncate ${isCurrentUser ? 'text-blue-700 dark:text-blue-300' : 'text-slate-900 dark:text-slate-100'}">${effectiveName} ${isCurrentUser ? '(You)' : ''}</span>
-                                        <span class="text-[10px] sm:text-[11px] text-slate-500 font-mono truncate">@${safeUsername}</span>
+                                        <span onclick="event.stopPropagation(); app.leaderboard.navigateToPublicProfile('${safeUsername}')" class="text-xs sm:text-sm font-semibold truncate hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors ${isCurrentUser ? 'text-blue-700 dark:text-blue-300' : 'text-slate-900 dark:text-slate-100'}">${effectiveName} ${isCurrentUser ? '(You)' : ''}</span>
+                                        <span onclick="event.stopPropagation(); app.leaderboard.navigateToPublicProfile('${safeUsername}')" class="text-[10px] sm:text-[11px] text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors font-mono truncate">@${safeUsername}</span>
                                     </div>
                                 </div>
                             </td>
@@ -6712,8 +7343,18 @@ const app = {
             this.selectedProfile = null;
         },
 
+        navigateToPublicProfile(targetUsername) {
+            const username = targetUsername || (this.selectedProfile ? this.selectedProfile.username : null);
+            if (!username) {
+                app.toast.show('Username tidak ditemukan.', 'warning');
+                return;
+            }
+            this.closeProfilePreview();
+            app.navigate('u/' + username);
+        },
+
         viewFullProfile() {
-            app.toast.show('Akses profil publik di-blokir.', 'warning');
+            this.navigateToPublicProfile();
         }
     },
 

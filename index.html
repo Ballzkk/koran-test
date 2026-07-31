@@ -75,23 +75,8 @@
         <div class="bg-blue-600 text-white p-2 rounded-lg font-bold shadow-xs">KT</div>
         <span class="font-extrabold text-lg text-slate-900 dark:text-slate-100 tracking-tight">Koran Test</span>
       </div>
-      <div id="desktop-nav-guest" class="flex items-center space-x-5">
-        <button id="dn-g-home" onclick="app.navigate('home')" class="nav-btn hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-120 text-slate-600 dark:text-slate-400 font-semibold text-sm">Home</button>
-        <button id="dn-g-test" onclick="app.navigate('test-menu')" class="nav-btn hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-120 text-slate-600 dark:text-slate-400 font-semibold text-sm">Tests</button>
-        <button id="dn-g-learn" onclick="app.navigate('articles')" class="nav-btn hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-120 text-slate-600 dark:text-slate-400 font-semibold text-sm">Learn</button>
-        <button onclick="app.theme.toggle()" class="theme-toggle-btn p-2 rounded-lg text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-120 flex items-center justify-center" aria-label="Toggle theme">
-          <i class="fa-solid fa-moon"></i>
-        </button>
-        <button id="dn-g-login" onclick="app.navigate('account')" class="nav-btn bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-slate-950 font-semibold text-sm px-4 py-2 rounded-lg transition-colors duration-120 shadow-xs">Login</button>
-      </div>
-      <div id="desktop-nav-auth" class="flex items-center space-x-5 hidden">
-        <button id="dn-a-dashboard" onclick="app.navigate('dashboard')" class="nav-btn hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-120 text-slate-600 dark:text-slate-400 font-semibold text-sm">Dashboard</button>
-        <button id="dn-a-test" onclick="app.navigate('test-menu')" class="nav-btn hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-120 text-slate-600 dark:text-slate-400 font-semibold text-sm">Tests</button>
-        <button id="dn-a-leaderboard" onclick="app.navigate('leaderboard')" class="nav-btn hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-120 text-slate-600 dark:text-slate-400 font-semibold text-sm">Leaderboard</button>
-        <button id="dn-a-profile" onclick="app.navigate('account')" class="nav-btn hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-120 text-slate-600 dark:text-slate-400 font-semibold text-sm">Profile</button>
-        <button onclick="app.theme.toggle()" class="theme-toggle-btn p-2 rounded-lg text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-120 flex items-center justify-center" aria-label="Toggle theme">
-          <i class="fa-solid fa-moon"></i>
-        </button>
+      <div id="desktop-nav-container" class="flex items-center space-x-5">
+        <!-- Rendered dynamically from shared navigation config -->
       </div>
     </div>
   </nav>
@@ -1049,6 +1034,14 @@
              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Email (Private)</label>
              <input type="email" id="edit-email" readonly class="w-full bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-lg p-2.5 text-sm text-slate-500 outline-none cursor-not-allowed" value="email@example.com">
           </div>
+          <div>
+             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Profile Visibility</label>
+             <select id="edit-visibility" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-colors duration-120">
+               <option value="public">Public — Anyone can view your profile</option>
+               <option value="private">Private — Only you can view your profile</option>
+             </select>
+             <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Private profiles hide stats, achievements, and recent results from visitors.</p>
+          </div>
         </div>
 
         <div class="flex gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
@@ -1065,14 +1058,14 @@
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
             <div class="flex items-center space-x-2">
-              <button onclick="app.navigate('profile')" class="text-slate-500 dark:text-slate-400 hover:text-blue-400 text-sm font-medium flex items-center gap-1 transition">
-                <i class="fa-solid fa-arrow-left"></i> Profile
+              <button id="achievements-back-btn" onclick="app.achievements.goBack()" class="text-slate-500 dark:text-slate-400 hover:text-blue-400 text-sm font-medium flex items-center gap-1 transition">
+                <i class="fa-solid fa-arrow-left"></i> <span id="achievements-back-text">Profile</span>
               </button>
               <span class="text-slate-600">•</span>
-              <span class="text-xs font-extrabold text-blue-400 uppercase tracking-wider">Achievements</span>
+              <span id="achievements-badge-text" class="text-xs font-extrabold text-blue-400 uppercase tracking-wider">Achievements</span>
             </div>
-            <h2 class="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-100 mt-1">Achievements</h2>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Track your progress and unlock milestones.</p>
+            <h2 id="achievements-header-title" class="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-100 mt-1">Achievements</h2>
+            <p id="achievements-header-subtitle" class="text-xs text-slate-500 dark:text-slate-400 mt-1">Track your progress and unlock milestones.</p>
           </div>
           <div id="achievements-summary" class="bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 px-4 py-2.5 rounded-xl text-right flex items-center space-x-3">
             <div class="w-10 h-10 bg-blue-500/10 text-blue-400 rounded-xl flex items-center justify-center text-lg">
@@ -1814,6 +1807,243 @@
       </div>
     </section>
 
+    <!-- VIEW: PUBLIC PROFILE (Phase 3) -->
+    <section id="view-public-profile" class="page-view max-w-2xl mx-auto space-y-6 hidden">
+      <!-- Top Navigation / Back & Share Buttons -->
+      <div class="flex items-center justify-between">
+        <button onclick="app.goBackFromPublicProfile()" class="inline-flex items-center space-x-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 text-xs font-semibold px-3.5 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs transition-colors duration-120">
+          <i class="fa-solid fa-arrow-left text-xs"></i>
+          <span>Kembali</span>
+        </button>
+        <button id="pubprof-share-btn" onclick="app.sharePublicProfile()" class="inline-flex items-center space-x-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 text-xs font-semibold px-3.5 py-2 rounded-lg bg-white dark:bg-slate-900 border border-blue-200 dark:border-blue-500/30 shadow-xs transition-colors duration-120">
+          <i class="fa-solid fa-share-nodes text-xs"></i>
+          <span>Share Profile</span>
+        </button>
+      </div>
+
+      <!-- Loading Skeleton Container (Phase 2 Lightweight Skeleton) -->
+      <div id="pubprof-loading" class="space-y-6">
+        <!-- 1. Header Skeleton -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 md:p-8 rounded-xl flex flex-col md:flex-row items-center md:items-start gap-6 shadow-xs animate-pulse">
+          <div class="w-20 h-20 bg-slate-200 dark:bg-slate-800/80 rounded-full shrink-0"></div>
+          <div class="space-y-3 flex-1 w-full text-center md:text-left">
+            <div class="h-6 bg-slate-200 dark:bg-slate-800/80 rounded w-1/3 mx-auto md:mx-0"></div>
+            <div class="h-4 bg-slate-200 dark:bg-slate-800/60 rounded w-1/4 mx-auto md:mx-0"></div>
+            <div class="h-3 bg-slate-200 dark:bg-slate-800/50 rounded w-1/5 mx-auto md:mx-0 mt-2"></div>
+          </div>
+        </div>
+
+        <!-- 2. Statistics Grid Skeleton -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 animate-pulse">
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-lg space-y-2 text-center">
+            <div class="h-3 bg-slate-200 dark:bg-slate-800/60 rounded w-2/3 mx-auto"></div>
+            <div class="h-5 bg-slate-200 dark:bg-slate-800/80 rounded w-1/2 mx-auto"></div>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-lg space-y-2 text-center">
+            <div class="h-3 bg-slate-200 dark:bg-slate-800/60 rounded w-2/3 mx-auto"></div>
+            <div class="h-5 bg-slate-200 dark:bg-slate-800/80 rounded w-1/2 mx-auto"></div>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-lg space-y-2 text-center">
+            <div class="h-3 bg-slate-200 dark:bg-slate-800/60 rounded w-2/3 mx-auto"></div>
+            <div class="h-5 bg-slate-200 dark:bg-slate-800/80 rounded w-1/2 mx-auto"></div>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-lg space-y-2 text-center">
+            <div class="h-3 bg-slate-200 dark:bg-slate-800/60 rounded w-2/3 mx-auto"></div>
+            <div class="h-5 bg-slate-200 dark:bg-slate-800/80 rounded w-1/2 mx-auto"></div>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-lg space-y-2 text-center col-span-2 sm:col-span-1">
+            <div class="h-3 bg-slate-200 dark:bg-slate-800/60 rounded w-2/3 mx-auto"></div>
+            <div class="h-5 bg-slate-200 dark:bg-slate-800/80 rounded w-1/2 mx-auto"></div>
+          </div>
+        </div>
+
+        <!-- 3. Showcase Skeleton -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-xs space-y-4 animate-pulse">
+          <div class="h-4 bg-slate-200 dark:bg-slate-800/80 rounded w-1/4"></div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="h-16 bg-slate-100 dark:bg-slate-800/60 rounded-lg"></div>
+            <div class="h-16 bg-slate-100 dark:bg-slate-800/60 rounded-lg"></div>
+            <div class="h-16 bg-slate-100 dark:bg-slate-800/60 rounded-lg"></div>
+            <div class="h-16 bg-slate-100 dark:bg-slate-800/60 rounded-lg"></div>
+          </div>
+        </div>
+
+        <!-- 4. Achievements Summary Skeleton -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-xs space-y-3 animate-pulse">
+          <div class="flex justify-between items-center">
+            <div class="h-4 bg-slate-200 dark:bg-slate-800/80 rounded w-1/4"></div>
+            <div class="h-4 bg-slate-200 dark:bg-slate-800/60 rounded w-1/6"></div>
+          </div>
+          <div class="h-2 bg-slate-200 dark:bg-slate-800/60 rounded-full w-full"></div>
+        </div>
+      </div>
+
+      <!-- Not Found State Container -->
+      <div id="pubprof-notfound" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-8 sm:p-10 rounded-xl text-center shadow-xs space-y-5 hidden">
+        <div class="w-16 h-16 bg-slate-100 dark:bg-slate-800/80 text-slate-400 rounded-full flex items-center justify-center mx-auto text-2xl border border-slate-200 dark:border-slate-700">
+          <i class="fa-solid fa-user-slash"></i>
+        </div>
+        <div class="space-y-1.5 max-w-sm mx-auto">
+          <h3 id="pubprof-err-title" class="font-bold text-lg text-slate-900 dark:text-slate-100">Profile Not Found</h3>
+          <p id="pubprof-err-desc" class="text-xs text-slate-500 leading-relaxed">The requested profile could not be found.</p>
+        </div>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-2.5 pt-2">
+          <button onclick="app.navigate('leaderboard')" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs px-5 py-2.5 rounded-lg transition-colors shadow-xs">
+            Return to Leaderboard
+          </button>
+          <button onclick="app.navigate('home')" class="w-full sm:w-auto bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-xs px-5 py-2.5 rounded-lg transition-colors">
+            Go to Home
+          </button>
+        </div>
+      </div>
+
+      <!-- Private Profile State Container (Dedicated Page) -->
+      <div id="pubprof-private-state" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-8 sm:p-10 rounded-xl text-center shadow-xs space-y-5 hidden">
+        <div class="w-16 h-16 bg-amber-50 dark:bg-amber-500/10 text-amber-500 rounded-full flex items-center justify-center mx-auto text-2xl border border-amber-200 dark:border-amber-500/30 shadow-xs">
+          <i class="fa-solid fa-lock"></i>
+        </div>
+        <div class="space-y-1.5 max-w-sm mx-auto">
+          <h3 class="font-bold text-lg text-slate-900 dark:text-slate-100">This profile is private.</h3>
+          <p class="text-xs text-slate-500 leading-relaxed">The owner has chosen not to share this profile publicly.</p>
+        </div>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-2.5 pt-2">
+          <button onclick="app.goBackFromPublicProfile()" class="w-full sm:w-auto bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-xs px-5 py-2.5 rounded-lg transition-colors flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-arrow-left text-xs"></i>
+            <span>Back</span>
+          </button>
+          <button onclick="app.navigate('home')" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs px-5 py-2.5 rounded-lg transition-colors shadow-xs">
+            Go to Home
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Profile Content Container -->
+      <div id="pubprof-content" class="space-y-6 hidden">
+        <!-- Profile Owner Indicator Banner (Owner Only) -->
+        <div id="pubprof-owner-banner" class="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 p-4 rounded-xl flex items-center justify-between shadow-xs hidden">
+          <div class="flex items-center space-x-2.5">
+            <i id="pubprof-owner-icon" class="fa-solid fa-user-check text-blue-600 dark:text-blue-400 text-sm"></i>
+            <span id="pubprof-owner-text" class="text-xs sm:text-sm font-semibold text-blue-900 dark:text-blue-200">This is your Public Profile.</span>
+          </div>
+          <button onclick="app.navigate('edit-profile')" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs px-3.5 py-1.5 rounded-lg transition-colors shadow-xs">
+            <i class="fa-solid fa-pen text-[10px] mr-1"></i> Edit Profile
+          </button>
+        </div>
+
+        <!-- 1. Profile Header -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 md:p-8 rounded-xl flex flex-col md:flex-row items-center md:items-start gap-6 relative shadow-xs">
+          <div id="pubprof-avatar" class="w-20 h-20 bg-blue-50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 text-3xl font-bold rounded-full flex items-center justify-center flex-shrink-0 border-2 border-blue-200 dark:border-blue-500/30 overflow-hidden shadow-xs">?</div>
+          
+          <div class="text-center md:text-left space-y-1 flex-1">
+            <h2 id="pubprof-displayname" class="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100">-</h2>
+            <p id="pubprof-username" class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">@username</p>
+            <div class="pt-2 flex items-center justify-center md:justify-start space-x-4">
+              <span class="text-xs text-slate-500 flex items-center"><i class="fa-solid fa-calendar-days mr-1.5"></i> <span id="pubprof-joindate">Joined -</span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Statistics Cards Grid (5 core stats) -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-lg text-center shadow-xs">
+            <p class="text-[10px] text-slate-500 font-bold uppercase mb-0.5">Best Standard</p>
+            <p id="pubprof-best-std" class="text-base font-bold text-blue-600 dark:text-blue-400">-</p>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-lg text-center shadow-xs">
+            <p class="text-[10px] text-slate-500 font-bold uppercase mb-0.5">Best Marathon</p>
+            <p id="pubprof-best-mar" class="text-base font-bold text-blue-600 dark:text-blue-400">-</p>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-lg text-center shadow-xs">
+            <p class="text-[10px] text-slate-500 font-bold uppercase mb-0.5">Total Tests</p>
+            <p id="pubprof-total-tests" class="text-base font-bold text-slate-900 dark:text-slate-100">-</p>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-lg text-center shadow-xs">
+            <p class="text-[10px] text-slate-500 font-bold uppercase mb-0.5">Avg Accuracy</p>
+            <p id="pubprof-avg-acc" class="text-base font-bold text-slate-900 dark:text-slate-100">-</p>
+          </div>
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-lg text-center col-span-2 sm:col-span-1 shadow-xs">
+            <p class="text-[10px] text-slate-500 font-bold uppercase mb-0.5">Avg Consistency</p>
+            <p id="pubprof-avg-cons" class="text-base font-bold text-slate-900 dark:text-slate-100">-</p>
+          </div>
+        </div>
+
+        <!-- 3. Showcase Section (Max 4 Items) -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-xs space-y-4">
+          <div class="flex items-center space-x-2">
+            <div class="w-7 h-7 bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-lg flex items-center justify-center text-xs border border-amber-100 dark:border-amber-500/20">
+              <i class="fa-solid fa-star"></i>
+            </div>
+            <h4 class="font-bold text-sm text-slate-900 dark:text-slate-100">Achievement Showcase</h4>
+          </div>
+          <div id="pubprof-showcase-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+            <!-- Rendered dynamically (max 4) -->
+          </div>
+        </div>
+
+        <!-- 4. Achievement Summary Card & View All Achievements -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-xs space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <div class="w-7 h-7 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-lg flex items-center justify-center text-xs border border-blue-100 dark:border-blue-500/20">
+                <i class="fa-solid fa-trophy"></i>
+              </div>
+              <h4 class="font-bold text-sm text-slate-900 dark:text-slate-100">Achievements</h4>
+            </div>
+            <span id="pubprof-achievements-summary" class="text-xs font-bold text-slate-700 dark:text-slate-300">0 / 0 Unlocked</span>
+          </div>
+          <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+            <div id="pubprof-achievements-bar" class="bg-blue-500 h-full rounded-full transition-all duration-300" style="width: 0%;"></div>
+          </div>
+          <div class="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex justify-end">
+            <button onclick="app.openPublicAchievementsFromCurrentProfile()" class="inline-flex items-center space-x-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline transition-colors">
+              <span>View All Achievements</span>
+              <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- 5. Recent Results Card (5 Most Recent Sessions) -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-xs space-y-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <div class="w-7 h-7 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg flex items-center justify-center text-xs border border-emerald-100 dark:border-emerald-500/20">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+              </div>
+              <h4 class="font-bold text-sm text-slate-900 dark:text-slate-100">Recent Results</h4>
+            </div>
+            <!-- Disabled View Full History button -->
+            <button disabled title="Full history view coming soon" class="inline-flex items-center space-x-1.5 text-xs font-semibold text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-70">
+              <span>View Full History</span>
+              <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700 uppercase">Coming Soon</span>
+            </button>
+          </div>
+
+          <!-- Results List Container -->
+          <div id="pubprof-recent-results" class="space-y-2">
+            <!-- Rendered dynamically (max 5) -->
+          </div>
+        </div>
+
+        <!-- 6. Guest Call-To-Action Card (Unauthenticated Visitors Only) -->
+        <div id="pubprof-guest-cta" class="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-700 dark:to-indigo-800 text-white p-6 sm:p-7 rounded-xl shadow-md space-y-4 hidden">
+          <div class="space-y-1.5">
+            <h3 class="font-extrabold text-lg sm:text-xl">Enjoying Koran Test?</h3>
+            <p class="text-xs sm:text-sm text-blue-100 leading-relaxed max-w-lg">
+              Create your own account to track your progress, unlock achievements, and compete on the leaderboard.
+            </p>
+          </div>
+          <div class="flex flex-wrap items-center gap-3 pt-1">
+            <button onclick="app.navigate('register')" class="bg-white hover:bg-slate-100 text-blue-700 font-bold text-xs px-4 py-2.5 rounded-lg transition-colors shadow-xs">
+              Create Account
+            </button>
+            <button onclick="app.navigate('login')" class="bg-blue-500/30 hover:bg-blue-500/40 text-white font-bold text-xs px-4 py-2.5 rounded-lg border border-white/20 transition-colors">
+              Sign In
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
 
 
   <!-- AUTH INTENT MODAL -->
@@ -1846,8 +2076,8 @@
           ?
         </div>
         <div>
-          <h3 id="profile-preview-name" class="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100">—</h3>
-          <p id="profile-preview-username" class="text-xs text-slate-500 dark:text-slate-400 font-mono">—</p>
+          <h3 id="profile-preview-name" onclick="app.leaderboard.navigateToPublicProfile()" class="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors">—</h3>
+          <p id="profile-preview-username" onclick="app.leaderboard.navigateToPublicProfile()" class="text-xs text-slate-500 dark:text-slate-400 font-mono hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors">—</p>
         </div>
       </div>
 
@@ -1885,7 +2115,7 @@
         <button onclick="app.leaderboard.closeProfilePreview()" class="flex-1 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 font-semibold py-2.5 rounded-lg text-xs sm:text-sm transition-colors duration-120 shadow-xs">
           Close
         </button>
-        <button disabled title="Public profile is blocked" class="flex-1 bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 dark:text-slate-500 font-semibold py-2.5 rounded-lg text-xs sm:text-sm cursor-not-allowed opacity-60">
+        <button id="btn-view-full-profile" onclick="app.leaderboard.navigateToPublicProfile()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-slate-950 font-semibold py-2.5 rounded-lg text-xs sm:text-sm transition-colors duration-120 shadow-xs">
           View Full Profile
         </button>
       </div>
@@ -2153,23 +2383,8 @@
 
   <!-- MOBILE BOTTOM NAV (Single Unified Navigation) -->
   <nav id="mobile-nav" class="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-slate-900/95 border-t border-slate-200 dark:border-slate-800 py-1 z-[45] pb-safe backdrop-blur-md">
-    <div class="flex items-center">
-      <button id="mn-home" onclick="app.navigate('home')" class="flex-1 flex flex-col items-center text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-120 py-1.5 min-h-[52px]">
-        <i class="fa-solid fa-house text-base mb-0.5"></i>
-        <span class="text-[10px] font-semibold">Home</span>
-      </button>
-      <button id="mn-test" onclick="app.navigate('test-menu')" class="flex-1 flex flex-col items-center text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-120 py-1.5 min-h-[52px]">
-        <i class="fa-solid fa-clipboard-list text-base mb-0.5"></i>
-        <span class="text-[10px] font-semibold">Tests</span>
-      </button>
-      <button id="mn-leaderboard" onclick="app.navigate('leaderboard')" class="flex-1 flex flex-col items-center text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-120 py-1.5 min-h-[52px]">
-        <i class="fa-solid fa-trophy text-base mb-0.5"></i>
-        <span class="text-[10px] font-semibold">Leaderboard</span>
-      </button>
-      <button id="mn-profile" onclick="app.navigate('account')" class="flex-1 flex flex-col items-center text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-120 py-1.5 min-h-[52px]">
-        <i class="fa-solid fa-user text-base mb-0.5"></i>
-        <span class="text-[10px] font-semibold">Profile</span>
-      </button>
+    <div id="mobile-nav-container" class="flex items-center">
+      <!-- Rendered dynamically from shared navigation config -->
     </div>
   </nav>
 
