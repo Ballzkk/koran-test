@@ -253,6 +253,10 @@ const app = {
                 bestStandardConsistency = profile.best_standard_consistency != null ? profile.best_standard_consistency : null;
                 bestStandardTestDate = profile.best_standard_test_date || null;
                 lastNotifiedRank = profile.last_notified_rank !== undefined ? profile.last_notified_rank : null;
+
+                if (this.userIdService && !profile.user_id) {
+                    await this.userIdService.ensureUserId(profile);
+                }
             }
         } catch (e) {
             console.error('Error fetching profile from Supabase:', e);
@@ -260,6 +264,8 @@ const app = {
 
         const userObj = {
             id: userId,
+            user_id: profile?.user_id || null,
+            user_sequence: profile?.user_sequence !== undefined ? profile.user_sequence : null,
             username: username,
             displayName: displayName,
             name: displayName || username,
@@ -279,6 +285,38 @@ const app = {
 
         console.log('[SHOWCASE STATE]', userObj.achievement_showcase);
         return userObj;
+    },
+
+    async refreshUserProfile() {
+        if (!this.state.user || this.state.user.isGuest) {
+            console.log('[REFRESH USER] Skipping - user is guest or not logged in');
+            return null;
+        }
+
+        try {
+            console.log('[REFRESH USER] Fetching fresh profile data for:', this.state.user.id);
+            const freshUser = await this.fetchUserProfile(
+                this.state.user.id, 
+                this.state.user.email
+            );
+
+            if (freshUser) {
+                // Update state and localStorage
+                this.state.user = freshUser;
+                localStorage.setItem('kt_user', JSON.stringify(freshUser));
+                console.log('[REFRESH USER] Profile data refreshed successfully');
+
+                // Sync UI to update all components
+                this.syncAuthStateDisplay();
+                return freshUser;
+            } else {
+                console.warn('[REFRESH USER] No fresh user data returned');
+                return null;
+            }
+        } catch (err) {
+            console.error('[REFRESH USER] Error refreshing profile:', err);
+            return null;
+        }
     },
 
     async processSessionUser(authUser, isFreshLogin = false) {
@@ -357,11 +395,15 @@ const app = {
             }
 
             // CASE 1: Profile exists with valid username
-            console.log('[GOOGLE PROFILE FOUND]');
-            console.log('[SHOWCASE PROFILE]', profile.achievement_showcase);
-            app.state.pendingGoogleAuth = null;
+            // Migration / One-Time User ID initialization during auth load (0 overhead once assigned)
+            if (this.userIdService && !profile.user_id) {
+                await this.userIdService.ensureUserId(profile);
+            }
+
             app.state.user = {
                 id: profile.id,
+                user_id: profile.user_id || null,
+                user_sequence: profile.user_sequence !== undefined ? profile.user_sequence : null,
                 username: profile.username || authEmail.split('@')[0],
                 displayName: profile.display_name || null,
                 name: profile.display_name || profile.username || authEmail.split('@')[0],
@@ -383,7 +425,18 @@ const app = {
             console.log('[GOOGLE LOGIN SUCCESS]');
             app.syncAuthStateDisplay();
 
+            if (this.friendService) {
+                this.friendService.isInitialized = false;
+                this.friendService.init();
+            }
+
+            // Boot chat realtime globally right after login
+            if (this.chatService) {
+                this.chatService.initRealtime();
+            }
+
             if (isExplicitLogin) {
+                await this.refreshUserProfile();
                 sessionStorage.removeItem('kt_google_login_pending');
                 app.toast.show('Login successful!', 'success');
                 console.log('[NAVIGATION] Dashboard');
@@ -1137,6 +1190,7 @@ const app = {
         this.syncAuthStateDisplay();
         this.bindGlobalProtection();
         this.theme.init();
+        this.audioFeedbackService.setupAutoplayUnlock();
         this.usernameValidation.init();
         this.editUsernameValidation.init();
         this.emailValidation.init();
@@ -1308,9 +1362,9 @@ const app = {
             if (!container) return;
 
             const toast = document.createElement('div');
-            let borderColor = 'border-l-blue-500';
+            let borderColor = 'border-l-sky-500';
             let icon = 'fa-circle-info';
-            let iconColor = 'text-blue-500';
+            let iconColor = 'text-sky-500';
 
             if (type === 'success') { borderColor = 'border-l-emerald-500'; icon = 'fa-circle-check'; iconColor = 'text-emerald-500'; }
             else if (type === 'warning') { borderColor = 'border-l-amber-500'; icon = 'fa-triangle-exclamation'; iconColor = 'text-amber-500'; }
@@ -1372,16 +1426,14 @@ const app = {
         if (this.state.user && !this.state.user.isGuest && (viewId === 'home' || viewId === 'login' || viewId === 'register')) {
             viewId = 'dashboard';
         }
-        // Guest user Dashboard / Protected Views -> Login redirection
-        if ((!this.state.user || this.state.user.isGuest) && (viewId === 'dashboard' || viewId === 'profile' || viewId === 'edit-profile' || (viewId === 'achievements' && this.achievements.mode !== 'public') || viewId === 'history')) {
+        // Guest user Protected Views -> Login redirection (Profile view is accessible to both Auth & Guest users)
+        if ((!this.state.user || this.state.user.isGuest) && (viewId === 'dashboard' || viewId === 'edit-profile' || viewId === 'chat' || (viewId === 'achievements' && this.achievements.mode !== 'public') || viewId === 'history')) {
             viewId = 'login';
         }
 
-        // Account view routing
-        if (viewId === 'account' && this.state.user && !this.state.user.isGuest) {
-            viewId = 'profile';
-        } else if (viewId === 'account' && (!this.state.user || this.state.user.isGuest)) {
-            viewId = 'login';
+        // Account view routing: Authenticated users -> profile, Guest / Unauth -> login
+        if (viewId === 'account') {
+            viewId = (this.state.user && !this.state.user.isGuest) ? 'profile' : 'login';
         }
 
         // Synchronize browser URL hash for all application pages EXCEPT verify-email callback
@@ -1434,18 +1486,62 @@ const app = {
             }
             this.state.currentView = viewId;
 
-            // Render data for specific views
-            if (viewId === 'public-profile') await this.renderPublicProfile(publicProfileUsername);
-            if (viewId === 'dashboard') await this.renderDashboard();
-            if (viewId === 'leaderboard') this.leaderboard.render();
-            if (viewId === 'profile') await this.renderProfile();
-            if (viewId === 'edit-profile') this.renderEditProfile();
-            if (viewId === 'achievements') this.renderAchievements();
-            if (viewId === 'history') await this.renderHistoryStatistics();
-            if (viewId === 'articles') this.articles.renderList();
-            if (viewId === 'verify-email') this.initVerifyEmailView();
-            if (viewId === 'forgot-password') this.initForgotPasswordView();
-            if (viewId === 'reset-password') this.initResetPasswordView();
+            // Render data for specific views with strict isolation & error safety
+            try {
+                if (viewId === 'public-profile') await this.renderPublicProfile(publicProfileUsername);
+            } catch (err) {
+                console.error('[NAVIGATION] Error rendering public-profile:', err);
+            }
+
+            try {
+                if (viewId === 'dashboard') await this.renderDashboard();
+            } catch (err) {
+                console.error('[NAVIGATION] Error rendering dashboard:', err);
+            }
+
+            try {
+                if (viewId === 'leaderboard') this.leaderboard.render();
+            } catch (err) {
+                console.error('[NAVIGATION] Error rendering leaderboard:', err);
+            }
+
+            try {
+                if (viewId === 'friends') await this.renderFriends();
+            } catch (err) {
+                console.error('[NAVIGATION] Error rendering friends:', err);
+            }
+
+            try {
+                if (viewId === 'chat') {
+                    document.body.classList.add('overflow-hidden', 'h-screen');
+                    await this.chatService.init();
+                } else {
+                    document.body.classList.remove('overflow-hidden', 'h-screen');
+                }
+            } catch (err) {
+                console.error('[NAVIGATION] Error initializing chatService:', err);
+            }
+
+            try {
+                if (viewId === 'profile') {
+                    await this.refreshUserProfile();
+                    await this.renderProfile();
+                }
+            } catch (err) {
+                console.error('[NAVIGATION] Error rendering profile:', err);
+            }
+
+            try {
+                if (viewId === 'edit-profile') this.renderEditProfile();
+                if (viewId === 'achievements') this.renderAchievements();
+                if (viewId === 'history') await this.renderHistoryStatistics();
+                if (viewId === 'articles') this.articles.renderList();
+                if (viewId === 'verify-email') this.initVerifyEmailView();
+                if (viewId === 'forgot-password') this.initForgotPasswordView();
+                if (viewId === 'reset-password') this.initResetPasswordView();
+            } catch (err) {
+                console.error('[NAVIGATION] Error rendering view ' + viewId + ':', err);
+            }
 
             if (viewId === 'register') this.resetAuthForms('register');
             if (viewId === 'login') {
@@ -1953,6 +2049,10 @@ const app = {
                 timestamp: Date.now()
             };
 
+            if (this.achievements) {
+                this.achievements.getEngineState();
+            }
+
             return rankedData;
         } catch (err) {
             console.error('[LEADERBOARD SERVICE FAILED]', err);
@@ -1961,6 +2061,16 @@ const app = {
     },
 
 
+
+    async renderFriends() {
+        console.log("[LIFECYCLE] Friends page mounted");
+        if (this.friendsHub) {
+            this.friendsHub.switchTab(this.friendsHub.activeTab || 'friends');
+        }
+        if (this.friendService) {
+            await this.friendService.init();
+        }
+    },
 
     async renderDashboardHero() {
         const user = this.state.user;
@@ -1978,7 +2088,7 @@ const app = {
         const displayNameEscaped = this.escapeHtml(displayName);
 
         if (user.isGuest) {
-            if (greetingEl) greetingEl.innerHTML = `Welcome, <span class="text-blue-400">${displayNameEscaped}</span> 👋`;
+            if (greetingEl) greetingEl.innerHTML = `Welcome, <span class="text-sky-400">${displayNameEscaped}</span> 👋`;
             if (statusEl) statusEl.innerText = 'Sign in or register to record scores and join the National Leaderboard.';
             if (substatusEl) substatusEl.innerText = '';
             return;
@@ -2011,14 +2121,14 @@ const app = {
 
         // CASE 1: User has never completed a Standard Test
         if (!currentRank || userBestScore <= 0) {
-            if (greetingEl) greetingEl.innerHTML = `Welcome, <span class="text-blue-400">${displayNameEscaped}</span> 👋`;
+            if (greetingEl) greetingEl.innerHTML = `Welcome, <span class="text-sky-400">${displayNameEscaped}</span> 👋`;
             if (statusEl) statusEl.innerText = 'Complete your first Standard Test to join the leaderboard.';
             if (substatusEl) substatusEl.innerText = '';
             return;
         }
 
         // Default Greeting for returning users
-        if (greetingEl) greetingEl.innerHTML = `Welcome back, <span class="text-blue-400">${displayNameEscaped}</span> 👋`;
+        if (greetingEl) greetingEl.innerHTML = `Welcome back, <span class="text-sky-400">${displayNameEscaped}</span> 👋`;
 
         let statusText = '';
         let substatusText = '';
@@ -2096,8 +2206,8 @@ const app = {
 
         // ---- Desktop nav highlight ----
         document.querySelectorAll('#desktop-nav-guest .nav-btn, #desktop-nav-auth .nav-btn').forEach(btn => {
-            btn.classList.remove('text-blue-400');
-            if (!btn.classList.contains('bg-blue-500')) {
+            btn.classList.remove('text-sky-400');
+            if (!btn.classList.contains('bg-sky-500')) {
                 btn.classList.add('text-slate-500', 'dark:text-slate-400');
             }
         });
@@ -2125,13 +2235,13 @@ const app = {
             const btn = document.getElementById(desktopBtnId);
             if (btn) {
                 btn.classList.remove('text-slate-500', 'dark:text-slate-400');
-                btn.classList.add('text-blue-400');
+                btn.classList.add('text-sky-400');
             }
         }
 
         // ---- Mobile nav highlight (Single Unified Mapping) ----
         document.querySelectorAll('#mobile-nav button').forEach(btn => {
-            btn.classList.remove('text-blue-400');
+            btn.classList.remove('text-sky-400');
             btn.classList.add('text-slate-500');
         });
 
@@ -2159,7 +2269,7 @@ const app = {
             const btn = document.getElementById(mobileBtnId);
             if (btn) {
                 btn.classList.remove('text-slate-500');
-                btn.classList.add('text-blue-400');
+                btn.classList.add('text-sky-400');
             }
         }
 
@@ -2207,12 +2317,13 @@ const app = {
             { id: 'nav-home', label: 'Home', target: 'home', icon: 'fa-solid fa-house', isButton: false },
             { id: 'nav-tests', label: 'Tests', target: 'test-menu', icon: 'fa-solid fa-clipboard-list', isButton: false },
             { id: 'nav-learn', label: 'Learn', target: 'articles', icon: 'fa-solid fa-book-open', isButton: false },
-            { id: 'nav-login', label: 'Login', target: 'account', icon: 'fa-solid fa-right-to-bracket', isButton: true }
+            { id: 'nav-login', label: 'Login', target: 'login', icon: 'fa-solid fa-right-to-bracket', isButton: true }
         ],
         authenticated: [
             { id: 'nav-dashboard', label: 'Dashboard', target: 'dashboard', icon: 'fa-solid fa-house-user', isButton: false },
             { id: 'nav-tests', label: 'Tests', target: 'test-menu', icon: 'fa-solid fa-clipboard-list', isButton: false },
             { id: 'nav-leaderboard', label: 'Leaderboard', target: 'leaderboard', icon: 'fa-solid fa-trophy', isButton: false },
+            { id: 'nav-friends', label: 'Friends', target: 'friends', icon: 'fa-solid fa-user-group', isButton: false },
             { id: 'nav-profile', label: 'Profile', target: 'account', icon: 'fa-solid fa-user', isButton: false }
         ]
     },
@@ -2220,10 +2331,32 @@ const app = {
     renderNavigation(currentViewId) {
         const isAuthed = this.state.user !== null && !this.state.user.isGuest;
         const config = isAuthed ? this.navigationConfig.authenticated : this.navigationConfig.guest;
-        const activeView = currentViewId || this.state.currentView || this.getRouteFromHash() || (isAuthed ? 'dashboard' : 'home');
+
+        // Determine activeView with explicit priority fallback
+        let activeView = 'home';
+        if (currentViewId) {
+            activeView = currentViewId;
+        } else if (this.state.currentView) {
+            activeView = this.state.currentView;
+        } else {
+            const hashView = this.getRouteFromHash();
+            if (hashView) {
+                activeView = hashView;
+            } else {
+                activeView = isAuthed ? 'dashboard' : 'home';
+            }
+        }
 
         // Normalize view aliases
         const normalizedActiveView = (activeView === 'account') ? (isAuthed ? 'profile' : 'login') : activeView;
+
+        console.log('[NAV DEBUG] renderNavigation activeView:', {
+            currentViewId,
+            stateCurrentView: this.state.currentView,
+            hashView: this.getRouteFromHash(),
+            finalActiveView: normalizedActiveView,
+            isAuthed
+        });
 
         // 1. Render Desktop Navigation
         const desktopContainer = document.getElementById('desktop-nav-container');
@@ -2231,16 +2364,18 @@ const app = {
             let desktopHTML = '';
             config.forEach(item => {
                 const itemNormalizedTarget = (item.target === 'account') ? (isAuthed ? 'profile' : 'login') : item.target;
-                const isActive = normalizedActiveView === itemNormalizedTarget || (item.target === 'test-menu' && (normalizedActiveView === 'test-screen' || normalizedActiveView === 'test-menu'));
+                const isActive = normalizedActiveView === itemNormalizedTarget 
+                    || (item.target === 'test-menu' && (normalizedActiveView === 'test-screen' || normalizedActiveView === 'test-menu'))
+                    || (item.target === 'articles' && (normalizedActiveView === 'articles' || normalizedActiveView === 'article-detail'));
 
                 if (item.isButton) {
                     desktopHTML += `
-                        <button id="d-${item.id}" onclick="app.navigate('${item.target}')" class="nav-btn bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-slate-950 font-semibold text-sm px-4 py-2 rounded-lg transition-colors duration-120 shadow-xs">
+                        <button id="d-${item.id}" onclick="app.navigate('${item.target}')" class="nav-btn bg-sky-600 hover:bg-sky-700 text-white dark:bg-sky-500 dark:hover:bg-sky-600 dark:text-slate-950 font-semibold text-sm px-4 py-2 rounded-lg transition-colors duration-120 shadow-xs">
                             ${item.label}
                         </button>
                     `;
                 } else {
-                    const colorClass = isActive ? 'text-blue-500 dark:text-blue-400 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 font-semibold';
+                    const colorClass = isActive ? 'text-sky-600 dark:text-sky-400 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 font-semibold';
                     desktopHTML += `
                         <button id="d-${item.id}" onclick="app.navigate('${item.target}')" class="nav-btn transition-colors duration-120 text-sm ${colorClass}">
                             ${item.label}
@@ -2265,8 +2400,10 @@ const app = {
             let mobileHTML = '';
             config.forEach(item => {
                 const itemNormalizedTarget = (item.target === 'account') ? (isAuthed ? 'profile' : 'login') : item.target;
-                const isActive = normalizedActiveView === itemNormalizedTarget || (item.target === 'test-menu' && (normalizedActiveView === 'test-screen' || normalizedActiveView === 'test-menu'));
-                const activeClass = isActive ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400';
+                const isActive = normalizedActiveView === itemNormalizedTarget 
+                    || (item.target === 'test-menu' && (normalizedActiveView === 'test-screen' || normalizedActiveView === 'test-menu'))
+                    || (item.target === 'articles' && (normalizedActiveView === 'articles' || normalizedActiveView === 'article-detail'));
+                const activeClass = isActive ? 'text-sky-600 dark:text-sky-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400';
 
                 mobileHTML += `
                     <button id="m-${item.id}" onclick="app.navigate('${item.target}')" class="flex-1 flex flex-col items-center transition-colors duration-120 py-1.5 min-h-[52px] ${activeClass}">
@@ -2328,7 +2465,7 @@ const app = {
         this.renderAvatar('mobile-header-avatar', this.state.user);
 
         // Render synchronized navigation for both Desktop and Mobile from shared config
-        this.renderNavigation();
+        this.renderNavigation(this.state.currentView || 'home');
 
         // ---- Mobile bottom nav: Always active on mobile viewports ----
         const mobileNav = document.getElementById('mobile-nav');
@@ -2502,8 +2639,8 @@ const app = {
             row.className = 'hover:bg-slate-100 dark:bg-slate-800/50 transition border-b border-slate-200 dark:border-slate-800/50';
             row.innerHTML = `
                 <td class="p-3 font-medium text-slate-900 dark:text-slate-100">${safeDate}</td>
-                <td class="p-3"><span class="bg-blue-500/10 text-blue-400 text-[10px] px-2 py-0.5 rounded font-bold">${safeMode}</span></td>
-                <td class="p-3 text-center font-extrabold text-blue-400">${currentScore}</td>
+                <td class="p-3"><span class="bg-sky-500/10 text-sky-400 text-[10px] px-2 py-0.5 rounded font-bold">${safeMode}</span></td>
+                <td class="p-3 text-center font-extrabold text-sky-400">${currentScore}</td>
                 <td class="p-3 text-center text-emerald-400 font-bold">${h.accuracy || 0}%</td>
                 <td class="p-3 text-center text-slate-500 dark:text-slate-400">${h.consistency != null ? h.consistency : 100}%</td>
             `;
@@ -2649,158 +2786,213 @@ const app = {
 
     // ======================== PROFILE ========================
     async renderProfile() {
-        const user = this.state.user;
+        console.log("[LIFECYCLE] renderProfile() started");
+
+        // Refresh data if user is logged in
+        let user = this.state.user;
+        if (user && !user.isGuest && user.id) {
+            try {
+                console.log('[PROFILE] Refreshing user data before render...');
+                const freshUser = await this.fetchUserProfile(user.id, user.email);
+                if (freshUser) {
+                    this.state.user = freshUser;
+                    localStorage.setItem('kt_user', JSON.stringify(freshUser));
+                    user = freshUser;
+                    console.log('[PROFILE] User data refreshed successfully');
+                } else {
+                    console.warn('[PROFILE] Failed to refresh user data, using cached data');
+                }
+            } catch (err) {
+                console.error('[PROFILE] Error refreshing user data:', err);
+            }
+        }
+
         if (!user) {
-            this.navigate('account');
-            return;
+            console.log("[LIFECYCLE] User state empty, falling back to Guest profile state");
+            user = { name: 'Guest User', username: 'User_Guest', isGuest: true };
         }
 
-        const el = (id, val) => { const e = document.getElementById(id); if (e) e.innerText = val; };
+        // Log state for debugging
+        console.log('[PROFILE] Rendering with user data:', {
+            id: user.id,
+            username: user.username,
+            displayName: user.displayName,
+            email: user.email,
+            isGuest: user.isGuest,
+            bestScore: user.best_standard_score,
+            rank: user.rank
+        });
 
-        const effectiveName = this.getEffectiveDisplayName(user);
-        this.renderAvatar('profile-avatar', user);
-        el('profile-username', '@' + (user.username || 'user'));
-        el('profile-displayname', (user.displayName && user.displayName.trim() !== '') ? user.displayName.trim() : 'Not set');
-        el('profile-bio', user.bio || 'No bio added.');
-        el('profile-joindate', 'Joined July 2026');
+        try {
+            const el = (id, val) => { const e = document.getElementById(id); if (e) e.innerText = val; };
 
-        // Fetch single source of truth Leaderboard Rank & Statistics
-        let rankText = '#—';
-        let marRankText = '#—';
-        if (!user.isGuest) {
-            try {
-                const allRanked = await this.getLeaderboardData('alltime', false, 'standard');
-                const userMatch = allRanked.find(r => r.id === user.id);
-                if (userMatch) {
-                    rankText = '#' + userMatch.rank;
-                    user.rank = rankText;
-                    user.best_standard_score = userMatch.score;
-                    user.best_standard_accuracy = userMatch.accuracy;
-                    user.best_standard_consistency = userMatch.consistency;
-                }
+            const effectiveName = this.getEffectiveDisplayName(user);
+            this.renderAvatar('profile-avatar', user);
+            el('profile-displayname', effectiveName);
+            el('profile-username', '@' + (user.username || 'User_Guest'));
+            el('profile-userid', user.user_id ? user.user_id : (user.id ? String(user.id).slice(0, 8) : 'GUEST-USER'));
+            el('profile-bio', user.bio || 'No bio added.');
+            el('profile-joindate', user.created_at ? `Joined ${new Date(user.created_at).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })}` : 'Joined July 2026');
 
-                const marRanked = await this.getLeaderboardData('alltime', false, 'marathon');
-                const marUserMatch = marRanked.find(r => r.id === user.id);
-                if (marUserMatch) {
-                    marRankText = '#' + marUserMatch.rank;
-                    user.marathon_rank = marRankText;
-                    user.best_marathon_score = marUserMatch.score;
-                }
-            } catch (e) {
-                console.error('Error fetching profile ranks:', e);
-            }
-        }
-        el('profile-rank', rankText);
-        el('profile-bestscore', (user.best_standard_score || 0) > 0 ? `${user.best_standard_score} pts` : '0');
-        el('profile-marathon-rank', marRankText);
-        el('profile-marathon-score', (user.best_marathon_score || 0) > 0 ? `${user.best_marathon_score} pts` : '0');
-
-        // 2. Fetch test_results from Supabase database for average accuracy & consistency across all tests
-        let totalTests = 0;
-        let avgAcc = 0;
-        let avgCons = 0;
-        let dbResults = [];
-
-        if (!user.isGuest) {
-            try {
-                const { data, error: testsErr } = await supabaseClient
-                    .from('test_results')
-                    .select('mode, score, total_answered, correct_answers, accuracy, consistency, created_at')
-                    .eq('user_id', user.id)
-                    .order('created_at', { ascending: false });
-
-                if (!testsErr && data) {
-                    dbResults = data;
-                    totalTests = data.length;
-                    if (totalTests > 0) {
-                        const sumAcc = data.reduce((acc, row) => acc + (row.accuracy || 0), 0);
-                        const sumCons = data.reduce((acc, row) => acc + (row.consistency !== undefined ? row.consistency : 100), 0);
-                        avgAcc = Math.round(sumAcc / totalTests);
-                        avgCons = Math.round(sumCons / totalTests);
+            // Fetch single source of truth Leaderboard Rank & Statistics
+            let rankText = '#—';
+            let marRankText = '#—';
+            if (!user.isGuest) {
+                try {
+                    const allRanked = await this.getLeaderboardData('alltime', false, 'standard');
+                    const userMatch = (allRanked || []).find(r => r.id === user.id);
+                    if (userMatch) {
+                        rankText = '#' + userMatch.rank;
+                        user.rank = rankText;
+                        user.best_standard_score = userMatch.score;
+                        user.best_standard_accuracy = userMatch.accuracy;
+                        user.best_standard_consistency = userMatch.consistency;
                     }
+
+                    const marRanked = await this.getLeaderboardData('alltime', false, 'marathon');
+                    const marUserMatch = (marRanked || []).find(r => r.id === user.id);
+                    if (marUserMatch) {
+                        marRankText = '#' + marUserMatch.rank;
+                        user.marathon_rank = marRankText;
+                        user.best_marathon_score = marUserMatch.score;
+                    }
+                } catch (e) {
+                    console.error('[PROFILE] Error fetching profile ranks:', e);
                 }
-            } catch (e) {
-                console.error('Error fetching test results for profile:', e);
             }
-        } else {
-            // Guest mode fallback using local history
-            const history = this.state.history || [];
-            totalTests = history.length;
-            if (totalTests > 0) {
-                avgAcc = Math.round(history.reduce((a, h) => a + (h.accuracy || 0), 0) / totalTests);
-                avgCons = Math.round(history.reduce((a, h) => a + (h.consistency !== undefined ? h.consistency : 100), 0) / totalTests);
-            }
-        }
+            el('profile-rank', rankText);
+            el('profile-bestscore', (user.best_standard_score || 0) > 0 ? `${user.best_standard_score} pts` : '0');
+            el('profile-marathon-rank', marRankText);
+            el('profile-marathon-score', (user.best_marathon_score || 0) > 0 ? `${user.best_marathon_score} pts` : '0');
 
-        el('profile-avgacc', avgAcc + '%');
-        el('profile-avgcons', avgCons + '%');
-        el('profile-totaltests', totalTests);
+            // 2. Fetch test_results from Supabase database for average accuracy & consistency across all tests
+            let totalTests = 0;
+            let avgAcc = 0;
+            let avgCons = 0;
+            let dbResults = [];
 
-        // Show edit button if own profile
-        const editBtn = document.getElementById('profile-edit-btn');
-        if (editBtn) editBtn.classList.remove('hidden');
+            if (!user.isGuest) {
+                try {
+                    const { data, error: testsErr } = await supabaseClient
+                        .from('test_results')
+                        .select('mode, score, total_answered, correct_answers, accuracy, consistency, created_at')
+                        .eq('user_id', user.id)
+                        .order('created_at', { ascending: false });
 
-        // Recent results
-        const recentContainer = document.getElementById('profile-recent-results');
-        if (recentContainer) {
-            recentContainer.innerHTML = '';
-            const recent = !user.isGuest ? dbResults.slice(0, 5) : (this.state.history || []).slice(-5).reverse();
-            if (recent.length === 0) {
-                recentContainer.innerHTML = '<tr><td class="p-4 text-center text-slate-500 italic">Belum ada riwayat.</td></tr>';
+                    if (!testsErr && data) {
+                        dbResults = data;
+                        totalTests = data.length;
+                        if (totalTests > 0) {
+                            const sumAcc = data.reduce((acc, row) => acc + (row.accuracy || 0), 0);
+                            const sumCons = data.reduce((acc, row) => acc + (row.consistency !== undefined ? row.consistency : 100), 0);
+                            avgAcc = Math.round(sumAcc / totalTests);
+                            avgCons = Math.round(sumCons / totalTests);
+                        }
+                    }
+                } catch (e) {
+                    console.error('[PROFILE] Error fetching test results for profile:', e);
+                }
             } else {
-                recent.forEach(h => {
-                    const tr = document.createElement('tr');
-                    tr.className = 'hover:bg-slate-100 dark:bg-slate-800/40 transition';
-                    const safeMode = this.escapeHtml(h.mode || 'Standard Test');
-                    const scoreVal = h.score !== undefined ? h.score : (h.total_answered || h.totalAnswered || 0);
-                    const accVal = h.accuracy || 0;
-                    const dateStr = this.escapeHtml(h.created_at ? new Date(h.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : (h.date || '—'));
-
-                    tr.innerHTML = `
-                        <td class="p-3 font-semibold text-slate-800 dark:text-slate-200">${safeMode}</td>
-                        <td class="p-3 font-extrabold text-blue-400 text-right">${scoreVal} pts</td>
-                        <td class="p-3 text-emerald-400 text-right">${accVal}%</td>
-                        <td class="p-3 text-slate-500 dark:text-slate-400 text-right text-xs">${dateStr}</td>
-                    `;
-                    recentContainer.appendChild(tr);
-                });
+                // Guest mode fallback using local history
+                const history = this.state.history || [];
+                totalTests = history.length;
+                if (totalTests > 0) {
+                    avgAcc = Math.round(history.reduce((a, h) => a + (h.accuracy || 0), 0) / totalTests);
+                    avgCons = Math.round(history.reduce((a, h) => a + (h.consistency !== undefined ? h.consistency : 100), 0) / totalTests);
+                }
             }
-        }
 
-        // Render Security Section (Email/Password vs Google OAuth)
-        const emailSecUi = document.getElementById('profile-email-security-ui');
-        const googleSecUi = document.getElementById('profile-google-security-ui');
-        const isGoogle = user && (user.app_metadata?.provider === 'google' || user.is_google || (user.identities && user.identities.some(i => i.provider === 'google')));
+            el('profile-avgacc', avgAcc + '%');
+            el('profile-avgcons', avgCons + '%');
+            el('profile-totaltests', totalTests);
 
-        if (isGoogle) {
-            if (emailSecUi) emailSecUi.classList.add('hidden');
-            if (googleSecUi) googleSecUi.classList.remove('hidden');
-        } else {
-            if (emailSecUi) emailSecUi.classList.remove('hidden');
-            if (googleSecUi) googleSecUi.classList.add('hidden');
-        }
+            // Show edit button if own authenticated profile
+            const editBtn = document.getElementById('profile-edit-btn');
+            if (editBtn) {
+                if (user && !user.isGuest) {
+                    editBtn.classList.remove('hidden');
+                } else {
+                    editBtn.classList.add('hidden');
+                }
+            }
 
-        // Update Compact Achievement Summary Card & Showcase
-        if (this.achievements) {
-            const evaluated = this.achievements.getEvaluatedList();
-            const unlockedList = evaluated.filter(a => a.unlocked);
-            const unlockedCount = unlockedList.length;
-            const totalCount = evaluated.length;
-            const globalPercentage = totalCount > 0 ? Math.round((unlockedCount / totalCount) * 100) : 0;
+            // Recent results
+            const recentContainer = document.getElementById('profile-recent-results');
+            if (recentContainer) {
+                recentContainer.innerHTML = '';
+                const recent = !user.isGuest ? dbResults.slice(0, 5) : (this.state.history || []).slice(-5).reverse();
+                if (recent.length === 0) {
+                    recentContainer.innerHTML = '<tr><td class="p-4 text-center text-slate-500 italic">Belum ada riwayat.</td></tr>';
+                } else {
+                    recent.forEach(h => {
+                        const tr = document.createElement('tr');
+                        tr.className = 'hover:bg-slate-100 dark:bg-slate-800/40 transition';
+                        const safeMode = this.escapeHtml(h.mode || 'Standard Test');
+                        const scoreVal = h.score !== undefined ? h.score : (h.total_answered || h.totalAnswered || 0);
+                        const accVal = h.accuracy || 0;
+                        const dateStr = this.escapeHtml(h.created_at ? new Date(h.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : (h.date || '—'));
 
-            const counterEl = document.getElementById('profile-ach-counter');
-            const percentEl = document.getElementById('profile-ach-percent');
-            const barEl = document.getElementById('profile-ach-bar');
+                        tr.innerHTML = `
+                            <td class="p-3 font-semibold text-slate-800 dark:text-slate-200">${safeMode}</td>
+                            <td class="p-3 font-extrabold text-sky-400 text-right">${scoreVal} pts</td>
+                            <td class="p-3 text-emerald-400 text-right">${accVal}%</td>
+                            <td class="p-3 text-slate-500 dark:text-slate-400 text-right text-xs">${dateStr}</td>
+                        `;
+                        recentContainer.appendChild(tr);
+                    });
+                }
+            }
 
-            if (counterEl) counterEl.innerText = `${unlockedCount} / ${totalCount} Unlocked`;
-            if (percentEl) percentEl.innerText = `${globalPercentage}%`;
-            if (barEl) barEl.style.width = `${globalPercentage}%`;
+            // Render Security Section (Email/Password vs Google OAuth)
+            const emailSecUi = document.getElementById('profile-email-security-ui');
+            const googleSecUi = document.getElementById('profile-google-security-ui');
+            const isGoogle = user && (user.app_metadata?.provider === 'google' || user.is_google || (user.identities && user.identities.some(i => i.provider === 'google')));
 
-            this.achievements.renderShowcaseContainer();
+            if (isGoogle) {
+                if (emailSecUi) emailSecUi.classList.add('hidden');
+                if (googleSecUi) googleSecUi.classList.remove('hidden');
+            } else {
+                if (emailSecUi) emailSecUi.classList.remove('hidden');
+                if (googleSecUi) googleSecUi.classList.add('hidden');
+            }
+
+            // Update Compact Achievement Summary Card & Showcase
+            if (this.achievements) {
+                try {
+                    const evaluated = this.achievements.getEvaluatedList();
+                    const unlockedList = (evaluated || []).filter(a => a.unlocked);
+                    const unlockedCount = unlockedList.length;
+                    const totalCount = (evaluated || []).length;
+                    const globalPercentage = totalCount > 0 ? Math.round((unlockedCount / totalCount) * 100) : 0;
+
+                    const counterEl = document.getElementById('profile-ach-counter');
+                    const percentEl = document.getElementById('profile-ach-percent');
+                    const barEl = document.getElementById('profile-ach-bar');
+
+                    if (counterEl) counterEl.innerText = `${unlockedCount} / ${totalCount} Unlocked`;
+                    if (percentEl) percentEl.innerText = `${globalPercentage}%`;
+                    if (barEl) barEl.style.width = `${globalPercentage}%`;
+
+                    this.achievements.renderShowcaseContainer();
+                } catch (achErr) {
+                    console.error('[PROFILE] Achievements evaluation error:', achErr);
+                }
+            }
+
+            if (this.audioFeedbackService) {
+                try {
+                    this.audioFeedbackService.renderUI();
+                } catch (audioErr) {
+                    console.error('[PROFILE] Audio feedback UI error:', audioErr);
+                }
+            }
+            console.log("[LIFECYCLE] renderProfile() completed successfully");
+        } catch (err) {
+            console.error('[PROFILE] Critical error during renderProfile():', err);
         }
     },
 
-    // ======================== PROFILE VISIBILITY SERVICE ========================
+    // ======================== PROFILE VISIBILITY SERVICE V2 (RELATIONSHIP AWARE) ========================
     profileVisibilityService: {
         resolveProfileVisibility(profileVisibility, viewer) {
             let resolvedVisibility = 'public';
@@ -2831,7 +3023,9 @@ const app = {
                     reason: 'not_found',
                     viewerType: 'guest',
                     resolvedVisibility: 'public',
-                    isOwner: false
+                    isOwner: false,
+                    isFriend: false,
+                    relationshipState: 'NONE'
                 };
             }
 
@@ -2858,29 +3052,1996 @@ const app = {
                 }
             }
 
+            // Relationship check via Friend System
+            const targetId = targetProfile.id;
+            const relationshipState = isOwner ? 'SELF' : (app.friendService ? app.friendService.getRelationship(targetId) : 'NONE');
+            const isFriend = relationshipState === 'FRIENDS' || isOwner;
+
             let canView = false;
             let reason = 'public';
 
-            if (resolvedVisibility === 'public') {
+            if (isOwner) {
                 canView = true;
-                reason = isOwner ? 'owner' : 'public';
-            } else if (resolvedVisibility === 'private') {
-                if (isOwner) {
+                reason = resolvedVisibility === 'private' ? 'private_owner' : 'owner';
+            } else if (isFriend) {
+                // Accepted Friends ALWAYS have access regardless of target visibility setting!
+                canView = true;
+                reason = resolvedVisibility === 'private' ? 'private_friend' : 'public_friend';
+                viewerType = 'friend';
+            } else {
+                // Non-friends (NONE, PENDING_SENT, PENDING_RECEIVED)
+                if (resolvedVisibility === 'public') {
                     canView = true;
-                    reason = 'private_owner';
+                    reason = 'public';
                 } else {
                     canView = false;
-                    reason = 'private';
+                    reason = 'private_denied';
                 }
             }
+
+            console.log('[PROFILE VISIBILITY V2] Access Check Decision:', {
+                targetId: targetId,
+                targetUsername: targetProfile.username,
+                resolvedVisibility: resolvedVisibility,
+                relationshipState: relationshipState,
+                isOwner: isOwner,
+                isFriend: isFriend,
+                canView: canView,
+                reason: reason
+            });
 
             return {
                 canView: canView,
                 reason: reason,
                 viewerType: viewerType,
                 resolvedVisibility: resolvedVisibility,
-                isOwner: isOwner
+                isOwner: isOwner,
+                isFriend: isFriend,
+                relationshipState: relationshipState
             };
+        }
+    },
+
+    // ======================== PERMANENT USER ID SERVICE ========================
+    userIdService: {
+        extractNumericDigits(uuid) {
+            if (!uuid || typeof uuid !== 'string') return '';
+            return uuid.replace(/[^0-9]/g, '');
+        },
+
+        generate(uuid, sequence, offset = 0) {
+            if (!uuid || sequence === undefined || sequence === null) return null;
+            const digits = this.extractNumericDigits(uuid);
+            if (!digits || digits.length === 0) return null;
+
+            let prefix = digits.slice(offset, offset + 5);
+            while (prefix.length < 5) {
+                prefix += '0';
+            }
+
+            return `${prefix}${sequence}`;
+        },
+
+        async ensureUserId(userProfile) {
+            if (!userProfile || userProfile.isGuest) return null;
+
+            // Read-Only check: if user_id is already assigned, return immediately (0 overhead)
+            if (userProfile.user_id) return userProfile.user_id;
+
+            // Strict Validation: verify profile.id (UUID) and user_sequence exist
+            if (!userProfile.id || userProfile.user_sequence === undefined || userProfile.user_sequence === null) {
+                console.warn('[USER ID SERVICE] Cannot generate user_id: missing valid profile.id or user_sequence');
+                return null;
+            }
+
+            let offset = 0;
+            let candidateId = null;
+            const digits = this.extractNumericDigits(userProfile.id);
+            const maxOffset = Math.max(0, digits.length - 5);
+
+            // Deterministic collision handling: shift offset by 5 until unique ID is found
+            while (offset <= maxOffset + 5) {
+                const idToTest = this.generate(userProfile.id, userProfile.user_sequence, offset);
+                if (!idToTest) break;
+
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('profiles')
+                        .select('id')
+                        .eq('user_id', idToTest)
+                        .maybeSingle();
+
+                    if (error) {
+                        console.error('[USER ID SERVICE] Database uniqueness query error:', error);
+                    }
+
+                    if (!data || data.id === userProfile.id) {
+                        candidateId = idToTest;
+                        break;
+                    }
+                } catch (err) {
+                    console.error('[USER ID SERVICE] Uniqueness check exception:', err);
+                    candidateId = idToTest;
+                    break;
+                }
+
+                offset += 5; // Deterministic 5-digit block shift on collision
+            }
+
+            if (!candidateId) return null;
+
+            // Persist to Supabase database profiles table
+            try {
+                const { error: updateErr } = await supabaseClient
+                    .from('profiles')
+                    .update({ user_id: candidateId })
+                    .eq('id', userProfile.id);
+
+                if (updateErr) {
+                    console.error('[USER ID SERVICE] Error persisting user_id to Supabase:', updateErr);
+                }
+            } catch (err) {
+                console.error('[USER ID SERVICE] Supabase update exception:', err);
+            }
+
+            // Synchronize state immediately
+            userProfile.user_id = candidateId;
+            if (app.state.user && app.state.user.id === userProfile.id) {
+                app.state.user.user_id = candidateId;
+                localStorage.setItem('kt_user', JSON.stringify(app.state.user));
+            }
+
+            return candidateId;
+        },
+
+        copyUserId(userId) {
+            if (!userId) {
+                app.toast.show('User ID tidak tersedia.', 'warning');
+                return;
+            }
+
+            const textToCopy = String(userId).trim();
+            try {
+                if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                    navigator.clipboard.writeText(textToCopy);
+                } else {
+                    const textArea = document.createElement('textarea');
+                    textArea.value = textToCopy;
+                    textArea.style.position = 'fixed';
+                    textArea.style.top = '0';
+                    textArea.style.left = '0';
+                    textArea.style.opacity = '0';
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                }
+                app.toast.show('User ID copied to clipboard.', 'success');
+            } catch (err) {
+                console.warn('[USER ID] Copy fallback executed:', err);
+                app.toast.show('User ID copied to clipboard.', 'success');
+            }
+        },
+
+        copyUserIdFromPublicProfile() {
+            const el = document.getElementById('pubprof-userid');
+            const uid = el ? el.innerText.trim() : '';
+            if (uid && uid !== '-') {
+                this.copyUserId(uid);
+            } else {
+                app.toast.show('User ID tidak tersedia.', 'warning');
+            }
+        }
+    },
+
+    // ======================== UNIVERSAL FRIEND SEARCH SERVICE ========================
+    userSearchService: {
+        debounceTimer: null,
+        currentQuery: '',
+        isSearching: false,
+
+        normalizeQuery(query) {
+            if (!query || typeof query !== 'string') return '';
+            return query.trim();
+        },
+
+        handleInput(rawQuery) {
+            const query = this.normalizeQuery(rawQuery);
+            this.currentQuery = query;
+
+            if (this.debounceTimer) clearTimeout(this.debounceTimer);
+
+            const clearBtn = document.getElementById('friends-search-clear');
+            if (clearBtn) {
+                if (query.length > 0) clearBtn.classList.remove('hidden');
+                else clearBtn.classList.add('hidden');
+            }
+
+            if (!query) {
+                this.showEmptyInitialState();
+                return;
+            }
+
+            // Debounce by 300ms before executing search
+            this.debounceTimer = setTimeout(() => {
+                this.executeSearch(query);
+            }, 300);
+        },
+
+        clearSearch() {
+            const input = document.getElementById('friends-search-input');
+            if (input) input.value = '';
+            this.handleInput('');
+        },
+
+        async executeSearch(query) {
+            this.isSearching = true;
+            this.showLoadingState();
+
+            try {
+                const results = await this.search(query);
+
+                // Guard against stale asynchronous search results
+                const latestInput = document.getElementById('friends-search-input')?.value;
+                if (this.normalizeQuery(latestInput) !== query) {
+                    return;
+                }
+
+                this.isSearching = false;
+                if (!results || results.length === 0) {
+                    this.showNoResultsState(query);
+                } else {
+                    this.renderSearchResults(results);
+                }
+            } catch (err) {
+                console.error('[USER SEARCH SERVICE] Search execution error:', err);
+                this.isSearching = false;
+                this.showNoResultsState(query);
+            }
+        },
+
+        async search(query) {
+            const cleanQuery = this.normalizeQuery(query);
+            if (!cleanQuery) return [];
+
+            const isNumeric = /^[0-9]+$/.test(cleanQuery);
+            const cleanUsername = cleanQuery.startsWith('@') ? cleanQuery.slice(1).trim() : cleanQuery;
+
+            const resultsMap = new Map();
+
+            // Priority 1: Exact User ID Match (numeric inputs only)
+            if (isNumeric) {
+                const userById = await this.searchByUserId(cleanQuery);
+                if (userById) {
+                    resultsMap.set(userById.id, userById);
+                    return Array.from(resultsMap.values());
+                }
+            }
+
+            // Priority 2: Exact Username Match (case-insensitive)
+            if (cleanUsername) {
+                const userByUsername = await this.searchByUsername(cleanUsername);
+                if (userByUsername) {
+                    resultsMap.set(userByUsername.id, userByUsername);
+                    return Array.from(resultsMap.values());
+                }
+            }
+
+            // Priority 3 & 4: Display Name Match (Exact first, then fuzzy/closest matches)
+            const displayNameMatches = await this.searchByDisplayName(cleanQuery);
+            displayNameMatches.forEach(profile => {
+                if (!resultsMap.has(profile.id)) {
+                    resultsMap.set(profile.id, profile);
+                }
+            });
+
+            return Array.from(resultsMap.values()).slice(0, 15);
+        },
+
+        async searchByUserId(userId) {
+            try {
+                const { data } = await supabaseClient
+                    .from('profiles')
+                    .select('id, user_id, username, display_name, avatar_url, visibility, created_at')
+                    .eq('user_id', userId)
+                    .maybeSingle();
+
+                return data;
+            } catch (err) {
+                console.error('[USER SEARCH] Error searching by user_id:', err);
+                return null;
+            }
+        },
+
+        async searchByUsername(username) {
+            if (!username) return null;
+            try {
+                const { data } = await supabaseClient
+                    .from('profiles')
+                    .select('id, user_id, username, display_name, avatar_url, visibility, created_at')
+                    .ilike('username', username)
+                    .maybeSingle();
+
+                return data;
+            } catch (err) {
+                console.error('[USER SEARCH] Error searching by username:', err);
+                return null;
+            }
+        },
+
+        async searchByDisplayName(displayName) {
+            if (!displayName) return [];
+            try {
+                const { data } = await supabaseClient
+                    .from('profiles')
+                    .select('id, user_id, username, display_name, avatar_url, visibility, created_at')
+                    .or(`display_name.ilike.%${displayName}%,username.ilike.%${displayName}%`)
+                    .limit(15);
+
+                const results = data || [];
+                const normalizedTarget = displayName.toLowerCase();
+
+                results.sort((a, b) => {
+                    const nameA = (a.display_name || '').toLowerCase();
+                    const nameB = (b.display_name || '').toLowerCase();
+
+                    const isExactA = nameA === normalizedTarget;
+                    const isExactB = nameB === normalizedTarget;
+
+                    if (isExactA && !isExactB) return -1;
+                    if (!isExactA && isExactB) return 1;
+
+                    const startsA = nameA.startsWith(normalizedTarget);
+                    const startsB = nameB.startsWith(normalizedTarget);
+
+                    if (startsA && !startsB) return -1;
+                    if (!startsA && startsB) return 1;
+
+                    return 0;
+                });
+
+                return results;
+            } catch (err) {
+                console.error('[USER SEARCH] Error searching by display_name:', err);
+                return [];
+            }
+        },
+
+        copyText(text, label) {
+            if (!text) {
+                app.toast.show(`${label} tidak tersedia.`, 'warning');
+                return;
+            }
+            const cleanText = String(text).trim();
+            try {
+                if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                    navigator.clipboard.writeText(cleanText);
+                } else {
+                    const textArea = document.createElement('textarea');
+                    textArea.value = cleanText;
+                    textArea.style.position = 'fixed';
+                    textArea.style.top = '0';
+                    textArea.style.left = '0';
+                    textArea.style.opacity = '0';
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                }
+                app.toast.show(`${label} copied.`, 'success');
+            } catch (err) {
+                app.toast.show(`${label} copied.`, 'success');
+            }
+        },
+
+        showEmptyInitialState() {
+            const resultsContainer = document.getElementById('friends-search-results-container');
+            const emptyInitial = document.getElementById('friends-empty-search-idle') || document.getElementById('friends-empty-state');
+            const emptyNoResults = document.getElementById('friends-empty-no-results');
+            const loadingEl = document.getElementById('friends-search-loading');
+
+            if (loadingEl) loadingEl.classList.add('hidden');
+            if (resultsContainer) resultsContainer.classList.add('hidden');
+            if (emptyNoResults) emptyNoResults.classList.add('hidden');
+            if (emptyInitial) emptyInitial.classList.remove('hidden');
+
+            if (app.friendsHub) app.friendsHub.renderSearchHistory();
+        },
+
+        showLoadingState() {
+            const resultsContainer = document.getElementById('friends-search-results-container');
+            const emptyInitial = document.getElementById('friends-empty-search-idle') || document.getElementById('friends-empty-state');
+            const emptyNoResults = document.getElementById('friends-empty-no-results');
+            const loadingEl = document.getElementById('friends-search-loading');
+
+            if (emptyInitial) emptyInitial.classList.add('hidden');
+            if (emptyNoResults) emptyNoResults.classList.add('hidden');
+            if (resultsContainer) resultsContainer.classList.add('hidden');
+            if (loadingEl) loadingEl.classList.remove('hidden');
+
+            if (app.friendsHub) app.friendsHub.renderSearchHistory();
+        },
+
+        showNoResultsState(query) {
+            const resultsContainer = document.getElementById('friends-search-results-container');
+            const emptyInitial = document.getElementById('friends-empty-search-idle') || document.getElementById('friends-empty-state');
+            const emptyNoResults = document.getElementById('friends-empty-no-results');
+            const loadingEl = document.getElementById('friends-search-loading');
+
+            if (loadingEl) loadingEl.classList.add('hidden');
+            if (resultsContainer) resultsContainer.classList.add('hidden');
+            if (emptyInitial) emptyInitial.classList.add('hidden');
+            if (emptyNoResults) {
+                const queryTextEl = document.getElementById('friends-no-results-query');
+                if (queryTextEl) queryTextEl.innerText = `"${query}"`;
+                emptyNoResults.classList.remove('hidden');
+            }
+
+            if (app.friendsHub) app.friendsHub.renderSearchHistory();
+        },
+
+        renderSearchResults(results) {
+            const resultsContainer = document.getElementById('friends-search-results-container');
+            const resultsList = document.getElementById('friends-search-results-list');
+            const emptyInitial = document.getElementById('friends-empty-search-idle') || document.getElementById('friends-empty-state');
+            const emptyNoResults = document.getElementById('friends-empty-no-results');
+            const loadingEl = document.getElementById('friends-search-loading');
+
+            if (loadingEl) loadingEl.classList.add('hidden');
+            if (emptyInitial) emptyInitial.classList.add('hidden');
+            if (emptyNoResults) emptyNoResults.classList.add('hidden');
+
+            if (!resultsList || !resultsContainer) return;
+
+            if (results && results.length > 0 && app.friendsHub) {
+                app.friendsHub.addToSearchHistory(results[0]);
+            }
+
+            resultsList.innerHTML = results.map(profile => app.renderPlayerCard(profile)).join('');
+            resultsContainer.classList.remove('hidden');
+
+            if (app.friendsHub) app.friendsHub.renderSearchHistory();
+        }
+    },
+
+    // ======================== FRIEND SERVICE ========================
+    friendService: {
+        pendingRequestsSent: [],
+        pendingRequestsReceived: [],
+        friendsList: [],
+        realtimeSubscription: null,
+        isInitialized: false,
+        isLoading: false,
+
+        async init() {
+            if (this.isInitialized) {
+                await this.loadAllData();
+                return;
+            }
+            this.isInitialized = true;
+
+            if (app.state.user && !app.state.user.isGuest) {
+                await this.loadAllData();
+                this.setupRealtimeSubscriptions();
+            }
+        },
+
+        async loadAllData() {
+            const user = app.state.user;
+            if (!user || user.isGuest) {
+                this.pendingRequestsSent = [];
+                this.pendingRequestsReceived = [];
+                this.friendsList = [];
+                this.isLoading = false;
+                this.refreshUI();
+                return;
+            }
+
+            console.log("[LIFECYCLE] Loading friends...");
+            if (this.friendsList.length === 0) {
+                this.isLoading = true;
+                this.refreshUI();
+            }
+
+            try {
+                // 1. Fetch Friends List via Read RPC (friend_get_list)
+                const { data: listRes, error: errList } = await supabaseClient.rpc('friend_get_list');
+                
+                if (errList) {
+                    // Fallback on ANY RPC error (404 PGRST202, 400 Bad Request, runtime errors, etc.)
+                    console.warn('[FRIEND SERVICE] friend_get_list RPC error, using fallback:', errList.code, errList.message);
+                    await this.loadAllDataFallback();
+                    return;
+                }
+
+                console.log("[FRIEND SERVICE] RPC friend_get_list response:", listRes);
+                let rawList = (listRes && listRes.success && Array.isArray(listRes.data)) ? listRes.data : [];
+                this.friendsList = rawList.map(item => ({
+                    id: item.id,
+                    user_id: item.user_id,
+                    friend_id: item.friend_id,
+                    username: item.username,
+                    display_name: item.display_name,
+                    avatar_url: item.avatar_url,
+                    user_id_numeric: item.user_id_numeric,
+                    best_standard_score: item.best_standard_score,
+                    best_marathon_score: item.best_marathon_score,
+                    achievement_count: item.achievement_count,
+                    nickname: item.nickname,
+                    created_at: item.created_at
+                }));
+                console.log("[LIFECYCLE] Friends loaded");
+                console.log("[LIFECYCLE] Friends state updated:", this.friendsList);
+
+                // 2. Fetch Friend Requests via Read RPC (friend_get_requests)
+                const { data: reqRes, error: errReq } = await supabaseClient.rpc('friend_get_requests');
+                
+                if (!errReq) {
+                    const reqData = (reqRes && reqRes.success && reqRes.data) ? reqRes.data : { incoming: [], outgoing: [] };
+
+                    this.pendingRequestsReceived = (reqData.incoming || []).map(r => ({
+                        id: r.request_id,
+                        sender_id: r.sender_id,
+                        receiver_id: user.id,
+                        created_at: r.created_at,
+                        username: r.username,
+                        display_name: r.display_name,
+                        avatar_url: r.avatar_url,
+                        user_id_numeric: r.user_id_numeric,
+                        sender: {
+                            id: r.sender_id,
+                            username: r.username,
+                            display_name: r.display_name,
+                            avatar_url: r.avatar_url,
+                            user_id: r.user_id_numeric
+                        }
+                    }));
+
+                    this.pendingRequestsSent = (reqData.outgoing || []).map(r => ({
+                        id: r.request_id,
+                        sender_id: user.id,
+                        receiver_id: r.receiver_id,
+                        created_at: r.created_at,
+                        username: r.username,
+                        display_name: r.display_name,
+                        avatar_url: r.avatar_url,
+                        user_id_numeric: r.user_id_numeric,
+                        receiver: {
+                            id: r.receiver_id,
+                            username: r.username,
+                            display_name: r.display_name,
+                            avatar_url: r.avatar_url,
+                            user_id: r.user_id_numeric
+                        }
+                    }));
+                }
+            } catch (err) {
+                console.error('[FRIEND SERVICE] Error loading friend data via RPC:', err);
+                await this.loadAllDataFallback();
+            } finally {
+                this.isLoading = false;
+                console.log("[LIFECYCLE] Rendering Friends page");
+                this.refreshUI();
+            }
+        },
+
+        async loadAllDataFallback() {
+            const user = app.state.user;
+            if (!user || user.isGuest) return;
+
+            try {
+                // 1. Fetch pending requests received
+                const { data: reqReceived } = await supabaseClient
+                    .from('friend_requests')
+                    .select('id, sender_id, receiver_id, status, created_at, sender:profiles!friend_requests_sender_id_fkey(*)')
+                    .eq('receiver_id', user.id)
+                    .eq('status', 'pending')
+                    .order('created_at', { ascending: false });
+
+                let receivedList = reqReceived || [];
+                const missingSenderIds = receivedList.filter(r => !r.sender).map(r => r.sender_id);
+                if (missingSenderIds.length > 0) {
+                    const { data: senderProfiles } = await supabaseClient
+                        .from('profiles')
+                        .select('*')
+                        .in('id', missingSenderIds);
+                    if (senderProfiles) {
+                        const profMap = new Map(senderProfiles.map(p => [p.id, p]));
+                        receivedList.forEach(r => {
+                            if (!r.sender && profMap.has(r.sender_id)) {
+                                r.sender = profMap.get(r.sender_id);
+                            }
+                        });
+                    }
+                }
+                this.pendingRequestsReceived = receivedList;
+
+                // 2. Fetch pending requests sent
+                const { data: reqSent } = await supabaseClient
+                    .from('friend_requests')
+                    .select('id, sender_id, receiver_id, status, created_at, receiver:profiles!friend_requests_receiver_id_fkey(*)')
+                    .eq('sender_id', user.id)
+                    .eq('status', 'pending')
+                    .order('created_at', { ascending: false });
+
+                let sentList = reqSent || [];
+                const missingReceiverIds = sentList.filter(r => !r.receiver).map(r => r.receiver_id);
+                if (missingReceiverIds.length > 0) {
+                    const { data: receiverProfiles } = await supabaseClient
+                        .from('profiles')
+                        .select('*')
+                        .in('id', missingReceiverIds);
+                    if (receiverProfiles) {
+                        const profMap = new Map(receiverProfiles.map(p => [p.id, p]));
+                        sentList.forEach(r => {
+                            if (!r.receiver && profMap.has(r.receiver_id)) {
+                                r.receiver = profMap.get(r.receiver_id);
+                            }
+                        });
+                    }
+                }
+                this.pendingRequestsSent = sentList;
+
+                // 3. Fetch friends list (strictly query user_id = user.id and join friend_id)
+                const { data: friendsData } = await supabaseClient
+                    .from('friends')
+                    .select('id, user_id, friend_id, nickname, created_at, friend:profiles!friends_friend_id_fkey(*)')
+                    .eq('user_id', user.id)
+                    .order('created_at', { ascending: false });
+
+                let rawFriends = friendsData || [];
+                const friendProfileIds = new Set();
+                rawFriends.forEach(f => {
+                    if (f.friend_id) {
+                        friendProfileIds.add(f.friend_id);
+                    }
+                });
+
+                let profilesMap = new Map();
+                if (friendProfileIds.size > 0) {
+                    const { data: profs } = await supabaseClient
+                        .from('profiles')
+                        .select('*')
+                        .in('id', Array.from(friendProfileIds));
+                    if (profs) {
+                        profs.forEach(p => profilesMap.set(p.id, p));
+                    }
+                }
+
+                this.friendsList = rawFriends.map(item => {
+                    let friendProfile = item.friend;
+                    if (!friendProfile || !friendProfile.username) {
+                        friendProfile = profilesMap.get(item.friend_id) || {};
+                    }
+                    return {
+                        id: item.id,
+                        user_id: user.id,
+                        friend_id: item.friend_id,
+                        username: friendProfile.username,
+                        display_name: friendProfile.display_name,
+                        avatar_url: friendProfile.avatar_url,
+                        user_id_numeric: friendProfile.user_id ? String(friendProfile.user_id) : '',
+                        best_standard_score: friendProfile.best_standard_score || 0,
+                        best_marathon_score: friendProfile.best_marathon_score || 0,
+                        achievement_count: (friendProfile.achievement_showcase && Array.isArray(friendProfile.achievement_showcase)) ? friendProfile.achievement_showcase.length : 0,
+                        nickname: item.nickname || null,
+                        created_at: item.created_at
+                    };
+                });
+            } catch (err) {
+                console.error('[FRIEND SERVICE] Fallback load error:', err);
+            }
+        },
+
+        setupRealtimeSubscriptions() {
+            const user = app.state.user;
+            if (!user || user.isGuest) return;
+
+            if (this.realtimeSubscription) {
+                supabaseClient.removeChannel(this.realtimeSubscription);
+            }
+
+            try {
+                this.realtimeSubscription = supabaseClient
+                    .channel(`public:friends:${user.id}`)
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'friend_requests' }, async () => {
+                        await this.loadAllData();
+                        this.refreshUI();
+                    })
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'friends' }, async () => {
+                        await this.loadAllData();
+                        this.refreshUI();
+                    })
+                    .subscribe();
+            } catch (err) {
+                console.warn('[FRIEND SERVICE] Supabase Realtime subscription error:', err);
+            }
+        },
+
+        getRelationship(targetUserId) {
+            const currentUser = app.state.user;
+            if (!currentUser || currentUser.isGuest) return 'NONE';
+            if (currentUser.id === targetUserId) return 'SELF';
+
+            // Check if they are friends in friendsList
+            const isFriend = this.friendsList.some(f => f.friend_id === targetUserId || (f.friendProfile && f.friendProfile.id === targetUserId));
+            if (isFriend) return 'FRIENDS';
+
+            // Check if pending request received from target user
+            const receivedReq = this.pendingRequestsReceived.find(r => r.sender_id === targetUserId);
+            if (receivedReq) return 'PENDING_RECEIVED';
+
+            // Check if pending request sent to target user
+            const sentReq = this.pendingRequestsSent.find(r => r.receiver_id === targetUserId);
+            if (sentReq) return 'PENDING_SENT';
+
+            return 'NONE';
+        },
+
+        async getRelationshipRPC(targetUserId) {
+            const currentUser = app.state.user;
+            if (!currentUser || currentUser.isGuest) return 'NONE';
+            if (currentUser.id === targetUserId) return 'SELF';
+
+            try {
+                const { data, error } = await supabaseClient.rpc('friend_get_relationship', {
+                    p_other_user_id: targetUserId
+                });
+                if (error || !data || !data.success) return this.getRelationship(targetUserId);
+                return (data.state || 'none').toUpperCase();
+            } catch (e) {
+                return this.getRelationship(targetUserId);
+            }
+        },
+
+        async sendRequest(receiverId) {
+            const user = app.state.user;
+            if (!user || user.isGuest) {
+                app.toast.show('Silakan login terlebih dahulu untuk menambah teman.', 'warning');
+                return;
+            }
+
+            if (user.id === receiverId) return;
+            const currentRel = this.getRelationship(receiverId);
+            if (currentRel !== 'NONE') return;
+
+            try {
+                const { data, error } = await supabaseClient.rpc('friend_send_request', {
+                    p_receiver_id: receiverId
+                });
+
+                if (error) {
+                    console.error('[FRIEND SERVICE] RPC friend_send_request error:', error);
+                    app.toast.show(error.message || 'Gagal mengirim permintaan pertemanan.', 'error');
+                    return;
+                }
+
+                if (data && data.success === false) {
+                    app.toast.show(data.message || 'Gagal mengirim permintaan pertemanan.', 'warning');
+                    return;
+                }
+
+                app.toast.show((data && data.message) || 'Friend request sent.', 'success');
+                await this.loadAllData();
+                this.refreshUI();
+            } catch (err) {
+                console.error('[FRIEND SERVICE] Send request failed:', err);
+                app.toast.show('Gagal mengirim permintaan pertemanan.', 'error');
+            }
+        },
+
+        async cancelRequest(requestIdOrTargetId) {
+            const user = app.state.user;
+            if (!user || user.isGuest) return;
+
+            try {
+                const { data, error } = await supabaseClient.rpc('friend_cancel_request', {
+                    p_request_id: requestIdOrTargetId
+                });
+
+                if (error) {
+                    console.error('[FRIEND SERVICE] RPC friend_cancel_request error:', error);
+                    app.toast.show(error.message || 'Gagal membatalkan permintaan.', 'error');
+                    return;
+                }
+
+                if (data && data.success === false) {
+                    app.toast.show(data.message || 'Gagal membatalkan permintaan.', 'warning');
+                    return;
+                }
+
+                app.toast.show((data && data.message) || 'Friend request cancelled.', 'info');
+                await this.loadAllData();
+                this.refreshUI();
+            } catch (err) {
+                console.error('[FRIEND SERVICE] Cancel request failed:', err);
+            }
+        },
+
+        async acceptRequest(requestIdOrTargetId) {
+            const user = app.state.user;
+            if (!user || user.isGuest) return;
+
+            try {
+                const { data, error } = await supabaseClient.rpc('friend_accept_request', {
+                    p_request_id: requestIdOrTargetId
+                });
+
+                if (error) {
+                    console.error('[FRIEND SERVICE] RPC friend_accept_request error:', error);
+                    app.toast.show(error.message || 'Gagal menerima permintaan pertemanan.', 'error');
+                    return;
+                }
+
+                if (data && data.success === false) {
+                    app.toast.show(data.message || 'Gagal menerima permintaan pertemanan.', 'warning');
+                    return;
+                }
+
+                app.toast.show((data && data.message) || 'Friend request accepted.', 'success');
+                await this.loadAllData();
+                this.refreshUI();
+            } catch (err) {
+                console.error('[FRIEND SERVICE] Accept request failed:', err);
+                app.toast.show('Gagal menerima permintaan pertemanan.', 'error');
+            }
+        },
+
+        async declineRequest(requestIdOrTargetId) {
+            const user = app.state.user;
+            if (!user || user.isGuest) return;
+
+            try {
+                const { data, error } = await supabaseClient.rpc('friend_decline_request', {
+                    p_request_id: requestIdOrTargetId
+                });
+
+                if (error) {
+                    console.error('[FRIEND SERVICE] RPC friend_decline_request error:', error);
+                    app.toast.show(error.message || 'Gagal menolak permintaan.', 'error');
+                    return;
+                }
+
+                if (data && data.success === false) {
+                    app.toast.show(data.message || 'Gagal menolak permintaan.', 'warning');
+                    return;
+                }
+
+                app.toast.show((data && data.message) || 'Friend request declined.', 'info');
+                await this.loadAllData();
+                this.refreshUI();
+            } catch (err) {
+                console.error('[FRIEND SERVICE] Decline request failed:', err);
+            }
+        },
+
+        async removeFriend(friendId) {
+            const user = app.state.user;
+            if (!user || user.isGuest) return;
+
+            try {
+                const { data, error } = await supabaseClient.rpc('friend_remove', {
+                    p_friend_id: friendId
+                });
+
+                if (error) {
+                    console.error('[FRIEND SERVICE] RPC friend_remove error:', error);
+                    app.toast.show(error.message || 'Gagal menghapus teman.', 'error');
+                    return;
+                }
+
+                if (data && data.success === false) {
+                    app.toast.show(data.message || 'Gagal menghapus teman.', 'warning');
+                    return;
+                }
+
+                app.toast.show((data && data.message) || 'Friend removed.', 'info');
+                await this.loadAllData();
+                this.refreshUI();
+            } catch (err) {
+                console.error('[FRIEND SERVICE] Remove friend failed:', err);
+            }
+        },
+
+        renderFriendsHeroStats() {
+            const user = app.state.user;
+            if (!user) return;
+
+            const avatarEl = document.getElementById('friends-hero-avatar');
+            const displayNameEl = document.getElementById('friends-hero-display-name');
+            const usernameEl = document.getElementById('friends-hero-username');
+            const userIdEl = document.getElementById('friends-hero-userid');
+            const taglineCountEl = document.getElementById('friends-hero-count');
+
+            if (avatarEl) app.renderAvatar('friends-hero-avatar', user);
+            if (displayNameEl) displayNameEl.innerText = app.getEffectiveDisplayName(user);
+            if (usernameEl) usernameEl.innerText = user.username ? `@${user.username}` : '@user';
+            if (userIdEl) userIdEl.innerText = `ID: ${user.user_id || user.id || '---'}`;
+
+            const friendsCount = this.friendsList.length;
+            const receivedCount = this.pendingRequestsReceived.length;
+            const sentCount = this.pendingRequestsSent.length;
+
+            if (taglineCountEl) taglineCountEl.innerText = friendsCount;
+
+            const statTotalEl = document.getElementById('friends-stat-total');
+            const statReceivedEl = document.getElementById('friends-stat-received');
+            const statSentEl = document.getElementById('friends-stat-sent');
+
+            if (statTotalEl) statTotalEl.innerText = friendsCount;
+            if (statReceivedEl) statReceivedEl.innerText = receivedCount;
+            if (statSentEl) statSentEl.innerText = sentCount;
+        },
+
+        refreshUI() {
+            this.renderFriendsHeroStats();
+            if (app.state && app.state.currentView === 'friends') {
+                if (app.friendsHub) {
+                    app.friendsHub.renderActiveTab();
+                } else {
+                    this.renderFriendsPage();
+                }
+            }
+        },
+
+        renderFriendsPage() {
+            this.renderFriendsHeroStats();
+            this.renderFriendsList();
+            this.renderFollowingList();
+            this.renderPendingRequests();
+        },
+
+        renderFriendsList() {
+            const container = document.getElementById('friends-pane-friends');
+            const gridEl = document.getElementById('friends-list-grid');
+            const emptyEl = document.getElementById('friends-empty-friends');
+            const badgeCountEl = document.getElementById('friends-badge-friends-count');
+
+            if (!gridEl) return;
+
+            console.log("[FRIEND SERVICE] State passed into renderer (this.friendsList):", this.friendsList);
+
+            if (this.isLoading && this.friendsList.length === 0) {
+                if (emptyEl) emptyEl.classList.add('hidden');
+                gridEl.innerHTML = `
+                    <div class="col-span-full py-12 flex flex-col items-center justify-center space-y-3">
+                        <i class="fa-solid fa-circle-notch fa-spin text-2xl text-sky-500"></i>
+                        <p class="text-xs font-semibold text-slate-400">Loading friends...</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const count = this.friendsList.length;
+            if (badgeCountEl) badgeCountEl.innerText = count;
+
+            if (count === 0) {
+                if (emptyEl) emptyEl.classList.remove('hidden');
+                gridEl.innerHTML = '';
+                return;
+            }
+
+            if (emptyEl) emptyEl.classList.add('hidden');
+            gridEl.innerHTML = this.friendsList.map(friend => {
+                console.log("Friend Object:", friend);
+                return app.renderPlayerCard(friend);
+            }).join('');
+        },
+
+        renderFollowingList() {
+            const gridEl = document.getElementById('friends-following-grid');
+            const emptyEl = document.getElementById('friends-empty-following');
+            const badgeCountEl = document.getElementById('friends-badge-following-count');
+
+            if (!gridEl) return;
+
+            const count = this.pendingRequestsSent.length;
+            if (badgeCountEl) {
+                badgeCountEl.innerText = count;
+                if (count > 0) badgeCountEl.classList.remove('hidden');
+                else badgeCountEl.classList.add('hidden');
+            }
+
+            if (count === 0) {
+                if (emptyEl) emptyEl.classList.remove('hidden');
+                gridEl.innerHTML = '';
+                return;
+            }
+
+            if (emptyEl) emptyEl.classList.add('hidden');
+
+            gridEl.innerHTML = this.pendingRequestsSent.map(req => {
+                const receiver = req.receiver || {};
+                const profileObj = {
+                    id: receiver.id || req.receiver_id,
+                    display_name: receiver.display_name,
+                    username: receiver.username,
+                    avatar_url: receiver.avatar_url,
+                    visibility: receiver.visibility
+                };
+                return app.renderPlayerCard(profileObj);
+            }).join('');
+        },
+
+        renderPendingRequests() {
+            const incomingContainer = document.getElementById('friends-requests-incoming-container');
+            const incomingList = document.getElementById('friends-requests-incoming-list');
+            const emptyEl = document.getElementById('friends-empty-requests');
+            const badgeCountEl = document.getElementById('friends-badge-requests-count');
+
+            const incomingCount = this.pendingRequestsReceived.length;
+
+            if (badgeCountEl) {
+                badgeCountEl.innerText = incomingCount;
+                if (incomingCount > 0) badgeCountEl.classList.remove('hidden');
+                else badgeCountEl.classList.add('hidden');
+            }
+
+            if (incomingCount === 0) {
+                if (incomingContainer) incomingContainer.classList.add('hidden');
+                if (emptyEl) emptyEl.classList.remove('hidden');
+                if (incomingList) incomingList.innerHTML = '';
+                return;
+            }
+
+            if (emptyEl) emptyEl.classList.add('hidden');
+
+            if (incomingContainer && incomingList) {
+                incomingContainer.classList.remove('hidden');
+                incomingList.innerHTML = this.pendingRequestsReceived.map(req => {
+                    const sender = req.sender || {};
+                    const displayName = sender.display_name && sender.display_name.trim() ? sender.display_name : (sender.username || 'user');
+                    const username = sender.username || 'user';
+
+                    const safeSenderId = (sender.id || req.sender_id).replace(/'/g, "\\'");
+                    const safeUsername = username.replace(/'/g, "\\'");
+
+                    return `
+                        <div class="bg-white dark:bg-slate-900 border border-amber-200 dark:border-amber-500/30 rounded-xl p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs hover:border-amber-300 transition">
+                            <div class="flex items-center space-x-3 flex-1 min-w-0 cursor-pointer" onclick="app.navigate('u/${safeUsername}')">
+                                <div class="w-11 h-11 rounded-full bg-gradient-to-tr from-amber-400 to-orange-500 text-white text-base font-black flex items-center justify-center border border-amber-200 dark:border-amber-500/30 overflow-hidden shrink-0">
+                                    ${sender.avatar_url 
+                                        ? `<img src="${sender.avatar_url}" alt="${displayName}" class="w-full h-full object-cover">`
+                                        : displayName.charAt(0).toUpperCase()
+                                    }
+                                </div>
+                                <div class="space-y-0.5 flex-1 min-w-0">
+                                    <h4 class="font-bold text-sm text-slate-900 dark:text-slate-100 truncate">${displayName}</h4>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 font-mono truncate">@${username}</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center space-x-2 w-full sm:w-auto justify-end shrink-0 border-t sm:border-t-0 pt-2.5 sm:pt-0 border-slate-100 dark:border-slate-800">
+                                <button type="button" onclick="app.friendService.acceptRequest('${safeSenderId}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition shadow-xs flex items-center gap-1.5">
+                                    <i class="fa-solid fa-check text-xs"></i>
+                                    <span>Accept</span>
+                                </button>
+                                <button type="button" onclick="app.friendService.declineRequest('${safeSenderId}')" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-xs px-3 py-2 rounded-lg transition">
+                                    <i class="fa-solid fa-xmark text-xs"></i>
+                                    <span>Decline</span>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else if (incomingContainer) {
+                incomingContainer.classList.add('hidden');
+            }
+        }
+    },
+
+    // ======================== FRIEND CARD V4 - FINAL MINIMAL LAYOUT ========================
+    renderPlayerCard(profile, options = {}) {
+        if (!profile) return '';
+
+        console.log("[PLAYER CARD] Renderer input:", profile);
+
+        const displayName = profile.display_name;
+        const username = profile.username;
+        const isPrivate = (profile.visibility || '').toLowerCase() === 'private';
+
+        const safeDisplayName = displayName ? String(displayName).replace(/'/g, "\\'") : '';
+        const safeUsername = username ? String(username).replace(/'/g, "\\'") : '';
+        const targetProfileId = profile.friend_id || profile.id;
+        const safeProfileId = targetProfileId ? String(targetProfileId).replace(/'/g, "\\'") : '';
+
+        // Relationship State & Action Button
+        const relState = this.friendService ? this.friendService.getRelationship(targetProfileId) : 'NONE';
+
+        let badgeHTML = '';
+        let relationshipActionHTML = '';
+
+        if (relState === 'SELF') {
+            badgeHTML = `<span class="text-xs font-bold px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700">You</span>`;
+            relationshipActionHTML = `<button type="button" disabled class="flex-1 bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-600 font-bold text-xs py-2.5 rounded-xl cursor-not-allowed opacity-50 flex items-center justify-center">Self</button>`;
+        } else if (relState === 'FRIENDS') {
+            badgeHTML = `<span class="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Friend</span>`;
+            relationshipActionHTML = `
+                <button type="button" onclick="app.friendService.removeFriend('${safeProfileId}')" class="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-500/10 text-rose-600 dark:text-rose-400 font-bold text-xs py-2.5 rounded-xl transition border border-rose-200/80 dark:border-rose-500/30 flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-user-minus text-[11px]"></i>
+                    <span>Remove</span>
+                </button>
+            `;
+        } else if (relState === 'PENDING_SENT') {
+            badgeHTML = `<span class="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-500/30 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500"></span> Pending</span>`;
+            relationshipActionHTML = `
+                <button type="button" onclick="app.friendService.cancelRequest('${safeProfileId}')" class="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs py-2.5 rounded-xl transition border border-slate-200/60 dark:border-slate-700/60 flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-xmark text-[11px]"></i>
+                    <span>Cancel</span>
+                </button>
+            `;
+        } else if (relState === 'PENDING_RECEIVED') {
+            badgeHTML = `<span class="text-xs font-bold px-2.5 py-1 rounded-full bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-500/30 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-sky-500"></span> Requested</span>`;
+            relationshipActionHTML = `
+                <button type="button" onclick="app.friendService.acceptRequest('${safeProfileId}')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 rounded-xl transition shadow-xs flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-check text-[11px]"></i>
+                    <span>Accept</span>
+                </button>
+            `;
+        } else { // NONE
+            badgeHTML = `<span class="text-xs font-bold px-2.5 py-1 rounded-full border shrink-0 ${isPrivate ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700'}"><i class="${isPrivate ? 'fa-solid fa-lock' : 'fa-solid fa-globe'} text-[9px] mr-1"></i>${isPrivate ? 'Private' : 'Public'}</span>`;
+            relationshipActionHTML = `
+                <button type="button" onclick="app.friendService.sendRequest('${safeProfileId}')" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs py-2.5 rounded-xl transition shadow-xs flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-user-plus text-[11px]"></i>
+                    <span>Add</span>
+                </button>
+            `;
+        }
+
+        return `
+            <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xs hover:shadow-md hover:border-sky-500/30 transition-all duration-200 h-full flex flex-col justify-between space-y-4">
+                <!-- Header: Avatar, Info, Badge -->
+                <div class="flex items-center justify-between gap-3">
+                    <div class="flex items-center space-x-3.5 min-w-0 flex-1">
+                        <!-- Avatar (64px mobile / 72px desktop) -->
+                        <div class="w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-full bg-gradient-to-tr from-sky-400 via-blue-500 to-indigo-600 text-white text-xl sm:text-2xl font-black flex items-center justify-center border-2 border-white dark:border-slate-800 overflow-hidden shrink-0 cursor-pointer shadow-sm" onclick="app.navigate('u/${safeUsername}')">
+                            ${profile.avatar_url 
+                                ? `<img src="${profile.avatar_url}" alt="${safeDisplayName}" class="w-full h-full object-cover rounded-full">`
+                                : (displayName ? displayName.charAt(0).toUpperCase() : 'U')
+                            }
+                        </div>
+
+                        <!-- Player Identity (Vertically Centered) -->
+                        <div class="space-y-0.5 min-w-0 flex-1">
+                            <h4 class="font-bold text-base sm:text-lg text-slate-900 dark:text-slate-100 truncate cursor-pointer hover:text-sky-600 dark:hover:text-sky-400 transition" onclick="app.navigate('u/${safeUsername}')">
+                                ${displayName || 'User'}
+                            </h4>
+                            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-mono truncate">
+                                @${username || 'user'}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Relationship Badge -->
+                    <div class="shrink-0">
+                        ${badgeHTML}
+                    </div>
+                </div>
+
+                <!-- Action Buttons: 3 Equal Width Buttons -->
+                <div class="flex items-center space-x-2 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+                    <button type="button" onclick="app.navigate('u/${safeUsername}')" class="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 border border-slate-200/60 dark:border-slate-700/60">
+                        <i class="fa-solid fa-user text-[11px]"></i>
+                        <span>View Profile</span>
+                    </button>
+
+                    ${relState === 'SELF' 
+                        ? `<button type="button" disabled class="flex-1 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600 font-bold text-xs py-2.5 rounded-xl cursor-not-allowed opacity-50 flex items-center justify-center gap-1.5 border border-slate-200/60 dark:border-slate-700/60"><i class="fa-solid fa-comment text-[11px]"></i><span>Chat</span></button>`
+                        : `<button type="button" onclick="app.chatService.openChat('${safeProfileId}')" class="flex-1 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs py-2.5 rounded-xl transition shadow-xs flex items-center justify-center gap-1.5"><i class="fa-solid fa-comment text-[11px]"></i><span>Chat</span></button>`
+                    }
+
+                    ${relationshipActionHTML}
+                </div>
+            </div>
+        `;
+    },
+
+    // ======================== FRIENDS HUB (MOBILE LEGENDS INSPIRED UI V3) ========================
+    friendsHub: {
+        activeTab: 'friends',
+
+        switchTab(tabName) {
+            this.activeTab = tabName;
+
+            const tabs = ['friends', 'following', 'requests', 'search'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`friends-tab-btn-${t}`);
+                const pane = document.getElementById(`friends-pane-${t}`);
+
+                if (btn) {
+                    if (t === tabName) {
+                        btn.className = 'friends-tab-btn flex-1 py-3 px-2 sm:px-4 rounded-xl text-xs sm:text-sm font-extrabold transition-all duration-200 flex items-center justify-center gap-1.5 bg-white dark:bg-slate-800 text-sky-600 dark:text-sky-400 shadow-sm border border-slate-200/60 dark:border-slate-700/60';
+                    } else {
+                        btn.className = 'friends-tab-btn flex-1 py-3 px-2 sm:px-4 rounded-xl text-xs sm:text-sm font-extrabold transition-all duration-200 flex items-center justify-center gap-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200';
+                    }
+                }
+
+                if (pane) {
+                    if (t === tabName) {
+                        pane.classList.remove('hidden');
+                    } else {
+                        pane.classList.add('hidden');
+                    }
+                }
+            });
+
+            this.renderActiveTab();
+        },
+
+        renderActiveTab() {
+            if (this.activeTab === 'friends') {
+                app.friendService.renderFriendsList();
+            } else if (this.activeTab === 'following') {
+                app.friendService.renderFollowingList();
+            } else if (this.activeTab === 'requests') {
+                app.friendService.renderPendingRequests();
+            } else if (this.activeTab === 'search') {
+                this.renderSearchHistory();
+                const input = document.getElementById('friends-search-input');
+                if (input && input.value && input.value.trim() !== '') {
+                    app.userSearchService.handleInput(input.value);
+                }
+            }
+        },
+
+        getSearchHistory() {
+            try {
+                const raw = localStorage.getItem('kt_friends_search_history');
+                return raw ? JSON.parse(raw) : [];
+            } catch (e) {
+                return [];
+            }
+        },
+
+        addToSearchHistory(profile) {
+            if (!profile || !profile.id) return;
+            const history = this.getSearchHistory();
+
+            const filtered = history.filter(item => item.id !== profile.id);
+            filtered.unshift({
+                id: profile.id,
+                display_name: profile.display_name,
+                username: profile.username,
+                user_id: profile.user_id
+            });
+
+            const trimmed = filtered.slice(0, 10);
+            localStorage.setItem('kt_friends_search_history', JSON.stringify(trimmed));
+            this.renderSearchHistory();
+        },
+
+        clearSearchHistory() {
+            localStorage.removeItem('kt_friends_search_history');
+            this.renderSearchHistory();
+            app.toast.show('Search history cleared.', 'info');
+        },
+
+        renderSearchHistory() {
+            const container = document.getElementById('friends-search-history-container');
+            const listEl = document.getElementById('friends-search-history-list');
+
+            if (!container || !listEl) return;
+
+            const input = document.getElementById('friends-search-input');
+            const isInputEmpty = !input || !input.value || input.value.trim() === '';
+
+            const history = this.getSearchHistory();
+
+            if (isInputEmpty && history.length > 0) {
+                container.classList.remove('hidden');
+                listEl.innerHTML = history.map(item => {
+                    const label = item.display_name && item.display_name.trim() ? item.display_name : item.username;
+                    const safeLabel = label.replace(/'/g, "\\'");
+                    return `
+                        <button type="button" onclick="app.friendsHub.selectHistoryItem('${safeLabel}')" class="bg-slate-100 dark:bg-slate-800 hover:bg-sky-50 dark:hover:bg-sky-500/10 text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 font-semibold text-xs px-3 py-1.5 rounded-xl border border-slate-200/60 dark:border-slate-700/60 transition inline-flex items-center gap-1.5">
+                            <i class="fa-solid fa-clock-rotate-left text-[10px] text-slate-400"></i>
+                            <span>${label}</span>
+                        </button>
+                    `;
+                }).join('');
+            } else {
+                container.classList.add('hidden');
+                listEl.innerHTML = '';
+            }
+        },
+
+        selectHistoryItem(query) {
+            const input = document.getElementById('friends-search-input');
+            if (input) {
+                input.value = query;
+                app.userSearchService.handleInput(query);
+            }
+        }
+    },
+
+    // ======================== CHAT ENCRYPTION V1 (WEB CRYPTO AES-256-GCM) ========================
+    chatCryptoService: {
+        keyCache: new Map(),
+
+        arrayBufferToBase64(buffer) {
+            const bytes = new Uint8Array(buffer);
+            let binary = '';
+            for (let i = 0; i < bytes.byteLength; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return window.btoa(binary);
+        },
+
+        base64ToUint8Array(base64) {
+            const binary = window.atob(base64);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) {
+                bytes[i] = binary.charCodeAt(i);
+            }
+            return bytes;
+        },
+
+        async getConversationKey(conversationId) {
+            if (!conversationId) return null;
+            if (this.keyCache.has(conversationId)) {
+                return this.keyCache.get(conversationId);
+            }
+
+            try {
+                const encoder = new TextEncoder();
+                const secretString = `KoranTest_Chat_AES256_GCM_V1:${conversationId}`;
+                const keyMaterial = await window.crypto.subtle.importKey(
+                    "raw",
+                    encoder.encode(secretString),
+                    "PBKDF2",
+                    false,
+                    ["deriveKey"]
+                );
+
+                const salt = encoder.encode(`salt_${conversationId}`);
+                const derivedKey = await window.crypto.subtle.deriveKey(
+                    {
+                        name: "PBKDF2",
+                        salt: salt,
+                        iterations: 100000,
+                        hash: "SHA-256"
+                    },
+                    keyMaterial,
+                    { name: "AES-GCM", length: 256 },
+                    false,
+                    ["encrypt", "decrypt"]
+                );
+
+                this.keyCache.set(conversationId, derivedKey);
+                return derivedKey;
+            } catch (err) {
+                console.error('[CHAT CRYPTO] Key derivation error:', err);
+                return null;
+            }
+        },
+
+        async encryptMessage(conversationId, plaintext) {
+            if (!plaintext || typeof plaintext !== 'string') return null;
+
+            try {
+                const key = await this.getConversationKey(conversationId);
+                if (!key) throw new Error('CryptoKey unavailable.');
+
+                const encoder = new TextEncoder();
+                const iv = window.crypto.getRandomValues(new Uint8Array(12));
+                const cipherBuffer = await window.crypto.subtle.encrypt(
+                    { name: "AES-GCM", iv: iv },
+                    key,
+                    encoder.encode(plaintext)
+                );
+
+                return {
+                    ciphertext: this.arrayBufferToBase64(cipherBuffer),
+                    iv: this.arrayBufferToBase64(iv),
+                    algorithm: 'AES-GCM',
+                    key_version: 1
+                };
+            } catch (err) {
+                console.error('[CHAT CRYPTO] Encryption error:', err);
+                return null;
+            }
+        },
+
+        async decryptMessage(conversationId, msgObj) {
+            if (!msgObj) return '';
+
+            // Fallback for legacy unencrypted plaintext messages
+            if (!msgObj.algorithm || msgObj.algorithm !== 'AES-GCM' || !msgObj.ciphertext || !msgObj.iv) {
+                return msgObj.content || '';
+            }
+
+            try {
+                const key = await this.getConversationKey(conversationId);
+                if (!key) return '🔒 [Encrypted Message]';
+
+                const ciphertextBytes = this.base64ToUint8Array(msgObj.ciphertext);
+                const ivBytes = this.base64ToUint8Array(msgObj.iv);
+
+                const decryptedBuffer = await window.crypto.subtle.decrypt(
+                    { name: "AES-GCM", iv: ivBytes },
+                    key,
+                    ciphertextBytes
+                );
+
+                return new TextDecoder().decode(decryptedBuffer);
+            } catch (err) {
+                console.error('[CHAT CRYPTO] Decryption error:', err);
+                return '🔒 [Encrypted Message]';
+            }
+        }
+    },
+
+    // ======================== CHAT MODULE V1 (EPHEMERAL ARCHITECTURE) ========================
+    chatService: {
+        activeTab: 'friends', // 'friends' | 'requests'
+        activeConversationId: null,
+        activeConversation: null,
+        conversations: {
+            friends: [],
+            requests: []
+        },
+        messages: [],
+        realtimeSubscription: null,
+        expiresTimerInterval: null,
+
+        // Global realtime boot — call once after login, stays active across all pages
+        initRealtime() {
+            if (!app.state.user || app.state.user.isGuest) return;
+            if (this._realtimeBooted) return;
+            this._realtimeBooted = true;
+            this.setupRealtime();
+            // Initial load of conversations for badge counts
+            this.loadConversations();
+            console.log('[CHAT SERVICE] Global realtime booted.');
+        },
+
+        async init() {
+            if (!app.state.user || app.state.user.isGuest) return;
+            // Ensure realtime is running
+            this.initRealtime();
+            await this.loadConversations();
+            // Start active polling when chat page is open (every 5s)
+            this._startActivePolling();
+        },
+
+        _startActivePolling() {
+            this._stopActivePolling();
+            this._activePollInterval = setInterval(async () => {
+                // Only poll when chat page is visible
+                const chatSection = document.getElementById('view-chat');
+                if (!chatSection || chatSection.classList.contains('hidden')) {
+                    return;
+                }
+                console.log('[CHAT POLL] Active polling tick...');
+                await this.loadConversations();
+                if (this.activeConversationId) {
+                    await this.loadMessages(this.activeConversationId);
+                }
+            }, 5000);
+        },
+
+        _stopActivePolling() {
+            if (this._activePollInterval) {
+                clearInterval(this._activePollInterval);
+                this._activePollInterval = null;
+            }
+        },
+
+        async loadConversations() {
+            if (!app.state.user || app.state.user.isGuest) return;
+
+            try {
+                const { data, error } = await supabaseClient.rpc('chat_get_conversations');
+                if (error) {
+                    console.error('[CHAT SERVICE] chat_get_conversations error:', error);
+                    return;
+                }
+
+                if (data && data.success) {
+                    this.conversations.friends = data.friends || [];
+                    this.conversations.requests = data.requests || [];
+                    this.renderConversationsList();
+                    this.updateUnreadBadges();
+                    this.updateGlobalChatBadge();
+                }
+            } catch (err) {
+                console.error('[CHAT SERVICE] loadConversations exception:', err);
+            }
+        },
+
+        async renderConversationsList() {
+            const listEl = document.getElementById('chat-conversations-list');
+            const emptyEl = document.getElementById('chat-conversations-empty');
+            if (!listEl) return;
+
+            const targetList = this.conversations[this.activeTab] || [];
+            listEl.innerHTML = '';
+
+            if (targetList.length === 0) {
+                if (emptyEl) emptyEl.classList.remove('hidden');
+                return;
+            } else {
+                if (emptyEl) emptyEl.classList.add('hidden');
+            }
+
+            const cardsHTML = await Promise.all(targetList.map(async c => {
+                const other = c.other_user || {};
+                const displayName = app.escapeHtml(other.display_name || other.username || 'User');
+                const isSelected = c.id === this.activeConversationId;
+                const activeClass = isSelected 
+                    ? 'bg-sky-50 dark:bg-sky-500/15 border-sky-300 dark:border-sky-500/40 shadow-xs' 
+                    : 'bg-white dark:bg-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800 border-slate-200/80 dark:border-slate-700/80 shadow-2xs';
+                
+                let lastMsgText = 'No messages yet';
+                if (c.last_message) {
+                    const plainText = await app.chatCryptoService.decryptMessage(c.id, c.last_message);
+                    lastMsgText = app.escapeHtml(plainText);
+                }
+
+                const unreadBadge = c.unread_count > 0 ? `<span class="bg-sky-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shrink-0">${c.unread_count}</span>` : '';
+
+                return `
+                    <div onclick="app.chatService.selectConversation('${c.id}')" class="p-3 rounded-2xl border ${activeClass} transition cursor-pointer flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-600 text-white font-bold text-sm flex items-center justify-center border border-white dark:border-slate-800 shrink-0 overflow-hidden">
+                            ${other.avatar_url ? `<img src="${other.avatar_url}" class="w-full h-full object-cover">` : displayName.charAt(0).toUpperCase()}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-bold text-xs text-slate-900 dark:text-slate-100 truncate">${displayName}</h4>
+                                <span class="text-[10px] text-slate-400 font-mono">${c.last_message_at ? new Date(c.last_message_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                <p class="truncate text-[11px]">${lastMsgText}</p>
+                                ${unreadBadge}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }));
+
+            listEl.innerHTML = cardsHTML.join('');
+        },
+
+        async openChat(targetUserId) {
+            if (!app.state.user || app.state.user.isGuest) {
+                app.toast.show('Sign in to chat with other players.', 'warning');
+                app.navigate('login');
+                return;
+            }
+
+            try {
+                const { data, error } = await supabaseClient.rpc('chat_get_or_create_conversation', {
+                    p_target_id: targetUserId
+                });
+
+                if (error) {
+                    console.error('[CHAT SERVICE] chat_get_or_create_conversation error:', error);
+                    app.toast.show(error.message || 'Failed to open chat.', 'error');
+                    return;
+                }
+
+                if (data && data.success && data.conversation) {
+                    app.navigate('chat');
+                    await this.loadConversations();
+                    this.switchTab(data.conversation.type === 'friend' ? 'friends' : 'requests');
+                    await this.selectConversation(data.conversation.id);
+
+                    if (data.conversation.type === 'request' && data.conversation.created_by !== app.state.user.id) {
+                        await supabaseClient.rpc('chat_mark_opened', { p_conversation_id: data.conversation.id });
+                    }
+                }
+            } catch (err) {
+                console.error('[CHAT SERVICE] openChat exception:', err);
+                app.toast.show('Failed to start chat.', 'error');
+            }
+        },
+
+        async selectConversation(conversationId) {
+            this.activeConversationId = conversationId;
+            const allConvs = [...this.conversations.friends, ...this.conversations.requests];
+            this.activeConversation = allConvs.find(c => c.id === conversationId) || null;
+
+            this.renderConversationsList();
+
+            const idleEl = document.getElementById('chat-idle-state');
+            const avatarEl = document.getElementById('chat-active-avatar');
+            const nameEl = document.getElementById('chat-active-displayname');
+            const userEl = document.getElementById('chat-active-username');
+            const badgeEl = document.getElementById('chat-active-badge');
+            const timerWrap = document.getElementById('chat-active-timer');
+            const streamEl = document.getElementById('chat-messages-stream');
+
+            if (idleEl) idleEl.classList.add('hidden');
+
+            // Lightweight loading state while fetching conversation history
+            if (streamEl) {
+                streamEl.innerHTML = `
+                    <div class="h-full flex flex-col items-center justify-center text-center p-6 space-y-3 my-auto">
+                        <div class="animate-spin rounded-full h-7 w-7 border-2 border-sky-500 border-t-transparent mx-auto"></div>
+                        <p class="text-xs font-semibold text-slate-500 dark:text-slate-400">Loading conversation...</p>
+                    </div>
+                `;
+            }
+
+            if (this.activeConversation) {
+                const other = this.activeConversation.other_user || {};
+                const displayName = app.escapeHtml(other.display_name || other.username || 'User');
+                const username = app.escapeHtml(other.username || 'user');
+
+                if (nameEl) nameEl.innerText = displayName;
+                if (userEl) userEl.innerText = '@' + username;
+
+                if (avatarEl) {
+                    avatarEl.innerHTML = other.avatar_url 
+                        ? `<img src="${other.avatar_url}" class="w-full h-full object-cover">`
+                        : displayName.charAt(0).toUpperCase();
+                }
+
+                if (badgeEl) {
+                    badgeEl.classList.remove('hidden');
+                    badgeEl.innerText = this.activeConversation.type === 'friend' ? 'Friend' : 'Request';
+                    badgeEl.className = this.activeConversation.type === 'friend' 
+                        ? 'text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-500 border border-sky-500/30 uppercase tracking-wider'
+                        : 'text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/30 uppercase tracking-wider';
+                }
+
+                if (timerWrap && this.activeConversation.type === 'friend' && this.activeConversation.expires_at) {
+                    timerWrap.classList.remove('hidden');
+                    this.startExpirationTimer(this.activeConversation.expires_at);
+                } else if (timerWrap) {
+                    timerWrap.classList.add('hidden');
+                }
+
+                await this.loadMessages(conversationId);
+                    // Auto mark this conversation as read since user opened it
+                    this._markConversationRead(conversationId);
+                    // Refresh unread badges after marking read
+                    setTimeout(() => this.loadConversations(), 500);
+            }
+
+            // On mobile viewports, automatically reveal active chat panel & hide conversation list
+            const convPanel = document.getElementById('chat-conversations-panel');
+            const activePanel = document.getElementById('chat-active-panel');
+            if (window.innerWidth < 768) {
+                if (convPanel) convPanel.classList.add('hidden');
+                if (activePanel) {
+                    activePanel.classList.remove('hidden');
+                    activePanel.classList.add('flex');
+                }
+            }
+
+            // Automatically focus cursor in input field
+            setTimeout(() => {
+                const inputEl = document.getElementById('chat-input-text');
+                if (inputEl) inputEl.focus();
+            }, 100);
+        },
+
+        async loadMessages(conversationId) {
+            try {
+                const { data, error } = await supabaseClient.rpc('chat_get_messages', {
+                    p_conversation_id: conversationId
+                });
+
+                if (error) {
+                    console.error('[CHAT SERVICE] chat_get_messages error:', error);
+                    return;
+                }
+
+                if (data && data.success) {
+                    this.messages = data.messages || [];
+                    this.renderMessagesStream();
+                }
+            } catch (err) {
+                console.error('[CHAT SERVICE] loadMessages exception:', err);
+            }
+        },
+
+        async renderMessagesStream() {
+            const streamEl = document.getElementById('chat-messages-stream');
+            if (!streamEl) return;
+
+            if (this.messages.length === 0) {
+                streamEl.innerHTML = `
+                    <div class="h-full flex flex-col items-center justify-center text-center p-6 space-y-2 my-auto">
+                        <div class="w-10 h-10 bg-slate-100 dark:bg-slate-800 text-slate-400 rounded-full flex items-center justify-center text-base">
+                            <i class="fa-regular fa-comment-dots"></i>
+                        </div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">No messages in this chat yet. Say hello!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const messagesHTML = await Promise.all(this.messages.map(async m => {
+                const myId = String(app.state.user?.id || '');
+                const senderId = String(m.sender_id || '');
+                const isMe = senderId === myId;
+                console.log('[CHAT BUBBLE] sender_id:', m.sender_id, 'myId:', app.state.user?.id, 'isMe:', isMe);
+                const senderName = app.escapeHtml(m.sender?.display_name || m.sender?.username || 'User');
+                const plainText = await app.chatCryptoService.decryptMessage(this.activeConversationId, m);
+                const content = app.escapeHtml(plainText);
+                const timeStr = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                if (isMe) {
+                    return `
+                        <div class="flex flex-col items-end space-y-1">
+                            <div class="max-w-[70%] bg-sky-600 text-white p-3 rounded-2xl rounded-tr-xs shadow-xs text-xs sm:text-sm leading-relaxed">
+                                ${content}
+                            </div>
+                            <div class="flex items-center gap-1 text-[10px] text-slate-400 font-mono px-1">
+                                <span>${timeStr}</span>
+                                <i class="fa-solid fa-check text-[9px] text-sky-400"></i>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="flex flex-col items-start space-y-1">
+                            <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 px-1">${senderName}</span>
+                            <div class="max-w-[70%] bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 text-slate-900 dark:text-slate-100 p-3 rounded-2xl rounded-tl-xs shadow-xs text-xs sm:text-sm leading-relaxed">
+                                ${content}
+                            </div>
+                            <span class="text-[10px] text-slate-400 font-mono px-1">${timeStr}</span>
+                        </div>
+                    `;
+                }
+            }));
+
+            streamEl.innerHTML = messagesHTML.join('');
+            setTimeout(() => {
+                streamEl.scrollTop = streamEl.scrollHeight;
+            }, 30);
+        },
+
+        async sendMessage() {
+            const inputEl = document.getElementById('chat-input-text');
+            if (!inputEl || !this.activeConversationId) return;
+
+            const text = inputEl.value.trim();
+            if (!text) return;
+
+            inputEl.value = '';
+
+            try {
+                // Encrypt plaintext using Web Crypto API AES-256-GCM before transmitting to database
+                const enc = await app.chatCryptoService.encryptMessage(this.activeConversationId, text);
+                if (!enc) {
+                    app.toast.show('Failed to encrypt message.', 'error');
+                    return;
+                }
+
+                const { data, error } = await supabaseClient.rpc('chat_send_message', {
+                    p_conversation_id: this.activeConversationId,
+                    p_ciphertext: enc.ciphertext,
+                    p_iv: enc.iv,
+                    p_algorithm: enc.algorithm,
+                    p_key_version: enc.key_version
+                });
+
+                if (error) {
+                    console.error('[CHAT SERVICE] chat_send_message error:', error);
+                    app.toast.show(error.message || 'Failed to send message.', 'error');
+                    return;
+                }
+
+                if (data && data.success) {
+                    console.log('[CHAT CRYPTO] Encrypted message sent successfully.');
+                    await this.loadMessages(this.activeConversationId);
+                    await this.loadConversations();
+                }
+            } catch (err) {
+                console.error('[CHAT SERVICE] sendMessage exception:', err);
+                app.toast.show('Failed to send message.', 'error');
+            }
+        },
+
+        handleInputKeyDown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                this.sendMessage();
+            }
+        },
+
+        switchTab(tabName) {
+            this.activeTab = tabName;
+
+            const btnFriends = document.getElementById('chat-tab-btn-friends');
+            const btnRequests = document.getElementById('chat-tab-btn-requests');
+
+            if (tabName === 'friends') {
+                if (btnFriends) btnFriends.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-extrabold transition-all duration-200 flex items-center justify-center gap-1.5 bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/30';
+                if (btnRequests) btnRequests.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-extrabold transition-all duration-200 flex items-center justify-center gap-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200';
+            } else {
+                if (btnFriends) btnFriends.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-extrabold transition-all duration-200 flex items-center justify-center gap-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200';
+                if (btnRequests) btnRequests.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-extrabold transition-all duration-200 flex items-center justify-center gap-1.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30';
+            }
+
+            this.renderConversationsList();
+        },
+
+        updateUnreadBadges() {
+            const friendsBadge = document.getElementById('chat-badge-friends-count');
+            const requestsBadge = document.getElementById('chat-badge-requests-count');
+
+            const totalFriendsUnread = this.conversations.friends.reduce((acc, c) => acc + (c.unread_count || 0), 0);
+            const totalRequestsUnread = this.conversations.requests.reduce((acc, c) => acc + (c.unread_count || 0), 0);
+
+            if (friendsBadge) {
+                if (totalFriendsUnread > 0) {
+                    friendsBadge.innerText = totalFriendsUnread;
+                    friendsBadge.classList.remove('hidden');
+                } else {
+                    friendsBadge.classList.add('hidden');
+                }
+            }
+
+            if (requestsBadge) {
+                if (totalRequestsUnread > 0) {
+                    requestsBadge.innerText = totalRequestsUnread;
+                    requestsBadge.classList.remove('hidden');
+                } else {
+                    requestsBadge.classList.add('hidden');
+                }
+            }
+        },
+
+        startExpirationTimer(expiresAtIso) {
+            if (this.expiresTimerInterval) clearInterval(this.expiresTimerInterval);
+
+            const timerVal = document.getElementById('chat-active-timer-val');
+
+            const update = () => {
+                const now = new Date().getTime();
+                const exp = new Date(expiresAtIso).getTime();
+                const diff = exp - now;
+
+                if (diff <= 0) {
+                    if (timerVal) timerVal.innerText = 'Expired';
+                    clearInterval(this.expiresTimerInterval);
+                    return;
+                }
+
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+                if (timerVal) {
+                    timerVal.innerText = `Expires in ${hours}h ${mins}m ${secs}s`;
+                }
+            };
+
+            update();
+            this.expiresTimerInterval = setInterval(update, 1000);
+        },
+
+        async closeChat() {
+            if (this.activeConversation && this.activeConversation.type === 'request') {
+                try {
+                    await supabaseClient.rpc('chat_close_request', { p_conversation_id: this.activeConversation.id });
+                } catch (e) {
+                    console.error('[CHAT SERVICE] closeChat RPC error:', e);
+                }
+            }
+
+            this.activeConversationId = null;
+            this.activeConversation = null;
+            // Stop active polling (only runs while chat page is open)
+            this._stopActivePolling();
+            // NOTE: Do NOT destroy realtimeSubscription here — keep it alive globally
+            // so badge updates and incoming message detection continue on all pages.
+
+            if (app.state.previousView) {
+                app.navigate(app.state.previousView);
+            } else {
+                app.navigate('friends');
+            }
+        },
+
+        showConversationsPanelOnMobile() {
+            const convPanel = document.getElementById('chat-conversations-panel');
+            const activePanel = document.getElementById('chat-active-panel');
+            if (convPanel) convPanel.classList.remove('hidden');
+            if (activePanel) {
+                activePanel.classList.add('hidden');
+                activePanel.classList.remove('flex');
+            }
+        },
+
+        setupRealtime() {
+            if (!supabaseClient) return;
+
+            // Clean up any existing subscription before re-subscribing
+            if (this.realtimeSubscription) {
+                try { supabaseClient.removeChannel(this.realtimeSubscription); } catch (e) {}
+                this.realtimeSubscription = null;
+            }
+
+            try {
+                this.realtimeSubscription = supabaseClient
+                    .channel('chat-live-updates-' + Date.now())
+                    // Live incoming/updated/deleted messages
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_messages' }, payload => {
+                        console.log('[CHAT REALTIME] chat_messages event:', payload.eventType);
+                        const convId = payload.new?.conversation_id || payload.old?.conversation_id;
+
+                        // If viewing this conversation, reload messages live
+                        if (convId && convId === this.activeConversationId) {
+                            this.loadMessages(this.activeConversationId);
+                            // Auto mark as read since user is viewing this conversation
+                            this._markConversationRead(this.activeConversationId);
+                        }
+
+                        // Always refresh conversation list (updates last message preview, unread count, timestamps)
+                        this.loadConversations();
+                    })
+                    // Live conversation metadata changes (unread_count, last_message_at, etc.)
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_conversations' }, payload => {
+                        console.log('[CHAT REALTIME] chat_conversations event:', payload.eventType);
+                        this.loadConversations();
+                    })
+                    // Live conversation participants changes (read status updates from other user)
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_participants' }, payload => {
+                        console.log('[CHAT REALTIME] chat_participants event:', payload.eventType);
+                        this.loadConversations();
+                    })
+                    .subscribe((status) => {
+                        console.log('[CHAT REALTIME] Subscription status:', status);
+                        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+                            console.warn('[CHAT REALTIME] Subscription failed, will retry in 10s...');
+                            setTimeout(() => {
+                                this.realtimeSubscription = null;
+                                this.setupRealtime();
+                            }, 10000);
+                        }
+                    });
+
+                // Start periodic global badge updater (every 15s fallback for badge accuracy)
+                if (this._badgeInterval) clearInterval(this._badgeInterval);
+                this._badgeInterval = setInterval(() => {
+                    this.updateGlobalChatBadge();
+                }, 15000);
+
+            } catch (err) {
+                console.error('[CHAT SERVICE] Realtime setup error:', err);
+            }
+        },
+
+        // Mark conversation as read when user is actively viewing it
+        async _markConversationRead(conversationId) {
+            if (!conversationId) return;
+            try {
+                await supabaseClient.rpc('chat_mark_read', {
+                    p_conversation_id: conversationId
+                });
+                console.log('[CHAT REALTIME] Marked conversation as read:', conversationId);
+            } catch (err) {
+                // Silently fail - mark_read is best-effort
+                console.warn('[CHAT REALTIME] mark_read failed (may not exist yet):', err.message);
+            }
+        },
+
+        // Update the global chat badge on Social Hub button and Friends header button
+        updateGlobalChatBadge() {
+            const totalUnread = [
+                ...this.conversations.friends,
+                ...this.conversations.requests
+            ].reduce((sum, c) => sum + (c.unread_count || 0), 0);
+
+            // Update all global chat badge elements
+            const badgeEls = document.querySelectorAll('.chat-global-unread-badge');
+            badgeEls.forEach(el => {
+                if (totalUnread > 0) {
+                    el.textContent = totalUnread > 99 ? '99+' : totalUnread;
+                    el.classList.remove('hidden');
+                } else {
+                    el.classList.add('hidden');
+                }
+            });
+
+            console.log('[CHAT REALTIME] Global unread badge updated:', totalUnread);
         }
     },
 
@@ -2923,13 +5084,56 @@ const app = {
                 return;
             }
 
-            // 2. Delegate access decision to Profile Visibility Service
+            // 2. Delegate access decision to Profile Visibility Service V2
             const access = this.profileVisibilityService.checkAccess(profile, this.state.user);
 
             // Handle Private Access Denial
             if (!access.canView) {
                 if (loadingEl) loadingEl.classList.add('hidden');
                 if (privateEl) privateEl.classList.remove('hidden');
+
+                const titleEl = document.getElementById('pubprof-private-title');
+                const descEl = document.getElementById('pubprof-private-desc');
+                const actionsEl = document.getElementById('pubprof-private-actions');
+                const safeProfileId = profile.id ? String(profile.id).replace(/'/g, "\\'") : '';
+                const relState = access.relationshipState;
+
+                if (titleEl) titleEl.innerText = 'Private Profile';
+                if (descEl) descEl.innerText = 'This user has chosen to keep their profile private. You must become friends to view this profile.';
+
+                let actionBtnHTML = '';
+                if (relState === 'NONE') {
+                    actionBtnHTML = `
+                        <button type="button" onclick="app.friendService.sendRequest('${safeProfileId}')" class="w-full sm:w-auto bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition shadow-xs flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-user-plus text-xs"></i>
+                            <span>Add Friend</span>
+                        </button>
+                    `;
+                } else if (relState === 'PENDING_SENT') {
+                    actionBtnHTML = `
+                        <button type="button" onclick="app.friendService.cancelRequest('${safeProfileId}')" class="w-full sm:w-auto bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-500/30 hover:bg-amber-100 dark:hover:bg-amber-500/20 font-bold text-xs px-5 py-2.5 rounded-xl transition flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-clock text-xs"></i>
+                            <span>Request Pending (Cancel)</span>
+                        </button>
+                    `;
+                } else if (relState === 'PENDING_RECEIVED') {
+                    actionBtnHTML = `
+                        <button type="button" onclick="app.friendService.acceptRequest('${safeProfileId}')" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition shadow-xs flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-check text-xs"></i>
+                            <span>Accept Friend Request</span>
+                        </button>
+                    `;
+                }
+
+                if (actionsEl) {
+                    actionsEl.innerHTML = `
+                        <button type="button" onclick="app.goBackFromPublicProfile()" class="w-full sm:w-auto bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-xs px-5 py-2.5 rounded-xl transition flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-arrow-left text-xs"></i>
+                            <span>Back</span>
+                        </button>
+                        ${actionBtnHTML}
+                    `;
+                }
                 return;
             }
 
@@ -2945,7 +5149,7 @@ const app = {
                         if (ownerIconEl) ownerIconEl.className = 'fa-solid fa-lock text-amber-500 text-sm';
                         if (ownerTextEl) ownerTextEl.innerText = 'Private Profile • Only visible to you (the owner).';
                     } else {
-                        if (ownerIconEl) ownerIconEl.className = 'fa-solid fa-user-check text-blue-600 dark:text-blue-400 text-sm';
+                        if (ownerIconEl) ownerIconEl.className = 'fa-solid fa-user-check text-sky-600 dark:text-sky-400 text-sm';
                         if (ownerTextEl) ownerTextEl.innerText = 'This is your Public Profile.';
                     }
                 } else {
@@ -3002,6 +5206,57 @@ const app = {
             // Render Avatar
             this.renderAvatar('pubprof-avatar', profile);
 
+            // 4b. Render Relationship Action Buttons in Public Profile
+            const relContainer = document.getElementById('pubprof-relationship-actions');
+            if (relContainer) {
+                const relState = this.friendService ? this.friendService.getRelationship(profile.id) : 'NONE';
+                const safeProfileId = profile.id.replace(/'/g, "\\'");
+
+                if (relState === 'SELF') {
+                    relContainer.innerHTML = '';
+                } else if (relState === 'FRIENDS') {
+                    relContainer.innerHTML = `
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-500/20">
+                                <i class="fa-solid fa-user-check text-xs mr-1"></i> Friends
+                            </span>
+                            <button type="button" onclick="app.friendService.removeFriend('${safeProfileId}')" class="bg-slate-100 dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-500 hover:text-red-500 font-semibold text-xs px-3 py-1.5 rounded-lg transition">
+                                <i class="fa-solid fa-user-minus text-xs mr-1"></i> Remove
+                            </button>
+                        </div>
+                    `;
+                } else if (relState === 'PENDING_SENT') {
+                    relContainer.innerHTML = `
+                        <div class="flex items-center space-x-2">
+                            <button type="button" onclick="app.friendService.cancelRequest('${safeProfileId}')" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-xs px-4 py-2 rounded-lg transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-clock text-xs"></i>
+                                <span>Cancel Request</span>
+                            </button>
+                        </div>
+                    `;
+                } else if (relState === 'PENDING_RECEIVED') {
+                    relContainer.innerHTML = `
+                        <div class="flex items-center space-x-2">
+                            <button type="button" onclick="app.friendService.acceptRequest('${safeProfileId}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-lg transition flex items-center gap-1.5 shadow-xs">
+                                <i class="fa-solid fa-check text-xs"></i> Accept Request
+                            </button>
+                            <button type="button" onclick="app.friendService.declineRequest('${safeProfileId}')" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-xs px-3 py-2 rounded-lg transition">
+                                <i class="fa-solid fa-xmark text-xs"></i> Decline
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    relContainer.innerHTML = `
+                        <div class="flex items-center space-x-2">
+                            <button type="button" onclick="app.friendService.sendRequest('${safeProfileId}')" class="bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs px-4 py-2 rounded-lg transition shadow-xs flex items-center gap-1.5">
+                                <i class="fa-solid fa-user-plus text-xs"></i>
+                                <span>Add Friend</span>
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+
             // 5. Calculate & Render Core Statistics
             const stdTests = tests.filter(t => (t.mode || '').toLowerCase().includes('standard'));
             const marTests = tests.filter(t => (t.mode || '').toLowerCase().includes('marathon'));
@@ -3051,30 +5306,30 @@ const app = {
             if (avgAccEl) avgAccEl.innerText = avgAcc ? `${avgAcc}%` : '-';
             if (avgConsEl) avgConsEl.innerText = avgCons ? `${avgCons}%` : '-';
 
-            // 6. Calculate & Render Achievements Summary
-            const evaluatedAchievements = this.achievements ? this.achievements.getEvaluatedListForUser(profile, tests) : [];
-            const unlockedCount = evaluatedAchievements.filter(a => a.unlocked).length;
-            const totalCount = evaluatedAchievements.length || 24;
+            // 6. Calculate & Render Achievements Summary via Achievement Engine 2.0
+            const publicRes = app.achievementEngine.resolve({
+                user: profile,
+                history: tests,
+                leaderboards: app.state.lb_cache || {},
+                previousState: null
+            });
+            const evaluatedAchievements = publicRes.achievements;
+            const { unlockedCount, totalCount, completionPercentage } = publicRes.summary;
 
             const summaryEl = document.getElementById('pubprof-achievements-summary');
             const barEl = document.getElementById('pubprof-achievements-bar');
 
             if (summaryEl) summaryEl.innerText = `${unlockedCount} / ${totalCount} Unlocked`;
-            if (barEl) {
-                const pct = totalCount > 0 ? Math.round((unlockedCount / totalCount) * 100) : 0;
-                barEl.style.width = `${pct}%`;
-            }
+            if (barEl) barEl.style.width = `${completionPercentage}%`;
 
             // 7. Calculate & Render Showcase (Maximum 4 Achievements)
             const showcaseGrid = document.getElementById('pubprof-showcase-grid');
             if (showcaseGrid) {
-                let showcaseIds = [];
-                if (Array.isArray(profile.achievement_showcase) && profile.achievement_showcase.length > 0) {
-                    showcaseIds = profile.achievement_showcase.slice(0, 4);
-                } else {
-                    const unlocked = evaluatedAchievements.filter(a => a.unlocked);
-                    showcaseIds = (unlocked.length > 0 ? unlocked : evaluatedAchievements).slice(0, 4).map(a => a.id);
-                }
+                const showcaseIds = publicRes.showcase.length > 0
+                    ? publicRes.showcase
+                    : (evaluatedAchievements.filter(a => a.unlocked).length > 0
+                        ? evaluatedAchievements.filter(a => a.unlocked).slice(0, 4).map(a => a.id)
+                        : evaluatedAchievements.slice(0, 4).map(a => a.id));
 
                 const showcaseItems = showcaseIds.map(id => evaluatedAchievements.find(a => a.id === id)).filter(Boolean).slice(0, 4);
 
@@ -3126,11 +5381,11 @@ const app = {
                         return `
                             <div class="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-800 text-xs">
                                 <div class="flex items-center space-x-2.5">
-                                    <i class="fa-solid fa-file-signature text-blue-500"></i>
+                                    <i class="fa-solid fa-file-signature text-sky-500"></i>
                                     <span class="font-semibold text-slate-800 dark:text-slate-200">${modeLabel}</span>
                                 </div>
                                 <div class="flex items-center space-x-3">
-                                    <span class="font-extrabold text-blue-600 dark:text-blue-400">${scoreVal} pts</span>
+                                    <span class="font-extrabold text-sky-600 dark:text-sky-400">${scoreVal} pts</span>
                                     <span class="text-[10px] text-slate-400 font-mono">${dateStr}</span>
                                 </div>
                             </div>
@@ -3205,12 +5460,321 @@ const app = {
     },
 
     // ======================== ACHIEVEMENTS SYSTEM ========================
+    // ======================== ACHIEVEMENT ENGINE 2.0 ========================
+    achievementEngine: {
+        // Achievement Definitions Library
+        config: [
+            // Getting Started (Permanent)
+            { id: 'first_test', title: 'First Test', desc: 'Complete your first Koran Test session', icon: 'fa-solid fa-flag-checkered', category: 'getting_started', target: 1, type: 'total_tests', rarity: 'common', unit: 'Test', isDynamic: false },
+            { id: 'first_standard', title: 'First Standard Test', desc: 'Complete a Standard mode test session', icon: 'fa-solid fa-clipboard-check', category: 'getting_started', target: 1, type: 'test_mode_standard', rarity: 'common', unit: 'Test', isDynamic: false },
+            { id: 'first_marathon', title: 'First Marathon Test', desc: 'Complete a Marathon mode test session', icon: 'fa-solid fa-person-running', category: 'getting_started', target: 1, type: 'test_mode_marathon', rarity: 'rare', unit: 'Test', isDynamic: false },
+
+            // Score (Permanent)
+            { id: 'score_100', title: 'Score 100', desc: 'Achieve a score of 100 points in a test session', icon: 'fa-solid fa-star', category: 'score', target: 100, type: 'best_score', rarity: 'common', unit: 'Score', isDynamic: false },
+            { id: 'score_500', title: 'Score 500', desc: 'Achieve a score of 500 points in a test session', icon: 'fa-solid fa-trophy', category: 'score', target: 500, type: 'best_score', rarity: 'rare', unit: 'Score', isDynamic: false },
+            { id: 'score_1000', title: 'Score 1000', desc: 'Achieve a score of 1000 points in a test session', icon: 'fa-solid fa-gem', category: 'score', target: 1000, type: 'best_score', rarity: 'legendary', unit: 'Score', isDynamic: false },
+
+            // Testing (Permanent)
+            { id: 'tests_10', title: '10 Tests', desc: 'Complete 10 test sessions in total', icon: 'fa-solid fa-vial', category: 'testing', target: 10, type: 'total_tests', rarity: 'common', unit: 'Tests', isDynamic: false },
+            { id: 'tests_25', title: '25 Tests', desc: 'Complete 25 test sessions in total', icon: 'fa-solid fa-flask', category: 'testing', target: 25, type: 'total_tests', rarity: 'rare', unit: 'Tests', isDynamic: false },
+            { id: 'tests_50', title: '50 Tests', desc: 'Complete 50 test sessions in total', icon: 'fa-solid fa-microscope', category: 'testing', target: 50, type: 'total_tests', rarity: 'epic', unit: 'Tests', isDynamic: false },
+            { id: 'tests_100', title: '100 Tests', desc: 'Complete 100 test sessions in total', icon: 'fa-solid fa-chart-line', category: 'testing', target: 100, type: 'total_tests', rarity: 'legendary', unit: 'Tests', isDynamic: false },
+
+            // All-Time Leaderboard Rankings (Dynamic)
+            { id: 'rank_100', title: 'Top 100 All Time', desc: 'Ranked in the Top 100 on the Global All-Time Leaderboard', icon: 'fa-solid fa-ranking-star', category: 'ranking', threshold: 100, group: 'alltime', source: 'alltime_standard', rarity: 'common', unit: 'Rank', isDynamic: true },
+            { id: 'rank_50', title: 'Top 50 All Time', desc: 'Ranked in the Top 50 on the Global All-Time Leaderboard', icon: 'fa-solid fa-award', category: 'ranking', threshold: 50, group: 'alltime', source: 'alltime_standard', rarity: 'rare', unit: 'Rank', isDynamic: true },
+            { id: 'rank_10', title: 'Top 10 All Time', desc: 'Ranked in the Top 10 on the Global All-Time Leaderboard', icon: 'fa-solid fa-crown', category: 'ranking', threshold: 10, group: 'alltime', source: 'alltime_standard', rarity: 'epic', unit: 'Rank', isDynamic: true },
+            { id: 'rank_3', title: 'Top 3 All Time', desc: 'Ranked in the Top 3 Podium on the Global All-Time Leaderboard', icon: 'fa-solid fa-medal', category: 'ranking', threshold: 3, group: 'alltime', source: 'alltime_standard', rarity: 'epic', unit: 'Rank', isDynamic: true },
+            { id: 'rank_1', title: '#1 All Time Champion', desc: 'Ranked #1 Champion on the Global All-Time Leaderboard', icon: 'fa-solid fa-trophy', category: 'ranking', threshold: 1, group: 'alltime', source: 'alltime_standard', rarity: 'legendary', unit: 'Rank', isDynamic: true },
+
+            // Weekly Leaderboard Rankings (Dynamic)
+            { id: 'weekly_rank_100', title: 'Top 100 Weekly', desc: 'Ranked in the Top 100 on the Weekly Leaderboard', icon: 'fa-solid fa-calendar-week', category: 'weekly', threshold: 100, group: 'weekly', source: 'weekly_standard', rarity: 'common', unit: 'Rank', isDynamic: true },
+            { id: 'weekly_rank_50', title: 'Top 50 Weekly', desc: 'Ranked in the Top 50 on the Weekly Leaderboard', icon: 'fa-solid fa-award', category: 'weekly', threshold: 50, group: 'weekly', source: 'weekly_standard', rarity: 'rare', unit: 'Rank', isDynamic: true },
+            { id: 'weekly_rank_10', title: 'Top 10 Weekly', desc: 'Ranked in the Top 10 on the Weekly Leaderboard', icon: 'fa-solid fa-crown', category: 'weekly', threshold: 10, group: 'weekly', source: 'weekly_standard', rarity: 'epic', unit: 'Rank', isDynamic: true },
+            { id: 'weekly_rank_3', title: 'Top 3 Weekly', desc: 'Ranked in the Top 3 Podium on the Weekly Leaderboard', icon: 'fa-solid fa-medal', category: 'weekly', threshold: 3, group: 'weekly', source: 'weekly_standard', rarity: 'epic', unit: 'Rank', isDynamic: true },
+            { id: 'weekly_rank_1', title: '#1 Weekly Champion', desc: 'Ranked #1 Champion on the Weekly Leaderboard', icon: 'fa-solid fa-trophy', category: 'weekly', threshold: 1, group: 'weekly', source: 'weekly_standard', rarity: 'legendary', unit: 'Rank', isDynamic: true },
+
+            // Marathon Hall of Fame Rankings (Dynamic)
+            { id: 'marathon_rank_100', title: 'Top 100 Marathon', desc: 'Ranked in the Top 100 on the Marathon Hall of Fame', icon: 'fa-solid fa-building-columns', category: 'marathon', threshold: 100, group: 'marathon', source: 'alltime_marathon', rarity: 'common', unit: 'Rank', isDynamic: true },
+            { id: 'marathon_rank_50', title: 'Top 50 Marathon', desc: 'Ranked in the Top 50 on the Marathon Hall of Fame', icon: 'fa-solid fa-award', category: 'marathon', threshold: 50, group: 'marathon', source: 'alltime_marathon', rarity: 'rare', unit: 'Rank', isDynamic: true },
+            { id: 'marathon_rank_10', title: 'Top 10 Marathon', desc: 'Ranked in the Top 10 on the Marathon Hall of Fame', icon: 'fa-solid fa-crown', category: 'marathon', threshold: 10, group: 'marathon', source: 'alltime_marathon', rarity: 'epic', unit: 'Rank', isDynamic: true },
+            { id: 'marathon_rank_3', title: 'Top 3 Marathon', desc: 'Ranked in the Top 3 Podium on the Marathon Hall of Fame', icon: 'fa-solid fa-medal', category: 'marathon', threshold: 3, group: 'marathon', source: 'alltime_marathon', rarity: 'epic', unit: 'Rank', isDynamic: true },
+            { id: 'marathon_rank_1', title: '#1 Marathon Champion', desc: 'Ranked #1 Champion on the Marathon Hall of Fame', icon: 'fa-solid fa-trophy', category: 'marathon', threshold: 1, group: 'marathon', source: 'alltime_marathon', rarity: 'legendary', unit: 'Rank', isDynamic: true },
+
+            // Accuracy (Permanent)
+            { id: 'acc_80', title: '80% Accuracy', desc: 'Achieve 80% or higher test accuracy', icon: 'fa-solid fa-bullseye', category: 'accuracy', target: 80, type: 'best_accuracy', rarity: 'common', unit: '%', isDynamic: false },
+            { id: 'acc_90', title: '90% Accuracy', desc: 'Achieve 90% or higher test accuracy', icon: 'fa-solid fa-crosshairs', category: 'accuracy', target: 90, type: 'best_accuracy', rarity: 'rare', unit: '%', isDynamic: false },
+            { id: 'acc_95', title: '95% Accuracy', desc: 'Achieve 95% or higher test accuracy', icon: 'fa-solid fa-bullseye', category: 'accuracy', target: 95, type: 'best_accuracy', rarity: 'epic', unit: '%', isDynamic: false },
+
+            // Consistency (Permanent)
+            { id: 'cons_80', title: '80% Consistency', desc: 'Maintain 80% or higher line consistency', icon: 'fa-solid fa-wave-square', category: 'consistency', target: 80, type: 'best_consistency', rarity: 'common', unit: '%', isDynamic: false },
+            { id: 'cons_90', title: '90% Consistency', desc: 'Maintain 90% or higher line consistency', icon: 'fa-solid fa-wave-square', category: 'consistency', target: 90, type: 'best_consistency', rarity: 'rare', unit: '%', isDynamic: false },
+            { id: 'cons_95', title: '95% Consistency', desc: 'Maintain 95% or higher line consistency', icon: 'fa-solid fa-wave-square', category: 'consistency', target: 95, type: 'best_consistency', rarity: 'epic', unit: '%', isDynamic: false },
+
+            // Streak (Permanent)
+            { id: 'streak_3', title: '3 Days Streak', desc: 'Practice tests for 3 consecutive days', icon: 'fa-solid fa-fire', category: 'streak', target: 3, type: 'streak_days', rarity: 'common', unit: 'Days', isDynamic: false },
+            { id: 'streak_7', title: '7 Days Streak', desc: 'Practice tests for 7 consecutive days', icon: 'fa-solid fa-fire', category: 'streak', target: 7, type: 'streak_days', rarity: 'rare', unit: 'Days', isDynamic: false },
+            { id: 'streak_30', title: '30 Days Streak', desc: 'Practice tests for 30 consecutive days', icon: 'fa-solid fa-bolt', category: 'streak', target: 30, type: 'streak_days', rarity: 'legendary', unit: 'Days', isDynamic: false }
+        ],
+
+        // Single Public Entry Point: PURE, DETERMINISTIC & SIDE-EFFECT FREE
+        resolve({ user, history = [], leaderboards = {}, previousState = null }) {
+            const permanent = this.resolvers.PermanentResolver.resolve(this.config, user, history);
+            const dynamic = this.resolvers.RankingResolver.resolve(this.config, user, leaderboards);
+            const achievements = this.resolvers.MergeResolver.merge(permanent, dynamic);
+            const { summary, progress } = this.resolvers.ProgressResolver.resolve(achievements);
+            const { showcase, showcaseRemoved } = this.resolvers.ShowcaseValidator.validate(user?.achievement_showcase, achievements);
+            const events = this.resolvers.EventResolver.computeEvents(previousState, achievements, showcaseRemoved);
+
+            return {
+                achievements,
+                permanent,
+                dynamic,
+                summary,
+                progress,
+                showcase,
+                events
+            };
+        },
+
+        // Internal Resolvers Architecture
+        resolvers: {
+            PermanentResolver: {
+                resolve(config, user, history = []) {
+                    const permConfigs = config.filter(c => !c.isDynamic);
+                    const totalTests = history.length;
+                    const storedUnlocked = Array.isArray(user?.unlocked_achievements) ? user.unlocked_achievements : [];
+
+                    if (totalTests === 0 && !user?.best_standard_test_date && storedUnlocked.length === 0) {
+                        return permConfigs.map(item => ({
+                            ...item,
+                            current: 0,
+                            unlocked: false,
+                            percentage: 0
+                        }));
+                    }
+
+                    const stdTests = history.filter(h => (h.mode || h.test_mode || '').toLowerCase().includes('standard')).length;
+                    const marTests = history.filter(h => (h.mode || h.test_mode || '').toLowerCase().includes('marathon')).length;
+
+                    const historyScores = history.map(h => h.score !== undefined ? h.score : (h.total_answered || h.totalAnswered || 0));
+                    const bestScore = historyScores.length > 0
+                        ? Math.max(...historyScores, user?.best_standard_score != null ? user.best_standard_score : 0)
+                        : (user?.best_standard_score != null ? user.best_standard_score : 0);
+
+                    const historyAcc = history.map(h => parseFloat(h.accuracy) || 0);
+                    const bestAcc = historyAcc.length > 0
+                        ? Math.max(...historyAcc, user?.best_standard_accuracy != null ? parseFloat(user.best_standard_accuracy) : 0)
+                        : (user?.best_standard_accuracy != null ? parseFloat(user.best_standard_accuracy) : 0);
+
+                    const historyCons = history.map(h => parseFloat(h.consistency) || 0);
+                    const bestCons = historyCons.length > 0
+                        ? Math.max(...historyCons, user?.best_standard_consistency != null ? parseFloat(user.best_standard_consistency) : 0)
+                        : (user?.best_standard_consistency != null ? parseFloat(user.best_standard_consistency) : 0);
+
+                    const streak = user?.current_streak || 0;
+
+                    return permConfigs.map(item => {
+                        let current = 0;
+                        let unlocked = storedUnlocked.includes(item.id);
+
+                        if (item.type === 'total_tests') {
+                            current = totalTests;
+                        } else if (item.type === 'test_mode_standard') {
+                            current = stdTests;
+                        } else if (item.type === 'test_mode_marathon') {
+                            current = marTests;
+                        } else if (item.type === 'best_score') {
+                            current = bestScore;
+                        } else if (item.type === 'best_accuracy') {
+                            current = Math.round(bestAcc);
+                        } else if (item.type === 'best_consistency') {
+                            current = Math.round(bestCons);
+                        } else if (item.type === 'streak_days') {
+                            current = streak;
+                        }
+
+                        if (!unlocked) {
+                            unlocked = current >= item.target;
+                        }
+
+                        const percentage = Math.min(100, Math.round((current / item.target) * 100));
+
+                        return {
+                            ...item,
+                            current,
+                            target: item.target,
+                            unlocked,
+                            percentage
+                        };
+                    });
+                }
+            },
+
+            RankingResolver: {
+                resolve(config, user, leaderboards = {}) {
+                    const dynConfigs = config.filter(c => c.isDynamic);
+                    const userId = user?.id;
+                    const username = user?.username ? user.username.trim().toLowerCase() : '';
+
+                    const getRankForSource = (sourceKey, fallbackRankProp) => {
+                        const lbList = leaderboards[sourceKey];
+                        if (Array.isArray(lbList) && lbList.length > 0 && (userId || username)) {
+                            const foundIdx = lbList.findIndex(entry => {
+                                const eId = entry.user_id || entry.id;
+                                const eUser = entry.username ? entry.username.trim().toLowerCase() : '';
+                                return (userId && eId && String(userId) === String(eId)) || (username && eUser && username === eUser);
+                            });
+                            if (foundIdx !== -1) {
+                                return foundIdx + 1;
+                            }
+                        }
+                        const raw = user ? user[fallbackRankProp] : null;
+                        if (raw) {
+                            const parsed = parseInt(String(raw).replace('#', ''));
+                            if (!isNaN(parsed) && parsed > 0) return parsed;
+                        }
+                        return 9999;
+                    };
+
+                    const alltimeRank = getRankForSource('alltime_standard', 'rank');
+                    const weeklyRank = getRankForSource('weekly_standard', 'weekly_rank');
+                    const marathonRank = getRankForSource('alltime_marathon', 'marathon_rank');
+
+                    return dynConfigs.map(item => {
+                        let currentRank = 9999;
+                        if (item.source === 'alltime_standard') currentRank = alltimeRank;
+                        else if (item.source === 'weekly_standard') currentRank = weeklyRank;
+                        else if (item.source === 'alltime_marathon') currentRank = marathonRank;
+
+                        const unlocked = currentRank > 0 && currentRank <= item.threshold;
+                        let percentage = 0;
+
+                        if (unlocked) {
+                            percentage = 100;
+                        } else if (currentRank <= 1000) {
+                            percentage = Math.max(0, Math.round(((1000 - currentRank) / (1000 - item.threshold)) * 100));
+                        }
+
+                        return {
+                            ...item,
+                            currentRank: currentRank <= 1000 ? currentRank : null,
+                            current: currentRank <= 1000 ? `#${currentRank}` : 'Unranked',
+                            target: `Top ${item.threshold}`,
+                            unlocked,
+                            percentage
+                        };
+                    });
+                }
+            },
+
+            MergeResolver: {
+                merge(permanent, dynamic) {
+                    return [...permanent, ...dynamic];
+                }
+            },
+
+            ProgressResolver: {
+                resolve(unifiedList) {
+                    const totalCount = unifiedList.length;
+                    const unlockedCount = unifiedList.filter(a => a.unlocked).length;
+                    const completionPercentage = totalCount > 0 ? Math.round((unlockedCount / totalCount) * 100) : 0;
+
+                    const categoryBreakdown = {};
+                    unifiedList.forEach(item => {
+                        const cat = item.category || 'general';
+                        if (!categoryBreakdown[cat]) {
+                            categoryBreakdown[cat] = { total: 0, unlocked: 0 };
+                        }
+                        categoryBreakdown[cat].total++;
+                        if (item.unlocked) categoryBreakdown[cat].unlocked++;
+                    });
+
+                    return {
+                        summary: {
+                            unlockedCount,
+                            totalCount,
+                            completionPercentage
+                        },
+                        progress: {
+                            categoryBreakdown
+                        }
+                    };
+                }
+            },
+
+            ShowcaseValidator: {
+                validate(userShowcaseData, unifiedList) {
+                    let rawList = [];
+                    if (userShowcaseData) {
+                        const scData = typeof userShowcaseData === 'string'
+                            ? JSON.parse(userShowcaseData)
+                            : userShowcaseData;
+                        if (scData && Array.isArray(scData.showcase)) {
+                            rawList = scData.showcase;
+                        } else if (Array.isArray(userShowcaseData)) {
+                            rawList = userShowcaseData;
+                        }
+                    }
+
+                    const unlockedMap = new Map(unifiedList.filter(a => a.unlocked).map(a => [a.id, a]));
+                    const validShowcase = [];
+                    const showcaseRemoved = [];
+
+                    rawList.forEach(id => {
+                        if (unlockedMap.has(id)) {
+                            if (validShowcase.length < 4) {
+                                validShowcase.push(id);
+                            }
+                        } else {
+                            showcaseRemoved.push(id);
+                        }
+                    });
+
+                    return {
+                        showcase: validShowcase,
+                        showcaseRemoved
+                    };
+                }
+            },
+
+            EventResolver: {
+                computeEvents(previousState, currentUnified, showcaseRemoved = []) {
+                    if (!previousState || !Array.isArray(previousState.achievements)) {
+                        return {
+                            newlyUnlocked: [],
+                            newlyLocked: [],
+                            showcaseRemoved: showcaseRemoved,
+                            changed: showcaseRemoved.length > 0
+                        };
+                    }
+
+                    const prevUnlockedIds = new Set(previousState.achievements.filter(a => a.unlocked).map(a => a.id));
+                    const currUnlockedIds = new Set(currentUnified.filter(a => a.unlocked).map(a => a.id));
+
+                    const newlyUnlocked = currentUnified.filter(a => a.unlocked && !prevUnlockedIds.has(a.id));
+                    const newlyLocked = previousState.achievements.filter(a => a.unlocked && !currUnlockedIds.has(a.id));
+
+                    const changed = newlyUnlocked.length > 0 || newlyLocked.length > 0 || showcaseRemoved.length > 0;
+
+                    return {
+                        newlyUnlocked,
+                        newlyLocked,
+                        showcaseRemoved,
+                        changed
+                    };
+                }
+            }
+        }
+    },
+
     renderAchievements() {
         if (this.achievements) {
             this.achievements.render();
         }
     },
 
+    // ======================== ACHIEVEMENTS UI CONSUMER ========================
     achievements: {
         mode: 'personal', // 'personal' or 'public'
         publicProfileData: null, // { profile, tests, username, displayName }
@@ -3220,7 +5784,9 @@ const app = {
             { id: 'getting_started', label: 'Getting Started' },
             { id: 'score', label: 'Score' },
             { id: 'testing', label: 'Testing' },
-            { id: 'ranking', label: 'Ranking' },
+            { id: 'ranking', label: 'All-Time Rank' },
+            { id: 'weekly', label: 'Weekly Rank' },
+            { id: 'marathon', label: 'Marathon Rank' },
             { id: 'accuracy', label: 'Accuracy' },
             { id: 'consistency', label: 'Consistency' },
             { id: 'streak', label: 'Streak' }
@@ -3234,9 +5800,9 @@ const app = {
             },
             rare: {
                 label: 'Rare',
-                badgeClass: 'text-blue-400 bg-blue-500/10 border-blue-500/30',
-                iconBg: 'bg-blue-500/10 text-blue-400 border-blue-500/30 shadow-[0_0_10px_rgba(6,182,212,0.15)]',
-                accentColor: 'text-blue-400'
+                badgeClass: 'text-sky-400 bg-sky-500/10 border-sky-500/30',
+                iconBg: 'bg-sky-500/10 text-sky-400 border-sky-500/30 shadow-[0_0_10px_rgba(6,182,212,0.15)]',
+                accentColor: 'text-sky-400'
             },
             epic: {
                 label: 'Epic',
@@ -3251,115 +5817,57 @@ const app = {
                 accentColor: 'text-amber-400'
             }
         },
-        config: [
-            // Getting Started
-            { id: 'first_test', title: 'First Test', desc: 'Complete your first Koran Test session', icon: 'fa-solid fa-flag-checkered', category: 'getting_started', target: 1, type: 'total_tests', rarity: 'common', unit: 'Test' },
-            { id: 'first_standard', title: 'First Standard Test', desc: 'Complete a Standard mode test session', icon: 'fa-solid fa-clipboard-check', category: 'getting_started', target: 1, type: 'test_mode_standard', rarity: 'common', unit: 'Test' },
-            { id: 'first_marathon', title: 'First Marathon Test', desc: 'Complete a Marathon mode test session', icon: 'fa-solid fa-person-running', category: 'getting_started', target: 1, type: 'test_mode_marathon', rarity: 'rare', unit: 'Test' },
+        circularRarityStyles: {
+            common: 'bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700/60 shadow-[0_0_8px_rgba(148,163,184,0.15)]',
+            rare: 'bg-sky-500/15 text-sky-400 border-sky-500/40 shadow-[0_0_12px_rgba(6,182,212,0.25)]',
+            epic: 'bg-purple-500/15 text-purple-400 border-purple-500/40 shadow-[0_0_12px_rgba(168,85,247,0.25)]',
+            legendary: 'bg-amber-500/15 text-amber-400 border-amber-500/40 shadow-[0_0_14px_rgba(245,158,11,0.3)]'
+        },
+        cachedState: null,
 
-            // Score
-            { id: 'score_100', title: 'Score 100', desc: 'Achieve a score of 100 points in a test session', icon: 'fa-solid fa-star', category: 'score', target: 100, type: 'best_score', rarity: 'common', unit: 'Score' },
-            { id: 'score_500', title: 'Score 500', desc: 'Achieve a score of 500 points in a test session', icon: 'fa-solid fa-trophy', category: 'score', target: 500, type: 'best_score', rarity: 'rare', unit: 'Score' },
-            { id: 'score_1000', title: 'Score 1000', desc: 'Achieve a score of 1000 points in a test session', icon: 'fa-solid fa-gem', category: 'score', target: 1000, type: 'best_score', rarity: 'legendary', unit: 'Score' },
-
-            // Testing
-            { id: 'tests_10', title: '10 Tests', desc: 'Complete 10 test sessions in total', icon: 'fa-solid fa-vial', category: 'testing', target: 10, type: 'total_tests', rarity: 'common', unit: 'Tests' },
-            { id: 'tests_25', title: '25 Tests', desc: 'Complete 25 test sessions in total', icon: 'fa-solid fa-flask', category: 'testing', target: 25, type: 'total_tests', rarity: 'rare', unit: 'Tests' },
-            { id: 'tests_50', title: '50 Tests', desc: 'Complete 50 test sessions in total', icon: 'fa-solid fa-microscope', category: 'testing', target: 50, type: 'total_tests', rarity: 'epic', unit: 'Tests' },
-            { id: 'tests_100', title: '100 Tests', desc: 'Complete 100 test sessions in total', icon: 'fa-solid fa-chart-line', category: 'testing', target: 100, type: 'total_tests', rarity: 'legendary', unit: 'Tests' },
-
-            // Ranking (Standard)
-            { id: 'rank_100', title: 'Top 100 Rank', desc: 'Reach Top 100 on the Global Leaderboard', icon: 'fa-solid fa-ranking-star', category: 'ranking', target: 100, type: 'rank_le', rarity: 'common', unit: 'Rank' },
-            { id: 'rank_50', title: 'Top 50 Rank', desc: 'Reach Top 50 on the Global Leaderboard', icon: 'fa-solid fa-award', category: 'ranking', target: 50, type: 'rank_le', rarity: 'rare', unit: 'Rank' },
-            { id: 'rank_10', title: 'Top 10 Rank', desc: 'Reach Top 10 on the Global Leaderboard', icon: 'fa-solid fa-crown', category: 'ranking', target: 10, type: 'rank_le', rarity: 'epic', unit: 'Rank' },
-            { id: 'rank_1', title: 'Rank #1 Champion', desc: 'Claim the #1 Champion spot on the Leaderboard', icon: 'fa-solid fa-trophy', category: 'ranking', target: 1, type: 'rank_le', rarity: 'legendary', unit: 'Rank' },
-
-            // Ranking (Marathon Hall of Fame)
-            { id: 'marathon_rank_100', title: 'Marathon Top 100', desc: 'Reach Top 100 on the Marathon Hall of Fame', icon: 'fa-solid fa-building-columns', category: 'marathon', target: 100, type: 'marathon_rank_le', rarity: 'common', unit: 'Rank' },
-            { id: 'marathon_rank_50', title: 'Marathon Top 50', desc: 'Reach Top 50 on the Marathon Hall of Fame', icon: 'fa-solid fa-award', category: 'marathon', target: 50, type: 'marathon_rank_le', rarity: 'rare', unit: 'Rank' },
-            { id: 'marathon_rank_10', title: 'Marathon Top 10', desc: 'Reach Top 10 on the Marathon Hall of Fame', icon: 'fa-solid fa-crown', category: 'marathon', target: 10, type: 'marathon_rank_le', rarity: 'epic', unit: 'Rank' },
-            { id: 'marathon_rank_1', title: 'Marathon Champion', desc: 'Claim the #1 Champion spot on the Marathon Hall of Fame', icon: 'fa-solid fa-trophy', category: 'marathon', target: 1, type: 'marathon_rank_le', rarity: 'legendary', unit: 'Rank' },
-
-            // Accuracy
-            { id: 'acc_80', title: '80% Accuracy', desc: 'Achieve 80% or higher test accuracy', icon: 'fa-solid fa-bullseye', category: 'accuracy', target: 80, type: 'best_accuracy', rarity: 'common', unit: '%' },
-            { id: 'acc_90', title: '90% Accuracy', desc: 'Achieve 90% or higher test accuracy', icon: 'fa-solid fa-crosshairs', category: 'accuracy', target: 90, type: 'best_accuracy', rarity: 'rare', unit: '%' },
-            { id: 'acc_95', title: '95% Accuracy', desc: 'Achieve 95% or higher test accuracy', icon: 'fa-solid fa-bullseye', category: 'accuracy', target: 95, type: 'best_accuracy', rarity: 'epic', unit: '%' },
-
-            // Consistency
-            { id: 'cons_80', title: '80% Consistency', desc: 'Maintain 80% or higher line consistency', icon: 'fa-solid fa-wave-square', category: 'consistency', target: 80, type: 'best_consistency', rarity: 'common', unit: '%' },
-            { id: 'cons_90', title: '90% Consistency', desc: 'Maintain 90% or higher line consistency', icon: 'fa-solid fa-wave-square', category: 'consistency', target: 90, type: 'best_consistency', rarity: 'rare', unit: '%' },
-            { id: 'cons_95', title: '95% Consistency', desc: 'Maintain 95% or higher line consistency', icon: 'fa-solid fa-wave-square', category: 'consistency', target: 95, type: 'best_consistency', rarity: 'epic', unit: '%' },
-
-            // Streak
-            { id: 'streak_3', title: '3 Days Streak', desc: 'Practice tests for 3 consecutive days', icon: 'fa-solid fa-fire', category: 'streak', target: 3, type: 'streak_days', rarity: 'common', unit: 'Days' },
-            { id: 'streak_7', title: '7 Days Streak', desc: 'Practice tests for 7 consecutive days', icon: 'fa-solid fa-fire', category: 'streak', target: 7, type: 'streak_days', rarity: 'rare', unit: 'Days' },
-            { id: 'streak_30', title: '30 Days Streak', desc: 'Practice tests for 30 consecutive days', icon: 'fa-solid fa-bolt', category: 'streak', target: 30, type: 'streak_days', rarity: 'legendary', unit: 'Days' }
-        ],
-
-        getEvaluatedListForUser(targetUser, tests = []) {
-            const totalTests = tests.length;
-
-            // EARLY EXIT: If user has zero test results, all achievements are locked
-            if (totalTests === 0) {
-                console.log('[ACHIEVEMENT INIT] Zero test results for user, all achievements locked');
-                return this.config.map(item => ({
-                    ...item,
-                    current: 0,
-                    unlocked: false,
-                    percentage: 0
-                }));
+        // Obtain Engine State
+        getEngineState() {
+            if (this.mode === 'public' && this.publicProfileData && this.publicProfileData.profile) {
+                return app.achievementEngine.resolve({
+                    user: this.publicProfileData.profile,
+                    history: this.publicProfileData.tests || [],
+                    leaderboards: app.state.lb_cache || {},
+                    previousState: null
+                });
             }
 
-            const stdTests = tests.filter(h => (h.mode || '').toLowerCase().includes('standard')).length;
-            const marTests = tests.filter(h => (h.mode || '').toLowerCase().includes('marathon')).length;
+            const user = app.state.user;
+            const history = app.state.history || [];
+            const leaderboards = {
+                alltime_standard: app.state.lb_cache_standard_alltime?.data || [],
+                weekly_standard: app.state.lb_cache_standard_weekly?.data || [],
+                alltime_marathon: app.state.lb_cache_marathon_alltime?.data || []
+            };
 
-            const historyScores = tests.map(h => h.score || 0);
-            const bestScore = Math.max(...historyScores);
-
-            const historyAcc = tests.map(h => parseFloat(h.accuracy) || 0);
-            const bestAcc = Math.max(...historyAcc);
-
-            const historyCons = tests.map(h => parseFloat(h.consistency) || 0);
-            const bestCons = Math.max(...historyCons);
-
-            const streak = targetUser?.current_streak || 0;
-
-            return this.config.map(item => {
-                let current = 0;
-                let unlocked = false;
-
-                if (item.type === 'total_tests') {
-                    current = totalTests;
-                    unlocked = current >= item.target;
-                } else if (item.type === 'test_mode_standard') {
-                    current = stdTests;
-                    unlocked = current >= item.target;
-                } else if (item.type === 'test_mode_marathon') {
-                    current = marTests;
-                    unlocked = current >= item.target;
-                } else if (item.type === 'best_score') {
-                    current = bestScore;
-                    unlocked = current >= item.target;
-                } else if (item.type === 'best_accuracy') {
-                    current = Math.round(bestAcc);
-                    unlocked = current >= item.target;
-                } else if (item.type === 'best_consistency') {
-                    current = Math.round(bestCons);
-                    unlocked = current >= item.target;
-                } else if (item.type === 'streak_days') {
-                    current = streak;
-                    unlocked = current >= item.target;
-                }
-
-                const percentage = Math.min(100, Math.round((current / item.target) * 100));
-
-                return {
-                    ...item,
-                    current,
-                    unlocked,
-                    percentage
-                };
+            const resolved = app.achievementEngine.resolve({
+                user,
+                history,
+                leaderboards,
+                previousState: this.cachedState
             });
+
+            this.cachedState = resolved;
+            return resolved;
+        },
+
+        getEvaluatedListForUser(targetUser, tests = []) {
+            const res = app.achievementEngine.resolve({
+                user: targetUser,
+                history: tests,
+                leaderboards: {},
+                previousState: null
+            });
+            return res.achievements;
+        },
+
+        getEvaluatedList() {
+            const res = this.getEngineState();
+            return res.achievements;
         },
 
         goBack() {
@@ -3375,141 +5883,14 @@ const app = {
             }
         },
 
-        getEvaluatedList() {
-            if (this.mode === 'public' && this.publicProfileData && this.publicProfileData.profile) {
-                return this.getEvaluatedListForUser(this.publicProfileData.profile, this.publicProfileData.tests || []);
-            }
-
-            const user = app.state.user;
-            const history = app.state.history || [];
-            const totalTests = history.length;
-
-            // EARLY EXIT: If user has zero test results, all achievements are locked
-            // This prevents false unlocks from profile defaults or fallback values
-            if (totalTests === 0) {
-                const hasProfileTests = user?.best_standard_test_date != null;
-                if (!hasProfileTests) {
-                    console.log('[ACHIEVEMENT INIT]', {
-                        userId: user?.id || 'unknown',
-                        totalTestResults: 0,
-                        bestScore: null,
-                        accuracy: null,
-                        consistency: null,
-                        streak: 0,
-                        unlockedAchievementIds: [],
-                        completionPercent: 0
-                    });
-                    return this.config.map(item => ({
-                        ...item,
-                        current: 0,
-                        unlocked: false,
-                        percentage: 0
-                    }));
-                }
-            }
-
-            const stdTests = history.filter(h => {
-                const m = (h.mode || h.test_mode || '').toLowerCase();
-                return m.includes('standard');
-            }).length;
-
-            const marTests = history.filter(h => {
-                const m = (h.mode || h.test_mode || '').toLowerCase();
-                return m.includes('marathon');
-            }).length;
-
-            // Score: only from actual test results in history
-            const historyScores = history.map(h => h.score !== undefined ? h.score : (h.total_answered || h.totalAnswered || 0));
-            const bestScore = historyScores.length > 0
-                ? Math.max(...historyScores, user?.best_standard_score != null ? user.best_standard_score : 0)
-                : (user?.best_standard_score != null ? user.best_standard_score : 0);
-
-            // Rank: only valid if user has test results
-            const rawRank = user?.rank ? String(user.rank).replace('#', '') : '9999';
-            const userRank = totalTests > 0 ? (parseInt(rawRank) || 9999) : 9999;
-
-            const rawMarathonRank = user?.marathon_rank ? String(user.marathon_rank).replace('#', '') : '9999';
-            const marathonUserRank = totalTests > 0 ? (parseInt(rawMarathonRank) || 9999) : 9999;
-
-            // Accuracy: only from actual test results, never from profile defaults
-            const historyAcc = history.map(h => parseFloat(h.accuracy) || 0);
-            const bestAcc = historyAcc.length > 0
-                ? Math.max(...historyAcc, user?.best_standard_accuracy != null ? parseFloat(user.best_standard_accuracy) : 0)
-                : (user?.best_standard_accuracy != null ? parseFloat(user.best_standard_accuracy) : 0);
-
-            // Consistency: only from actual test results, NEVER from profile defaults
-            const historyCons = history.map(h => parseFloat(h.consistency) || 0);
-            const bestCons = historyCons.length > 0
-                ? Math.max(...historyCons, user?.best_standard_consistency != null ? parseFloat(user.best_standard_consistency) : 0)
-                : (user?.best_standard_consistency != null ? parseFloat(user.best_standard_consistency) : 0);
-
-            // Streak: only from actual data, no artificial defaults
-            const streak = user?.current_streak || 0;
-
-            // Debug log
-            const evaluated = this.config.map(item => {
-                let current = 0;
-                let unlocked = false;
-
-                if (item.type === 'total_tests') {
-                    current = totalTests;
-                    unlocked = current >= item.target;
-                } else if (item.type === 'test_mode_standard') {
-                    current = stdTests;
-                    unlocked = current >= item.target;
-                } else if (item.type === 'test_mode_marathon') {
-                    current = marTests;
-                    unlocked = current >= item.target;
-                } else if (item.type === 'best_score') {
-                    current = bestScore;
-                    unlocked = current >= item.target;
-                } else if (item.type === 'rank_le') {
-                    current = userRank > 0 && userRank <= 1000 ? userRank : 0;
-                    unlocked = userRank > 0 && userRank <= item.target;
-                } else if (item.type === 'marathon_rank_le') {
-                    current = marathonUserRank > 0 && marathonUserRank <= 1000 ? marathonUserRank : 0;
-                    unlocked = marathonUserRank > 0 && marathonUserRank <= item.target;
-                } else if (item.type === 'best_accuracy') {
-                    current = Math.round(bestAcc);
-                    unlocked = current >= item.target;
-                } else if (item.type === 'best_consistency') {
-                    current = Math.round(bestCons);
-                    unlocked = current >= item.target;
-                } else if (item.type === 'streak_days') {
-                    current = streak;
-                    unlocked = current >= item.target;
-                }
-
-                let percentage = 0;
-                if (item.type === 'rank_le') {
-                    percentage = unlocked ? 100 : (userRank <= 1000 ? Math.max(0, Math.round(((1000 - userRank) / (1000 - item.target)) * 100)) : 0);
-                } else if (item.type === 'marathon_rank_le') {
-                    percentage = unlocked ? 100 : (marathonUserRank <= 1000 ? Math.max(0, Math.round(((1000 - marathonUserRank) / (1000 - item.target)) * 100)) : 0);
-                } else {
-                    percentage = Math.min(100, Math.round((current / item.target) * 100));
-                }
-
-                return {
-                    ...item,
-                    current,
-                    unlocked,
-                    percentage
-                };
+        scrollToActiveCategory(containerId, activeBtn) {
+            const container = document.getElementById(containerId);
+            if (!container || !activeBtn) return;
+            const targetLeft = activeBtn.offsetLeft - (container.clientWidth / 2) + (activeBtn.clientWidth / 2);
+            container.scrollTo({
+                left: Math.max(0, targetLeft),
+                behavior: 'smooth'
             });
-
-            const unlockedIds = evaluated.filter(a => a.unlocked).map(a => a.id);
-            console.log('[ACHIEVEMENT INIT]', {
-                userId: user?.id || 'unknown',
-                totalTestResults: totalTests,
-                bestScore: bestScore,
-                accuracy: Math.round(bestAcc),
-                consistency: Math.round(bestCons),
-                streak: streak,
-                unlockedAchievementIds: unlockedIds,
-                completionPercent: evaluated.length > 0 ? Math.round((unlockedIds.length / evaluated.length) * 100) : 0
-            });
-
-            return evaluated;
         },
 
         render(categoryFilter) {
@@ -3529,30 +5910,23 @@ const app = {
 
             if (backText) backText.innerText = isPublic ? 'Public Profile' : 'Profile';
             if (headerTitle) {
-                if (isPublic) {
-                    headerTitle.innerText = `${this.publicProfileData.displayName}'s Achievements`;
-                } else {
-                    headerTitle.innerText = 'Achievements';
-                }
+                headerTitle.innerText = isPublic ? `${this.publicProfileData.displayName}'s Achievements` : 'Achievements';
             }
             if (headerSub) {
-                if (isPublic) {
-                    headerSub.innerText = `Viewing achievements for @${this.publicProfileData.username} • Read-Only`;
-                } else {
-                    headerSub.innerText = 'Track your progress and unlock milestones.';
-                }
+                headerSub.innerText = isPublic
+                    ? `Viewing achievements for @${this.publicProfileData.username} • Read-Only`
+                    : 'Track your progress and unlock milestones.';
             }
 
             if (!grid) return;
 
-            const evaluated = this.getEvaluatedList();
-            const unlockedCount = evaluated.filter(a => a.unlocked).length;
-            const totalCount = evaluated.length;
-            const globalPercentage = totalCount > 0 ? Math.round((unlockedCount / totalCount) * 100) : 0;
+            const state = this.getEngineState();
+            const evaluated = state.achievements;
+            const { unlockedCount, totalCount, completionPercentage } = state.summary;
 
             if (counterText) counterText.innerText = `${unlockedCount} / ${totalCount} Unlocked`;
-            if (percentageText) percentageText.innerText = `${globalPercentage}% Completed`;
-            if (progressBar) progressBar.style.width = `${globalPercentage}%`;
+            if (percentageText) percentageText.innerText = `${completionPercentage}% Completed`;
+            if (progressBar) progressBar.style.width = `${completionPercentage}%`;
 
             // Render Categories
             if (categoriesContainer) {
@@ -3560,15 +5934,21 @@ const app = {
                     const isActive = cat.id === this.activeCategory;
                     return `
                         <button onclick="app.achievements.render('${cat.id}')" 
+                                data-cat-id="${cat.id}"
                                 class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap border ${
                                     isActive
-                                        ? 'bg-blue-500 text-slate-950 border-blue-400 shadow-md shadow-blue-500/20'
+                                        ? 'bg-sky-500 text-slate-950 border-sky-400 shadow-md shadow-sky-500/20'
                                         : 'bg-white dark:bg-slate-900 hover:bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800'
                                 }">
                             ${cat.label}
                         </button>
                     `;
                 }).join('');
+
+                const activeBtn = categoriesContainer.querySelector(`[data-cat-id="${this.activeCategory}"]`);
+                if (activeBtn) {
+                    this.scrollToActiveCategory('achievements-categories', activeBtn);
+                }
             }
 
             // Filter items
@@ -3583,15 +5963,16 @@ const app = {
 
                 return `
                     <div onclick="app.achievements.openDetailModal('${item.id}')" 
-                         class="bg-white dark:bg-slate-900 border rounded-2xl p-4 cursor-pointer transition flex flex-col justify-between group relative overflow-hidden ${
+                         class="bg-white dark:bg-slate-900 border rounded-2xl p-4 cursor-pointer transition flex flex-col justify-between group relative overflow-hidden h-full min-h-[200px] ${
                              isUnlocked
-                                 ? 'border-slate-200 dark:border-slate-800 hover:border-blue-500/60 shadow-lg'
+                                 ? 'border-slate-200 dark:border-slate-800 hover:border-sky-500/60 shadow-lg'
                                  : 'border-slate-200 dark:border-slate-800/80 opacity-60 hover:opacity-85'
                          }">
                         <!-- Status indicator -->
-                        <div class="absolute top-3 right-3 text-xs">
+                        <div class="absolute top-3 right-3 text-xs flex items-center gap-1.5">
+                            ${item.isDynamic ? '<span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 font-semibold">LIVE</span>' : ''}
                             ${isUnlocked 
-                                ? '<span class="text-blue-400"><i class="fa-solid fa-circle-check"></i></span>'
+                                ? '<span class="text-sky-400"><i class="fa-solid fa-circle-check"></i></span>'
                                 : '<span class="text-slate-600"><i class="fa-solid fa-lock"></i></span>'
                             }
                         </div>
@@ -3610,7 +5991,7 @@ const app = {
                                     ${rarity.label}
                                 </span>
                                 <h4 class="font-bold text-sm leading-snug transition ${
-                                    isUnlocked ? 'text-slate-900 dark:text-slate-100 group-hover:text-blue-400' : 'text-slate-500'
+                                    isUnlocked ? 'text-slate-900 dark:text-slate-100 group-hover:text-sky-400' : 'text-slate-500'
                                 }">${item.title}</h4>
                                 <p class="text-[11px] text-slate-500 mt-1 line-clamp-2 leading-relaxed">${item.desc}</p>
                             </div>
@@ -3619,11 +6000,11 @@ const app = {
                         <!-- Progress Bottom -->
                         <div class="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800/60 space-y-1.5">
                             <div class="flex justify-between items-center text-[10px]">
-                                <span class="text-slate-500 font-semibold">${item.current} / ${item.target} ${item.unit}</span>
-                                <span class="font-bold ${isUnlocked ? 'text-blue-400' : 'text-slate-500'}">${item.percentage}%</span>
+                                <span class="text-slate-500 font-semibold">${item.current} / ${item.target} ${item.unit || ''}</span>
+                                <span class="font-bold ${isUnlocked ? 'text-sky-400' : 'text-slate-500'}">${item.percentage}%</span>
                             </div>
                             <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                                <div class="${isUnlocked ? 'bg-blue-500' : 'bg-slate-700'} h-1.5 rounded-full transition-all duration-500" style="width: ${item.percentage}%"></div>
+                                <div class="${isUnlocked ? 'bg-sky-500' : 'bg-slate-700'} h-1.5 rounded-full transition-all duration-500" style="width: ${item.percentage}%"></div>
                             </div>
                         </div>
                     </div>
@@ -3659,15 +6040,15 @@ const app = {
             }
             if (titleEl) titleEl.innerText = item.title;
             if (descEl) descEl.innerText = item.desc;
-            if (reqEl) reqEl.innerText = `${item.target} ${item.unit}`;
-            if (progText) progText.innerText = `${item.current} / ${item.target} ${item.unit} (${item.percentage}%)`;
+            if (reqEl) reqEl.innerText = `${item.target} ${item.unit || ''}`;
+            if (progText) progText.innerText = `${item.current} / ${item.target} ${item.unit || ''} (${item.percentage}%)`;
             if (progBar) {
                 progBar.style.width = `${item.percentage}%`;
-                progBar.className = `${item.unlocked ? 'bg-blue-500' : 'bg-slate-700'} h-2 rounded-full transition-all duration-300`;
+                progBar.className = `${item.unlocked ? 'bg-sky-500' : 'bg-slate-700'} h-2 rounded-full transition-all duration-300`;
             }
             if (statusEl) {
                 statusEl.innerText = item.unlocked ? 'Unlocked' : 'Locked';
-                statusEl.className = `font-bold ${item.unlocked ? 'text-blue-400' : 'text-slate-500'}`;
+                statusEl.className = `font-bold ${item.unlocked ? 'text-sky-400' : 'text-slate-500'}`;
             }
 
             modal.classList.remove('hidden');
@@ -3678,12 +6059,11 @@ const app = {
             if (modal) modal.classList.add('hidden');
         },
 
-        // ======================== UNLOCK EXPERIENCE ENGINE ========================
+        // ======================== UNLOCK & EVENT EXPERIENCE (UI LAYER) ========================
         unlockQueue: [],
         isShowingUnlockModal: false,
         currentUnlockItem: null,
         autoCloseTimer: null,
-        previousUnlockedIds: null,
 
         playAchievementSound() {
             // Audio hook placeholder for future sound effects
@@ -3742,40 +6122,24 @@ const app = {
         },
 
         captureBaseline() {
-            const evaluated = this.getEvaluatedList();
-            this.previousUnlockedIds = evaluated.filter(a => a.unlocked).map(a => a.id);
+            this.getEngineState();
         },
 
         checkUnlocksAfterTest() {
-            if (!this.previousUnlockedIds) {
-                this.captureBaseline();
-            }
+            const res = this.getEngineState();
+            const { events } = res;
 
-            const beforeList = this.previousUnlockedIds || [];
-            const evaluated = this.getEvaluatedList();
-            const currentUnlockedIds = evaluated.filter(a => a.unlocked).map(a => a.id);
-
-            // Detect newly unlocked achievements
-            const newlyUnlocked = evaluated.filter(a => a.unlocked && !beforeList.includes(a.id));
-
-            console.log('[ACHIEVEMENT]', {
-                previousCount: beforeList.length,
-                newCount: currentUnlockedIds.length,
-                unlockedIds: newlyUnlocked.map(a => a.id),
-                unlockQueue: newlyUnlocked.map(a => a.title)
-            });
-
-            // Update baseline unlocked IDs
-            this.previousUnlockedIds = currentUnlockedIds;
-
-            // Immediately update Profile Summary Card
             if (app.renderProfile) {
                 app.renderProfile();
             }
 
-            if (newlyUnlocked.length > 0) {
-                this.unlockQueue.push(...newlyUnlocked);
+            if (events.newlyUnlocked.length > 0) {
+                this.unlockQueue.push(...events.newlyUnlocked);
                 this.processUnlockQueue();
+            }
+
+            if (events.showcaseRemoved.length > 0) {
+                app.toast.show('Notice: Some dynamic showcase items were auto-removed due to rank change.', 'info', 3000);
             }
         },
 
@@ -3814,7 +6178,6 @@ const app = {
 
             modal.classList.remove('hidden');
 
-            // Auto close after 3 seconds
             if (this.autoCloseTimer) clearTimeout(this.autoCloseTimer);
             this.autoCloseTimer = setTimeout(() => {
                 this.closeUnlockModal();
@@ -3838,63 +6201,37 @@ const app = {
             this.isShowingUnlockModal = false;
             this.currentUnlockItem = null;
 
-            // Process next unlocked achievement in queue after a short delay
             setTimeout(() => {
                 this.processUnlockQueue();
             }, 300);
         },
 
-        // ======================== ACHIEVEMENT SHOWCASE ENGINE ========================
+        // ======================== ACHIEVEMENT SHOWCASE ENGINE (UI LAYER) ========================
         showcaseSelectedIds: [],
         initialShowcaseIds: [],
         pickerCategory: 'all',
-
-        circularRarityStyles: {
-            common: 'bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700/60 shadow-[0_0_8px_rgba(148,163,184,0.15)]',
-            rare: 'bg-blue-500/15 text-blue-400 border-blue-500/40 shadow-[0_0_12px_rgba(6,182,212,0.25)]',
-            epic: 'bg-purple-500/15 text-purple-400 border-purple-500/40 shadow-[0_0_12px_rgba(168,85,247,0.25)]',
-            legendary: 'bg-amber-500/15 text-amber-400 border-amber-500/40 shadow-[0_0_14px_rgba(245,158,11,0.3)]'
-        },
 
         renderShowcaseContainer(containerId = 'profile-showcase-container') {
             const container = document.getElementById(containerId);
             if (!container) return;
 
-            const user = app.state.user;
-            console.log('[SHOWCASE RENDER]', user?.achievement_showcase);
-            const evaluated = this.getEvaluatedList();
-            const unlockedList = evaluated.filter(a => a.unlocked);
-            const unlockedIds = unlockedList.map(a => a.id);
-
-            // Extract user.achievement_showcase
-            let rawList = [];
-            if (user && user.achievement_showcase) {
-                const scData = typeof user.achievement_showcase === 'string'
-                    ? JSON.parse(user.achievement_showcase)
-                    : user.achievement_showcase;
-                if (scData && Array.isArray(scData.showcase)) {
-                    rawList = scData.showcase;
-                }
-            }
-
-            // Validate: must exist and be currently unlocked, max 4
-            const validSelectedIds = rawList.filter(id => unlockedIds.includes(id)).slice(0, 4);
+            const res = this.getEngineState();
+            const validSelectedIds = res.showcase;
+            const evaluated = res.achievements;
 
             if (validSelectedIds.length === 0) {
-                // Empty State
                 container.className = "w-full";
                 container.innerHTML = `
                     <div class="w-full text-center py-4 px-4 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 rounded-xl space-y-2">
                         <div class="text-2xl">🏆</div>
                         <p class="text-xs font-extrabold text-slate-800 dark:text-slate-200">No Achievement Showcase</p>
                         <p class="text-[11px] text-slate-500 dark:text-slate-400">Choose up to four achievements to personalize your profile.</p>
-                        <button onclick="app.achievements.openShowcaseModal()" class="text-xs font-extrabold text-blue-400 hover:text-blue-300 transition inline-flex items-center gap-1 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded">
+                        <button onclick="app.achievements.openShowcaseModal()" class="text-xs font-extrabold text-sky-400 hover:text-sky-300 transition inline-flex items-center gap-1 mt-1 focus:outline-none focus:ring-2 focus:ring-sky-400 rounded">
                             Choose Showcase →
                         </button>
                     </div>
                 `;
             } else {
-                // Render up to 4 selected showcase achievement circular badges
                 const selectedItems = validSelectedIds.map(id => evaluated.find(a => a.id === id)).filter(Boolean);
 
                 container.className = "bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 p-4 rounded-xl flex items-center justify-between w-full";
@@ -3903,16 +6240,16 @@ const app = {
                         ${selectedItems.map(item => {
                             const circStyle = this.circularRarityStyles[item.rarity] || this.circularRarityStyles.common;
                             return `
-                                <div onclick="app.toast.show('🏆 ${item.title}: ${item.desc} | Target: ${item.target} ${item.unit}', 'info', 3000)" 
-                                     title="${item.title}\n${item.desc}\nTarget: ${item.target} ${item.unit}\nRarity: ${item.rarity.toUpperCase()}" 
+                                <div onclick="app.toast.show('🏆 ${item.title}: ${item.desc} | Target: ${item.target} ${item.unit || ''}', 'info', 3000)" 
+                                     title="${item.title}\n${item.desc}\nTarget: ${item.target} ${item.unit || ''}\nRarity: ${item.rarity.toUpperCase()}" 
                                      tabindex="0" role="button" aria-label="${item.title}"
-                                     class="w-12 h-12 sm:w-13 sm:h-13 rounded-full border flex items-center justify-center text-xl cursor-pointer transition-all duration-300 transform hover:scale-110 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-400 ${circStyle}">
+                                     class="w-12 h-12 sm:w-13 sm:h-13 rounded-full border flex items-center justify-center text-xl cursor-pointer transition-all duration-300 transform hover:scale-110 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-sky-400 ${circStyle}">
                                     <i class="${item.icon}"></i>
                                 </div>
                             `;
                         }).join('')}
                     </div>
-                    <button onclick="app.achievements.openShowcaseModal()" aria-label="Edit Showcase" class="text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-blue-400 transition p-1.5 rounded-lg hover:bg-slate-100 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    <button onclick="app.achievements.openShowcaseModal()" aria-label="Edit Showcase" class="text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-sky-400 transition p-1.5 rounded-lg hover:bg-slate-100 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-400">
                         <i class="fa-solid fa-pen-to-square text-sm"></i>
                     </button>
                 `;
@@ -3924,24 +6261,8 @@ const app = {
             const grid = document.getElementById('showcase-picker-grid');
             if (!modal || !grid) return;
 
-            const user = app.state.user;
-            const evaluated = this.getEvaluatedList();
-            const unlockedList = evaluated.filter(a => a.unlocked);
-            const unlockedIds = unlockedList.map(a => a.id);
-
-            // Read current valid selected showcase IDs
-            let rawList = [];
-            if (user && user.achievement_showcase) {
-                const scData = typeof user.achievement_showcase === 'string'
-                    ? JSON.parse(user.achievement_showcase)
-                    : user.achievement_showcase;
-                if (scData && Array.isArray(scData.showcase)) {
-                    rawList = scData.showcase;
-                }
-            }
-
-            this.showcaseSelectedIds = rawList.filter(id => unlockedIds.includes(id)).slice(0, 4);
-            console.log('[SHOWCASE MODAL]', this.showcaseSelectedIds);
+            const res = this.getEngineState();
+            this.showcaseSelectedIds = [...res.showcase];
             this.initialShowcaseIds = [...this.showcaseSelectedIds];
             this.pickerCategory = 'all';
 
@@ -4018,7 +6339,7 @@ const app = {
                                  title="Slot ${i + 1}: ${item.title} (Drag to reorder)" 
                                  class="relative w-8 h-8 rounded-full border flex items-center justify-center text-xs cursor-grab active:cursor-grabbing transition-transform duration-150 hover:scale-105 ${circStyle}">
                                 <i class="${item.icon}"></i>
-                                <span class="absolute -top-1 -right-1 bg-blue-600 text-white dark:bg-blue-500 dark:text-slate-950 text-[8px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center shadow-xs">${i + 1}</span>
+                                <span class="absolute -top-1 -right-1 bg-sky-600 text-white dark:bg-sky-500 dark:text-slate-950 text-[8px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center shadow-xs">${i + 1}</span>
                             </div>
                         `;
                     }
@@ -4047,32 +6368,35 @@ const app = {
                 grid.scrollTop = 0;
             }
 
-            // Render Live Profile Preview
             this.renderLivePreview();
 
             if (counter) counter.innerText = `${this.showcaseSelectedIds.length} / 4`;
 
-            // Check if changes were made to toggle Save Changes button
             const isChanged = JSON.stringify(this.showcaseSelectedIds) !== JSON.stringify(this.initialShowcaseIds);
             if (saveBtn) {
                 saveBtn.disabled = !isChanged;
             }
 
-            // Render Category Filter Tabs
             if (categoriesContainer) {
                 categoriesContainer.innerHTML = this.categories.map(cat => {
                     const isActive = cat.id === this.pickerCategory;
                     return `
                         <button onclick="app.achievements.renderShowcasePicker('${cat.id}')" 
+                                data-showcase-cat-id="${cat.id}"
                                 class="px-3 py-1 rounded-lg text-xs font-medium transition-colors duration-120 whitespace-nowrap border shrink-0 ${
                                     isActive
-                                        ? 'bg-blue-600 text-white dark:bg-blue-500 dark:text-slate-950 border-blue-600 dark:border-blue-500 shadow-xs font-semibold'
+                                        ? 'bg-sky-600 text-white dark:bg-sky-500 dark:text-slate-950 border-sky-600 dark:border-sky-500 shadow-xs font-semibold'
                                         : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
                                 }">
                             ${cat.label}
                         </button>
                     `;
                 }).join('');
+
+                const activeBtn = categoriesContainer.querySelector(`[data-showcase-cat-id="${this.pickerCategory}"]`);
+                if (activeBtn) {
+                    this.scrollToActiveCategory('showcase-picker-categories', activeBtn);
+                }
             }
 
             const evaluated = this.getEvaluatedList();
@@ -4093,14 +6417,14 @@ const app = {
                     <div onclick="${isUnlocked ? `app.achievements.toggleShowcaseSelection('${item.id}')` : ''}"
                          tabindex="${isUnlocked ? '0' : '-1'}"
                          role="button"
-                         title="${item.title}: ${item.desc}\nTarget: ${item.target} ${item.unit}"
+                         title="${item.title}: ${item.desc}\nTarget: ${item.target} ${item.unit || ''}"
                          aria-selected="${isSelected}"
                          aria-disabled="${!isUnlocked}"
                          onkeydown="${isUnlocked ? `if(event.key==='Enter'||event.key===' '){event.preventDefault();app.achievements.toggleShowcaseSelection('${item.id}');}` : ''}"
-                         class="bg-white dark:bg-slate-900 border rounded-xl p-3 flex flex-col justify-between transition-all duration-150 select-none relative overflow-hidden group min-h-[95px] w-full min-w-0 ${
+                         class="bg-white dark:bg-slate-900 border rounded-xl p-3 flex flex-col justify-between transition-all duration-150 select-none relative overflow-hidden group h-[98px] w-full min-w-0 ${
                              isUnlocked
                                  ? (isSelected
-                                     ? 'border-blue-500 dark:border-blue-400 bg-blue-50/40 dark:bg-blue-500/10 ring-1 ring-blue-500/50 shadow-xs cursor-pointer'
+                                     ? 'border-sky-500 dark:border-sky-400 bg-sky-50/40 dark:bg-sky-500/10 ring-1 ring-sky-500/50 shadow-xs cursor-pointer'
                                      : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer')
                                  : 'border-slate-200/60 dark:border-slate-800/60 bg-slate-50/60 dark:bg-slate-950/40 opacity-50 cursor-not-allowed'
                          }">
@@ -4116,8 +6440,8 @@ const app = {
                             <div class="shrink-0">
                                 ${isUnlocked ? (
                                     isSelected 
-                                        ? `<span class="bg-blue-600 text-white dark:bg-blue-500 dark:text-slate-950 text-[10px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-xs">${orderBadge} <i class="fa-solid fa-check text-[8px]"></i></span>`
-                                        : '<span class="text-slate-300 dark:text-slate-600 group-hover:text-blue-500 text-xs"><i class="fa-regular fa-circle"></i></span>'
+                                        ? `<span class="bg-sky-600 text-white dark:bg-sky-500 dark:text-slate-950 text-[10px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-xs">${orderBadge} <i class="fa-solid fa-check text-[8px]"></i></span>`
+                                        : '<span class="text-slate-300 dark:text-slate-600 group-hover:text-sky-500 text-xs"><i class="fa-regular fa-circle"></i></span>'
                                 ) : (
                                     '<span class="text-slate-300 dark:text-slate-600 text-xs"><i class="fa-solid fa-lock text-[9px]"></i></span>'
                                 )}
@@ -4127,14 +6451,14 @@ const app = {
                         <!-- Title & Progress -->
                         <div class="mt-1.5 space-y-0.5">
                             <h4 class="font-bold text-xs leading-tight truncate ${
-                                isUnlocked ? (isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-slate-900 dark:text-slate-100') : 'text-slate-400 dark:text-slate-500'
+                                isUnlocked ? (isSelected ? 'text-sky-600 dark:text-sky-400' : 'text-slate-900 dark:text-slate-100') : 'text-slate-400 dark:text-slate-500'
                             }">${item.title}</h4>
                             
                             <div class="flex items-center justify-between text-[10px]">
                                 <span class="text-slate-400 font-normal truncate max-w-[85px]">
-                                    ${item.target} ${item.unit}
+                                    ${item.target} ${item.unit || ''}
                                 </span>
-                                <span class="font-medium ${isUnlocked ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}">
+                                <span class="font-medium ${isUnlocked ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400'}">
                                     ${item.current}/${item.target}
                                 </span>
                             </div>
@@ -4167,8 +6491,8 @@ const app = {
             const user = app.state.user;
             if (!user) return;
 
-            const evaluated = this.getEvaluatedList();
-            const unlockedIds = evaluated.filter(a => a.unlocked).map(a => a.id);
+            const res = this.getEngineState();
+            const unlockedIds = res.achievements.filter(a => a.unlocked).map(a => a.id);
 
             // Validate: only unlocked items, max 4
             const validSelected = this.showcaseSelectedIds.filter(id => unlockedIds.includes(id)).slice(0, 4);
@@ -4202,6 +6526,292 @@ const app = {
             this.closeShowcaseModal();
             this.renderShowcaseContainer();
             app.toast.show('Achievement showcase updated successfully!', 'success', 2500);
+        }
+    },
+
+    // ======================== KEYBOARD FEEDBACK & AUDIO SERVICE ========================
+    audioFeedbackService: {
+        config: {
+            volumeLimit: 0.70,
+            defaultVolume: 0.25,
+            softKeyDuration: 20,
+            mechanicalKeyDuration: 30,
+            countdown: {
+                startFrequency: 520,
+                endFrequency: 820,
+                duration: 50
+            },
+            finishChime: {
+                firstFrequency: 523,
+                secondFrequency: 659,
+                duration: 300
+            }
+        },
+
+        audioCtx: null,
+        isUnlocked: false,
+        playedCountdownSeconds: new Set(),
+
+        getMode() {
+            return localStorage.getItem('korantest.keyboardFeedback.mode') || 'soft';
+        },
+
+        getVolume() {
+            const saved = localStorage.getItem('korantest.keyboardFeedback.volume');
+            const parsed = saved !== null ? parseFloat(saved) : this.config.defaultVolume;
+            return Math.min(Math.max(0, parsed), this.config.volumeLimit);
+        },
+
+        getCountdownEnabled() {
+            const saved = localStorage.getItem('korantest.keyboardFeedback.countdown');
+            return saved !== null ? saved === 'true' : true;
+        },
+
+        initAudioContext() {
+            if (this.isUnlocked) return;
+            try {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContextClass) return;
+                
+                if (!this.audioCtx) {
+                    this.audioCtx = new AudioContextClass();
+                }
+                
+                if (this.audioCtx.state === 'suspended') {
+                    this.audioCtx.resume();
+                }
+                
+                this.isUnlocked = true;
+            } catch (err) {
+                // Silent fallback
+            }
+        },
+
+        setupAutoplayUnlock() {
+            const unlockHandler = () => {
+                this.initAudioContext();
+                if (this.isUnlocked) {
+                    window.removeEventListener('click', unlockHandler);
+                    window.removeEventListener('keydown', unlockHandler);
+                    window.removeEventListener('touchstart', unlockHandler);
+                }
+            };
+            window.addEventListener('click', unlockHandler);
+            window.addEventListener('keydown', unlockHandler);
+            window.addEventListener('touchstart', unlockHandler);
+        },
+
+        resetSessionCountdown() {
+            this.playedCountdownSeconds.clear();
+        },
+
+        playKeyPress() {
+            if (!app.state.isTestRunning) return;
+            const mode = this.getMode();
+            if (mode === 'off') return;
+            this.synthesizeKeyPress(mode);
+        },
+
+        playPreview() {
+            this.initAudioContext();
+            const mode = this.getMode();
+            const previewMode = mode === 'off' ? 'soft' : mode;
+            this.synthesizeKeyPress(previewMode);
+        },
+
+        synthesizeKeyPress(mode) {
+            try {
+                this.initAudioContext();
+                if (!this.audioCtx || this.audioCtx.state !== 'running') return;
+
+                const masterVol = this.getVolume();
+                if (masterVol <= 0) return;
+
+                const now = this.audioCtx.currentTime;
+
+                if (mode === 'soft') {
+                    const osc = this.audioCtx.createOscillator();
+                    const gain = this.audioCtx.createGain();
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(620, now);
+                    osc.frequency.exponentialRampToValueAtTime(120, now + (this.config.softKeyDuration / 1000));
+
+                    gain.gain.setValueAtTime(masterVol * 0.45, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + (this.config.softKeyDuration / 1000));
+
+                    osc.connect(gain);
+                    gain.connect(this.audioCtx.destination);
+
+                    osc.start(now);
+                    osc.stop(now + (this.config.softKeyDuration / 1000));
+                } else if (mode === 'mechanical') {
+                    const osc1 = this.audioCtx.createOscillator();
+                    const osc2 = this.audioCtx.createOscillator();
+                    const gain = this.audioCtx.createGain();
+
+                    osc1.type = 'triangle';
+                    osc1.frequency.setValueAtTime(920, now);
+                    osc1.frequency.exponentialRampToValueAtTime(180, now + (this.config.mechanicalKeyDuration / 1000));
+
+                    osc2.type = 'square';
+                    osc2.frequency.setValueAtTime(450, now);
+                    osc2.frequency.exponentialRampToValueAtTime(90, now + (this.config.mechanicalKeyDuration / 1000));
+
+                    gain.gain.setValueAtTime(masterVol * 0.35, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + (this.config.mechanicalKeyDuration / 1000));
+
+                    osc1.connect(gain);
+                    osc2.connect(gain);
+                    gain.connect(this.audioCtx.destination);
+
+                    osc1.start(now);
+                    osc2.start(now);
+                    osc1.stop(now + (this.config.mechanicalKeyDuration / 1000));
+                    osc2.stop(now + (this.config.mechanicalKeyDuration / 1000));
+                }
+            } catch (e) {
+                // Silent fallback on audio failure
+            }
+        },
+
+        playCountdownBeep(secondsLeft) {
+            if (!app.state.activeTest || app.state.activeTest.duration <= 0) return;
+            if (!this.getCountdownEnabled()) return;
+            if (this.getMode() === 'off') return;
+
+            if (this.playedCountdownSeconds.has(secondsLeft)) return;
+            this.playedCountdownSeconds.add(secondsLeft);
+
+            try {
+                this.initAudioContext();
+                if (!this.audioCtx || this.audioCtx.state !== 'running') return;
+
+                const masterVol = this.getVolume();
+                if (masterVol <= 0) return;
+
+                const startFreq = this.config.countdown.startFrequency;
+                const endFreq = this.config.countdown.endFrequency;
+                const progress = (5 - secondsLeft) / 4;
+                const freq = startFreq + (progress * (endFreq - startFreq));
+
+                const now = this.audioCtx.currentTime;
+                const durationSec = this.config.countdown.duration / 1000;
+
+                const osc = this.audioCtx.createOscillator();
+                const gain = this.audioCtx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, now);
+
+                gain.gain.setValueAtTime(masterVol * 0.5, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + durationSec);
+
+                osc.connect(gain);
+                gain.connect(this.audioCtx.destination);
+
+                osc.start(now);
+                osc.stop(now + durationSec);
+            } catch (e) {
+                // Silent fallback
+            }
+        },
+
+        playTestFinishChime() {
+            if (this.getMode() === 'off') return;
+
+            try {
+                this.initAudioContext();
+                if (!this.audioCtx || this.audioCtx.state !== 'running') return;
+
+                const masterVol = this.getVolume();
+                if (masterVol <= 0) return;
+
+                const now = this.audioCtx.currentTime;
+                const chimeDurSec = this.config.finishChime.duration / 1000;
+
+                const osc1 = this.audioCtx.createOscillator();
+                const osc2 = this.audioCtx.createOscillator();
+                const gain = this.audioCtx.createGain();
+
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(this.config.finishChime.firstFrequency, now);
+
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(this.config.finishChime.secondFrequency, now + 0.08);
+
+                gain.gain.setValueAtTime(0.001, now);
+                gain.gain.linearRampToValueAtTime(masterVol * 0.4, now + 0.03);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + chimeDurSec);
+
+                osc1.connect(gain);
+                osc2.connect(gain);
+                gain.connect(this.audioCtx.destination);
+
+                osc1.start(now);
+                osc2.start(now + 0.08);
+                osc1.stop(now + chimeDurSec);
+                osc2.stop(now + chimeDurSec);
+            } catch (e) {
+                // Silent fallback
+            }
+        },
+
+        setMode(newMode) {
+            localStorage.setItem('korantest.keyboardFeedback.mode', newMode);
+            this.renderUI();
+        },
+
+        setVolume(newVal) {
+            const parsed = parseFloat(newVal) / 100;
+            const clamped = Math.min(Math.max(0, parsed), this.config.volumeLimit);
+            localStorage.setItem('korantest.keyboardFeedback.volume', clamped.toString());
+            this.renderUI();
+        },
+
+        toggleCountdown() {
+            const curr = this.getCountdownEnabled();
+            localStorage.setItem('korantest.keyboardFeedback.countdown', (!curr).toString());
+            this.renderUI();
+        },
+
+        renderUI() {
+            const mode = this.getMode();
+            const volume = this.getVolume();
+            const countdownEnabled = this.getCountdownEnabled();
+
+            const segmentedContainer = document.getElementById('keyboard-feedback-segmented');
+            if (segmentedContainer) {
+                const buttons = segmentedContainer.querySelectorAll('button[data-mode]');
+                buttons.forEach(btn => {
+                    const btnMode = btn.getAttribute('data-mode');
+                    if (btnMode === mode) {
+                        btn.className = "py-2 px-1 text-xs font-semibold rounded-lg transition-all bg-white dark:bg-slate-900 text-sky-600 dark:text-sky-400 shadow-xs border border-slate-200 dark:border-slate-700";
+                    } else {
+                        btn.className = "py-2 px-1 text-xs font-semibold rounded-lg transition-all text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 border border-transparent";
+                    }
+                });
+            }
+
+            const slider = document.getElementById('feedback-volume-slider');
+            const volText = document.getElementById('feedback-volume-text');
+            const actualPct = Math.round(volume * 100);
+
+            if (slider) slider.value = actualPct;
+            if (volText) volText.innerText = `${actualPct}%`;
+
+            const toggleBtn = document.getElementById('toggle-countdown-sound');
+            const toggleDot = document.getElementById('toggle-countdown-dot');
+
+            if (toggleBtn && toggleDot) {
+                if (countdownEnabled) {
+                    toggleBtn.className = "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-sky-500";
+                    toggleDot.className = "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-5";
+                } else {
+                    toggleBtn.className = "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-slate-300 dark:bg-slate-700";
+                    toggleDot.className = "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-0";
+                }
+            }
         }
     },
 
@@ -5517,6 +8127,7 @@ const app = {
 
             // Start engine after view is active
             app.state.isTestRunning = true;
+            if (app.audioFeedbackService) app.audioFeedbackService.resetSessionCountdown();
             if (app.achievements) app.achievements.captureBaseline();
             if (app.inactivity) app.inactivity.stopMonitoring();
             this.generateMatrixRow();
@@ -5552,6 +8163,7 @@ const app = {
 
         inputDigit(digit) {
             if (!app.state.isTestRunning) return;
+            if (app.audioFeedbackService) app.audioFeedbackService.playKeyPress();
 
             const inputEl = document.getElementById('input-placeholder');
             if (inputEl) inputEl.innerText = digit;
@@ -5597,6 +8209,11 @@ const app = {
                     if (timerEl) timerEl.classList.add('timer-warning');
                 }
 
+                // 5-second countdown sound for timed modes (Standard, Quick, Marathon where duration > 0)
+                if (app.state.activeTest.duration > 0 && app.state.timeLeft <= 5 && app.state.timeLeft > 0) {
+                    if (app.audioFeedbackService) app.audioFeedbackService.playCountdownBeep(app.state.timeLeft);
+                }
+
                 if (app.state.activeTest.duration > 0 && app.state.timeLeft <= 0) {
                     this.finalizeTestResults();
                 }
@@ -5613,6 +8230,7 @@ const app = {
 
         async finalizeTestResults() {
             this.terminateTestEngine();
+            if (app.audioFeedbackService) app.audioFeedbackService.playTestFinishChime();
 
             // Flush final 20s segment if test ends with remaining seconds
             const remainingSeconds = app.state.elapsedSeconds % 20;
@@ -6738,14 +9356,14 @@ const app = {
             const tableHeading = document.getElementById('lb-table-heading');
             const tableThead = document.querySelector('#view-leaderboard table thead');
 
-            const activeClass = "flex-1 sm:flex-none px-4 sm:px-6 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors duration-120 bg-blue-600 text-white dark:bg-blue-500 dark:text-slate-950 flex items-center justify-center gap-1.5 shadow-xs";
+            const activeClass = "flex-1 sm:flex-none px-4 sm:px-6 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors duration-120 bg-sky-600 text-white dark:bg-sky-500 dark:text-slate-950 flex items-center justify-center gap-1.5 shadow-xs";
             const inactiveClass = "flex-1 sm:flex-none px-4 sm:px-6 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors duration-120 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 flex items-center justify-center gap-1.5";
 
             if (mode === 'marathon') {
                 if (stdBtn) stdBtn.className = inactiveClass;
                 if (marBtn) marBtn.className = activeClass;
                 if (subtabsContainer) subtabsContainer.classList.add('hidden');
-                if (titleEl) titleEl.innerHTML = '<i class="fa-solid fa-building-columns text-blue-600 dark:text-blue-400 mr-2 text-lg"></i> Hall of Fame';
+                if (titleEl) titleEl.innerHTML = '<i class="fa-solid fa-building-columns text-sky-600 dark:text-sky-400 mr-2 text-lg"></i> Hall of Fame';
                 if (subtitleEl) subtitleEl.innerText = 'Best Marathon Performance Ever';
                 if (descEl) {
                     descEl.classList.remove('hidden');
@@ -6767,7 +9385,7 @@ const app = {
                 if (subtabsContainer) subtabsContainer.classList.remove('hidden');
                 if (championContainer) championContainer.classList.add('hidden');
                 if (tableHeading) tableHeading.classList.add('hidden');
-                if (titleEl) titleEl.innerHTML = '<i class="fa-solid fa-trophy text-blue-600 dark:text-blue-400 mr-2 text-lg"></i> Leaderboard';
+                if (titleEl) titleEl.innerHTML = '<i class="fa-solid fa-trophy text-sky-600 dark:text-sky-400 mr-2 text-lg"></i> Leaderboard';
                 if (subtitleEl) subtitleEl.innerText = 'Top performers based on their highest Standard Test score.';
                 if (descEl) descEl.classList.add('hidden');
                 if (tableThead) {
@@ -6793,7 +9411,7 @@ const app = {
             const globalTab = document.getElementById('lb-tab-global');
             const weeklyTab = document.getElementById('lb-tab-weekly');
 
-            const activeTabClass = "tab-btn flex-1 sm:flex-none bg-blue-600 text-white dark:bg-blue-500 dark:text-slate-950 px-4 py-1.5 rounded text-xs sm:text-sm font-semibold transition-colors duration-120";
+            const activeTabClass = "tab-btn flex-1 sm:flex-none bg-sky-600 text-white dark:bg-sky-500 dark:text-slate-950 px-4 py-1.5 rounded text-xs sm:text-sm font-semibold transition-colors duration-120";
             const inactiveTabClass = "tab-btn flex-1 sm:flex-none text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 px-4 py-1.5 rounded text-xs sm:text-sm font-semibold transition-colors duration-120";
 
             if (globalTab && weeklyTab) {
@@ -6852,7 +9470,7 @@ const app = {
                         <tr>
                             <td colspan="4" class="p-8 text-center space-y-3">
                                 <div class="text-amber-600 dark:text-amber-400 font-semibold text-sm"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Failed to load leaderboard.</div>
-                                <button onclick="app.leaderboard.render()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-slate-950 font-semibold text-xs rounded-lg transition-colors duration-120 shadow-xs">
+                                <button onclick="app.leaderboard.render()" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white dark:bg-sky-500 dark:hover:bg-sky-600 dark:text-slate-950 font-semibold text-xs rounded-lg transition-colors duration-120 shadow-xs">
                                     <i class="fa-solid fa-rotate-right mr-1"></i> Retry
                                 </button>
                             </td>
@@ -6899,7 +9517,7 @@ const app = {
                         <tr>
                             <td colspan="4" class="p-8 text-center space-y-3">
                                 <div class="text-amber-600 dark:text-amber-400 font-semibold text-sm"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Failed to load Weekly Leaderboard.</div>
-                                <button onclick="app.leaderboard.render()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-slate-950 font-semibold text-xs rounded-lg transition-colors duration-120 shadow-xs">
+                                <button onclick="app.leaderboard.render()" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white dark:bg-sky-500 dark:hover:bg-sky-600 dark:text-slate-950 font-semibold text-xs rounded-lg transition-colors duration-120 shadow-xs">
                                     <i class="fa-solid fa-rotate-right mr-1"></i> Retry
                                 </button>
                             </td>
@@ -6919,7 +9537,7 @@ const app = {
                                 <div class="text-3xl">🏆</div>
                                 <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">No test results yet this week</h3>
                                 <p class="text-xs text-slate-500 dark:text-slate-400 max-w-xs mx-auto leading-relaxed">Be the first player to claim the #1 spot on this week's leaderboard!</p>
-                                <button onclick="app.navigate('test-menu')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-slate-950 font-semibold text-xs rounded-lg transition-colors duration-120 shadow-xs inline-flex items-center gap-1.5 mt-1">
+                                <button onclick="app.navigate('test-menu')" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white dark:bg-sky-500 dark:hover:bg-sky-600 dark:text-slate-950 font-semibold text-xs rounded-lg transition-colors duration-120 shadow-xs inline-flex items-center gap-1.5 mt-1">
                                     <i class="fa-solid fa-play"></i> Start Test
                                 </button>
                             </td>
@@ -6971,7 +9589,7 @@ const app = {
                         <tr>
                             <td colspan="3" class="p-8 text-center space-y-3">
                                 <div class="text-amber-600 dark:text-amber-400 font-semibold text-sm"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Failed to load Marathon Hall of Fame.</div>
-                                <button onclick="app.leaderboard.render()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-slate-950 font-semibold text-xs rounded-lg transition-colors duration-120 shadow-xs">
+                                <button onclick="app.leaderboard.render()" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white dark:bg-sky-500 dark:hover:bg-sky-600 dark:text-slate-950 font-semibold text-xs rounded-lg transition-colors duration-120 shadow-xs">
                                     <i class="fa-solid fa-rotate-right mr-1"></i> Retry
                                 </button>
                             </td>
@@ -6992,7 +9610,7 @@ const app = {
                                 <p class="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">
                                     No Marathon records have been created yet. Be the first to complete a Marathon Test and claim your place in the Hall of Fame.
                                 </p>
-                                <button onclick="app.actions.triggerTestIntent('Marathon Test', 900)" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-slate-950 font-semibold text-xs rounded-lg transition-colors duration-120 shadow-xs inline-flex items-center gap-1.5 mt-1">
+                                <button onclick="app.actions.triggerTestIntent('Marathon Test', 900)" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white dark:bg-sky-500 dark:hover:bg-sky-600 dark:text-slate-950 font-semibold text-xs rounded-lg transition-colors duration-120 shadow-xs inline-flex items-center gap-1.5 mt-1">
                                     <i class="fa-solid fa-play"></i> Start Marathon Test
                                 </button>
                             </td>
@@ -7060,7 +9678,7 @@ const app = {
                     const isCurrentUser = app.state.user && !app.state.user.isGuest && entry.id === app.state.user.id;
 
                     row.className = `hover:bg-slate-50 dark:hover:bg-slate-800/60 active:bg-slate-100 dark:active:bg-slate-100 dark:bg-slate-800 transition-colors duration-120 border-b border-slate-100 dark:border-slate-800/50 cursor-pointer ${
-                        isCurrentUser ? 'bg-blue-50/80 dark:bg-blue-500/10 border-l-4 border-blue-600 dark:border-blue-400 font-bold' : ''
+                        isCurrentUser ? 'bg-sky-50/80 dark:bg-sky-500/10 border-l-4 border-sky-600 dark:border-sky-400 font-bold' : ''
                     }`;
                     row.onclick = () => app.leaderboard.onRowClick(entry.id);
 
@@ -7074,7 +9692,7 @@ const app = {
 
                     const avatarHtml = safeAvatarUrl
                         ? `<img src="${safeAvatarUrl}" alt="Avatar" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover flex-shrink-0">`
-                        : `<div class="w-7 h-7 sm:w-8 sm:h-8 bg-blue-50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 font-bold rounded-full flex items-center justify-center text-xs border border-blue-200 dark:border-blue-500/30 flex-shrink-0">${rawName.charAt(0).toUpperCase()}</div>`;
+                        : `<div class="w-7 h-7 sm:w-8 sm:h-8 bg-sky-50 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400 font-bold rounded-full flex items-center justify-center text-xs border border-sky-200 dark:border-sky-500/30 flex-shrink-0">${rawName.charAt(0).toUpperCase()}</div>`;
 
                     if (isMarathon) {
                         row.innerHTML = `
@@ -7082,10 +9700,10 @@ const app = {
                             <td class="p-3.5 sm:p-4">
                                 <div class="flex items-center space-x-3">
                                     ${avatarHtml}
-                                    <span class="text-xs sm:text-sm font-semibold truncate ${isCurrentUser ? 'text-blue-700 dark:text-blue-300' : 'text-slate-900 dark:text-slate-100'}">${effectiveName} ${isCurrentUser ? '(You)' : ''}</span>
+                                    <span class="text-xs sm:text-sm font-semibold truncate ${isCurrentUser ? 'text-sky-700 dark:text-sky-300' : 'text-slate-900 dark:text-slate-100'}">${effectiveName} ${isCurrentUser ? '(You)' : ''}</span>
                                 </div>
                             </td>
-                            <td class="p-3.5 sm:p-4 font-extrabold text-blue-600 dark:text-blue-400 text-xs sm:text-sm text-right font-mono">${(entry.score || 0).toLocaleString()}</td>
+                            <td class="p-3.5 sm:p-4 font-extrabold text-sky-600 dark:text-sky-400 text-xs sm:text-sm text-right font-mono">${(entry.score || 0).toLocaleString()}</td>
                         `;
                     } else {
                         let rankDisplay = `#${entry.rank}`;
@@ -7099,12 +9717,12 @@ const app = {
                                 <div class="flex items-center space-x-2.5 sm:space-x-3">
                                     ${avatarHtml}
                                     <div class="flex flex-col min-w-0">
-                                        <span onclick="event.stopPropagation(); app.leaderboard.navigateToPublicProfile('${safeUsername}')" class="text-xs sm:text-sm font-semibold truncate hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors ${isCurrentUser ? 'text-blue-700 dark:text-blue-300' : 'text-slate-900 dark:text-slate-100'}">${effectiveName} ${isCurrentUser ? '(You)' : ''}</span>
-                                        <span onclick="event.stopPropagation(); app.leaderboard.navigateToPublicProfile('${safeUsername}')" class="text-[10px] sm:text-[11px] text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors font-mono truncate">@${safeUsername}</span>
+                                        <span onclick="event.stopPropagation(); app.leaderboard.navigateToPublicProfile('${safeUsername}')" class="text-xs sm:text-sm font-semibold truncate hover:text-sky-600 dark:hover:text-sky-400 cursor-pointer transition-colors ${isCurrentUser ? 'text-sky-700 dark:text-sky-300' : 'text-slate-900 dark:text-slate-100'}">${effectiveName} ${isCurrentUser ? '(You)' : ''}</span>
+                                        <span onclick="event.stopPropagation(); app.leaderboard.navigateToPublicProfile('${safeUsername}')" class="text-[10px] sm:text-[11px] text-slate-500 hover:text-sky-600 dark:hover:text-sky-400 cursor-pointer transition-colors font-mono truncate">@${safeUsername}</span>
                                     </div>
                                 </div>
                             </td>
-                            <td class="p-3 sm:p-3.5 font-extrabold text-blue-600 dark:text-blue-400 text-xs sm:text-sm text-right">${entry.score}</td>
+                            <td class="p-3 sm:p-3.5 font-extrabold text-sky-600 dark:text-sky-400 text-xs sm:text-sm text-right">${entry.score}</td>
                             <td class="p-3 sm:p-3.5 text-emerald-600 dark:text-emerald-400 text-xs sm:text-sm text-center font-medium">${entry.accuracy}%</td>
                         `;
                     }
@@ -7424,13 +10042,13 @@ const app = {
             grid.innerHTML = this.data.map((article, i) => `
                 <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden group cursor-pointer" onclick="app.articles.viewDetail(${i})">
                     <div class="h-40 bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                        <div class="w-full h-full bg-gradient-to-br ${['from-blue-500/20 to-purple-500/20', 'from-emerald-500/20 to-blue-500/20', 'from-amber-500/20 to-red-500/20', 'from-indigo-500/20 to-pink-500/20'][i]} group-hover:scale-105 transition-transform duration-300 flex items-center justify-center">
+                        <div class="w-full h-full bg-gradient-to-br ${['from-sky-500/20 to-purple-500/20', 'from-emerald-500/20 to-sky-500/20', 'from-amber-500/20 to-red-500/20', 'from-indigo-500/20 to-pink-500/20'][i]} group-hover:scale-105 transition-transform duration-300 flex items-center justify-center">
                             <i class="fa-solid ${['fa-book-open', 'fa-triangle-exclamation', 'fa-chart-line', 'fa-brain'][i]} text-3xl text-slate-600"></i>
                         </div>
                     </div>
                     <div class="p-4 space-y-2">
                         <span class="text-[10px] text-slate-500 font-bold uppercase">${article.date}</span>
-                        <h4 class="font-bold text-sm text-slate-900 dark:text-slate-100 group-hover:text-blue-400 transition">${article.title}</h4>
+                        <h4 class="font-bold text-sm text-slate-900 dark:text-slate-100 group-hover:text-sky-400 transition">${article.title}</h4>
                         <p class="text-xs text-slate-500 line-clamp-2">${article.excerpt}</p>
                     </div>
                 </div>

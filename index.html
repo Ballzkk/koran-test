@@ -45,7 +45,7 @@
   <header id="mobile-header" class="md:hidden fixed top-0 left-0 right-0 bg-white/90 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 z-[45] px-4 py-2.5 shadow-xs backdrop-blur-md pt-safe">
     <div class="flex items-center justify-between max-w-6xl mx-auto">
       <div class="flex items-center space-x-3 cursor-pointer" onclick="app.navigate('account')">
-        <div id="mobile-header-avatar" class="w-10 h-10 bg-blue-50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 font-bold rounded-full flex items-center justify-center text-base border border-blue-200 dark:border-blue-500/30 overflow-hidden flex-shrink-0">
+        <div id="mobile-header-avatar" class="w-10 h-10 bg-sky-50 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400 font-bold rounded-full flex items-center justify-center text-base border border-sky-200 dark:border-sky-500/30 overflow-hidden flex-shrink-0">
           ?
         </div>
         <div class="flex flex-col leading-tight">
@@ -61,7 +61,7 @@
           <i class="fa-solid fa-moon"></i>
         </button>
         <div class="flex items-center space-x-2 cursor-pointer" onclick="app.navigate('home')">
-          <div class="bg-blue-600 text-white p-1.5 rounded-lg font-extrabold text-xs shadow-xs">KT</div>
+          <div class="bg-sky-600 text-white p-1.5 rounded-lg font-extrabold text-xs shadow-xs">KT</div>
           <span class="font-extrabold text-base text-slate-900 dark:text-slate-100 tracking-tight">Koran Test</span>
         </div>
       </div>
@@ -72,7 +72,7 @@
   <nav id="main-topnav" class="bg-white/90 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40 px-4 py-3 shadow-xs backdrop-blur-md hidden md:block">
     <div class="max-w-6xl mx-auto flex items-center justify-between">
       <div class="flex items-center space-x-2 cursor-pointer" onclick="app.navigate('home')">
-        <div class="bg-blue-600 text-white p-2 rounded-lg font-bold shadow-xs">KT</div>
+        <div class="bg-sky-600 text-white p-2 rounded-lg font-bold shadow-xs">KT</div>
         <span class="font-extrabold text-lg text-slate-900 dark:text-slate-100 tracking-tight">Koran Test</span>
       </div>
       <div id="desktop-nav-container" class="flex items-center space-x-5">
@@ -84,7 +84,7 @@
   <!-- Global Loader -->
   <div id="global-loader" class="fixed inset-0 bg-slate-50 dark:bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
     <div class="flex flex-col items-center space-y-4">
-      <div class="animate-spin rounded-full h-12 w-12 border-4 border-blue-400 border-t-transparent"></div>
+      <div class="animate-spin rounded-full h-12 w-12 border-4 border-sky-400 border-t-transparent"></div>
       <p class="text-slate-500 font-bold">Processing data...</p>
     </div>
   </div>
@@ -95,9 +95,9 @@
     <section id="view-home" class="page-view active space-y-10 md:space-y-16">
       <div id="announcement-banner" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex items-center justify-between gap-3 shadow-xs">
         <div class="flex items-center space-x-3 min-w-0 flex-1">
-          <div class="bg-blue-50 dark:bg-blue-500/20 p-2.5 rounded-lg shrink-0 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-500/30"><i class="fa-solid fa-bullhorn text-sm"></i></div>
+          <div class="bg-sky-50 dark:bg-sky-500/20 p-2.5 rounded-lg shrink-0 text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-500/30"><i class="fa-solid fa-bullhorn text-sm"></i></div>
           <div class="min-w-0 flex-1">
-            <span class="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider block">Announcement</span>
+            <span class="text-[10px] font-bold text-sky-600 dark:text-sky-400 uppercase tracking-wider block">Announcement</span>
             <p class="text-xs sm:text-sm text-slate-800 dark:text-slate-200 font-medium truncate sm:whitespace-normal">Koran Test v2.0 is now live with Global Leaderboards and Profile Systems!</p>
           </div>
         </div>
@@ -105,11 +105,11 @@
       </div>
 
       <div class="text-center space-y-5 md:space-y-6 max-w-3xl mx-auto mt-4 md:mt-8">
-        <span class="inline-block bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 px-3 py-1 rounded-full text-xs font-semibold border border-blue-200 dark:border-blue-500/20">Free Career Psychotest Practice</span>
+        <span class="inline-block bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400 px-3 py-1 rounded-full text-xs font-semibold border border-sky-200 dark:border-sky-500/20">Free Career Psychotest Practice</span>
         <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-slate-100 leading-tight tracking-tight">Master Pauli &amp; Kraepelin Tests Before Selection Day</h1>
         <p class="text-base md:text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">The ultimate Koran Test simulation platform with performance analytics, global leaderboards, and achievement systems to prepare you for actual recruitment tests.</p>
         <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-          <button onclick="app.navigate('test-menu')" class="w-full sm:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-slate-950 font-semibold rounded-lg transition-colors duration-120 shadow-xs text-base">Start Practice</button>
+          <button onclick="app.navigate('test-menu')" class="w-full sm:w-auto px-6 py-3 bg-sky-600 hover:bg-sky-700 text-white dark:bg-sky-500 dark:hover:bg-sky-600 dark:text-slate-950 font-semibold rounded-lg transition-colors duration-120 shadow-xs text-base">Start Practice</button>
           <button id="home-guest-btn" onclick="app.actions.guestLogin()" class="w-full sm:w-auto px-6 py-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 font-semibold rounded-lg transition-colors duration-120 text-base shadow-xs">Try as Guest</button>
         </div>
         <p class="text-xs text-slate-500 mt-2">No app download required. 100% Free.</p>
@@ -125,25 +125,25 @@
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-3 relative overflow-hidden shadow-xs">
             <span class="absolute -right-3 -top-5 text-7xl text-slate-900 dark:text-slate-100 dark:text-slate-800/40 font-extrabold select-none pointer-events-none">1</span>
-            <div class="w-9 h-9 bg-blue-50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-lg flex items-center justify-center font-bold text-base mb-3 relative z-10 border border-blue-100 dark:border-blue-500/30">1</div>
+            <div class="w-9 h-9 bg-sky-50 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400 rounded-lg flex items-center justify-center font-bold text-base mb-3 relative z-10 border border-sky-100 dark:border-sky-500/30">1</div>
             <h3 class="font-bold text-slate-900 dark:text-slate-100 text-base relative z-10">Select Mode</h3>
             <p class="text-slate-600 dark:text-slate-400 text-xs sm:text-sm relative z-10">From Quick Test to Marathon, choose the test duration that fits your schedule.</p>
           </div>
           <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-3 relative overflow-hidden shadow-xs">
              <span class="absolute -right-3 -top-5 text-7xl text-slate-900 dark:text-slate-100 dark:text-slate-800/40 font-extrabold select-none pointer-events-none">2</span>
-            <div class="w-9 h-9 bg-blue-50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-lg flex items-center justify-center font-bold text-base mb-3 relative z-10 border border-blue-100 dark:border-blue-500/30">2</div>
+            <div class="w-9 h-9 bg-sky-50 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400 rounded-lg flex items-center justify-center font-bold text-base mb-3 relative z-10 border border-sky-100 dark:border-sky-500/30">2</div>
             <h3 class="font-bold text-slate-900 dark:text-slate-100 text-base relative z-10">Add Digits</h3>
             <p class="text-slate-600 dark:text-slate-400 text-xs sm:text-sm relative z-10">Add two adjacent digits. If the sum is 10 or more, <strong>type the last digit only</strong>.</p>
           </div>
           <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-3 relative overflow-hidden shadow-xs">
              <span class="absolute -right-3 -top-5 text-7xl text-slate-900 dark:text-slate-100 dark:text-slate-800/40 font-extrabold select-none pointer-events-none">3</span>
-            <div class="w-9 h-9 bg-blue-50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-lg flex items-center justify-center font-bold text-base mb-3 relative z-10 border border-blue-100 dark:border-blue-500/30">3</div>
+            <div class="w-9 h-9 bg-sky-50 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400 rounded-lg flex items-center justify-center font-bold text-base mb-3 relative z-10 border border-sky-100 dark:border-sky-500/30">3</div>
             <h3 class="font-bold text-slate-900 dark:text-slate-100 text-base relative z-10">Maintain Consistency</h3>
             <p class="text-slate-600 dark:text-slate-400 text-xs sm:text-sm relative z-10">Speed matters, but accuracy and graph consistency are highly valued by recruiters.</p>
           </div>
           <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-3 relative overflow-hidden shadow-xs">
              <span class="absolute -right-3 -top-5 text-7xl text-slate-900 dark:text-slate-100 dark:text-slate-800/40 font-extrabold select-none pointer-events-none">4</span>
-            <div class="w-9 h-9 bg-blue-50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-lg flex items-center justify-center font-bold text-base mb-3 relative z-10 border border-blue-100 dark:border-blue-500/30">4</div>
+            <div class="w-9 h-9 bg-sky-50 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400 rounded-lg flex items-center justify-center font-bold text-base mb-3 relative z-10 border border-sky-100 dark:border-sky-500/30">4</div>
             <h3 class="font-bold text-slate-900 dark:text-slate-100 text-base relative z-10">Evaluate Results</h3>
             <p class="text-slate-600 dark:text-slate-400 text-xs sm:text-sm relative z-10">Review your scores, accuracy rate, and graph statistics for performance evaluation.</p>
           </div>
@@ -154,42 +154,42 @@
         <h2 class="text-xl md:text-2xl font-bold text-center text-slate-900 dark:text-slate-100">Key Features</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
           <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 flex items-start space-x-3.5 shadow-xs">
-            <div class="bg-blue-50 dark:bg-blue-500/10 p-2.5 rounded-lg text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-500/20 shrink-0"><i class="fa-solid fa-chart-line text-lg"></i></div>
+            <div class="bg-sky-50 dark:bg-sky-500/10 p-2.5 rounded-lg text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-500/20 shrink-0"><i class="fa-solid fa-chart-line text-lg"></i></div>
             <div>
               <h3 class="font-bold text-slate-900 dark:text-slate-100 text-sm mb-1">Real-Time Analytics</h3>
               <p class="text-slate-600 dark:text-slate-400 text-xs leading-relaxed">Instantly track your calculation speed and graph consistency after each test session.</p>
             </div>
           </div>
           <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 flex items-start space-x-3.5 shadow-xs">
-            <div class="bg-blue-50 dark:bg-blue-500/10 p-2.5 rounded-lg text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-500/20 shrink-0"><i class="fa-solid fa-trophy text-lg"></i></div>
+            <div class="bg-sky-50 dark:bg-sky-500/10 p-2.5 rounded-lg text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-500/20 shrink-0"><i class="fa-solid fa-trophy text-lg"></i></div>
             <div>
               <h3 class="font-bold text-slate-900 dark:text-slate-100 text-sm mb-1">Global Leaderboard</h3>
               <p class="text-slate-600 dark:text-slate-400 text-xs leading-relaxed">Compare your test scores with candidates worldwide in real time.</p>
             </div>
           </div>
           <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 flex items-start space-x-3.5 shadow-xs">
-            <div class="bg-blue-50 dark:bg-blue-500/10 p-2.5 rounded-lg text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-500/20 shrink-0"><i class="fa-solid fa-medal text-lg"></i></div>
+            <div class="bg-sky-50 dark:bg-sky-500/10 p-2.5 rounded-lg text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-500/20 shrink-0"><i class="fa-solid fa-medal text-lg"></i></div>
             <div>
               <h3 class="font-bold text-slate-900 dark:text-slate-100 text-sm mb-1">Achievement System</h3>
               <p class="text-slate-600 dark:text-slate-400 text-xs leading-relaxed">Unlock badges and stay motivated with a structured achievement showcase.</p>
             </div>
           </div>
           <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 flex items-start space-x-3.5 shadow-xs">
-            <div class="bg-blue-50 dark:bg-blue-500/10 p-2.5 rounded-lg text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-500/20 shrink-0"><i class="fa-solid fa-mobile-screen text-lg"></i></div>
+            <div class="bg-sky-50 dark:bg-sky-500/10 p-2.5 rounded-lg text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-500/20 shrink-0"><i class="fa-solid fa-mobile-screen text-lg"></i></div>
             <div>
               <h3 class="font-bold text-slate-900 dark:text-slate-100 text-sm mb-1">Mobile Optimized</h3>
               <p class="text-slate-600 dark:text-slate-400 text-xs leading-relaxed">Responsive touch layout with an optimized Numpad for mobile practice.</p>
             </div>
           </div>
           <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 flex items-start space-x-3.5 shadow-xs">
-            <div class="bg-blue-50 dark:bg-blue-500/10 p-2.5 rounded-lg text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-500/20 shrink-0"><i class="fa-solid fa-clock-rotate-left text-lg"></i></div>
+            <div class="bg-sky-50 dark:bg-sky-500/10 p-2.5 rounded-lg text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-500/20 shrink-0"><i class="fa-solid fa-clock-rotate-left text-lg"></i></div>
             <div>
               <h3 class="font-bold text-slate-900 dark:text-slate-100 text-sm mb-1">Detailed History</h3>
               <p class="text-slate-600 dark:text-slate-400 text-xs leading-relaxed">Track your practice progress over time through performance trend charts.</p>
             </div>
           </div>
           <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 flex items-start space-x-3.5 shadow-xs">
-            <div class="bg-blue-50 dark:bg-blue-500/10 p-2.5 rounded-lg text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-500/20 shrink-0"><i class="fa-solid fa-shield-halved text-lg"></i></div>
+            <div class="bg-sky-50 dark:bg-sky-500/10 p-2.5 rounded-lg text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-500/20 shrink-0"><i class="fa-solid fa-shield-halved text-lg"></i></div>
             <div>
               <h3 class="font-bold text-slate-900 dark:text-slate-100 text-sm mb-1">100% Free Platform</h3>
               <p class="text-slate-600 dark:text-slate-400 text-xs leading-relaxed">All features and test modes are completely free with zero hidden fees.</p>
@@ -227,7 +227,7 @@
           <!-- 1. Greeting -->
           <div>
             <h2 id="dash-hero-greeting" class="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100 leading-tight">
-              Welcome back, <span id="dash-greeting-name" class="text-blue-600 dark:text-blue-400">—</span> 👋
+              Welcome back, <span id="dash-greeting-name" class="text-sky-600 dark:text-sky-400">—</span> 👋
             </h2>
           </div>
 
@@ -236,7 +236,7 @@
             <p id="dash-hero-status" class="text-base md:text-lg font-bold text-slate-800 dark:text-slate-200 leading-snug">
               —
             </p>
-            <p id="dash-hero-substatus" class="text-xs md:text-sm text-blue-600 dark:text-blue-400 font-semibold">
+            <p id="dash-hero-substatus" class="text-xs md:text-sm text-sky-600 dark:text-sky-400 font-semibold">
               —
             </p>
           </div>
@@ -245,7 +245,7 @@
           <div class="border-t border-slate-200 dark:border-slate-800 pt-1"></div>
 
           <!-- 3. Daily Motivation -->
-          <div class="border-l-2 border-blue-600 dark:border-blue-500 pl-3.5 py-0.5 text-xs md:text-sm italic">
+          <div class="border-l-2 border-sky-600 dark:border-sky-500 pl-3.5 py-0.5 text-xs md:text-sm italic">
             <p id="dash-hero-motivation" class="text-slate-600 dark:text-slate-300 font-medium leading-relaxed">—</p>
           </div>
         </div>
@@ -254,9 +254,9 @@
       <!-- Quick Actions -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <!-- Standard Test Card -->
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-xl flex items-center justify-between space-x-4 hover:border-blue-500/40 transition-colors duration-150 group shadow-xs">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-xl flex items-center justify-between space-x-4 hover:border-sky-500/40 transition-colors duration-150 group shadow-xs">
           <div class="flex items-center space-x-3.5">
-            <div class="w-10 h-10 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 group-hover:bg-blue-50 dark:group-hover:bg-blue-500/10 group-hover:text-blue-600 dark:group-hover:text-blue-400 rounded-lg flex items-center justify-center text-base transition-colors duration-150">
+            <div class="w-10 h-10 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 group-hover:bg-sky-50 dark:group-hover:bg-sky-500/10 group-hover:text-sky-600 dark:group-hover:text-sky-400 rounded-lg flex items-center justify-center text-base transition-colors duration-150">
               <i class="fa-solid fa-play"></i>
             </div>
             <div>
@@ -264,7 +264,7 @@
               <p class="text-slate-500 dark:text-slate-400 text-xs mt-0.5">5 Minutes — HRD Simulation</p>
             </div>
           </div>
-          <button onclick="app.actions.triggerTestIntent('Standard Test', 300)" class="bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-slate-950 font-semibold px-4 py-2 rounded-lg text-xs transition-colors duration-150 flex items-center space-x-1.5 flex-shrink-0 shadow-xs">
+          <button onclick="app.actions.triggerTestIntent('Standard Test', 300)" class="bg-sky-600 hover:bg-sky-700 text-white dark:bg-sky-500 dark:hover:bg-sky-600 dark:text-slate-950 font-semibold px-4 py-2 rounded-lg text-xs transition-colors duration-150 flex items-center space-x-1.5 flex-shrink-0 shadow-xs">
             <span>Start</span>
             <i class="fa-solid fa-chevron-right text-[10px]"></i>
           </button>
@@ -281,7 +281,7 @@
               <p class="text-slate-500 dark:text-slate-400 text-xs mt-0.5">15 Minutes — Endurance Test</p>
             </div>
           </div>
-          <button onclick="app.actions.triggerTestIntent('Marathon Test', 900)" class="bg-white dark:bg-slate-900 dark:bg-slate-800 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-white dark:text-slate-200 font-semibold px-4 py-2 rounded-lg text-xs transition-colors duration-150 flex items-center space-x-1.5 flex-shrink-0 shadow-xs">
+          <button onclick="app.actions.triggerTestIntent('Marathon Test', 900)" class="bg-sky-600 hover:bg-sky-700 text-white dark:bg-sky-500 dark:hover:bg-sky-600 dark:text-slate-950 font-semibold px-4 py-2 rounded-lg text-xs transition-colors duration-150 flex items-center space-x-1.5 flex-shrink-0 shadow-xs">
             <span>Start</span>
             <i class="fa-solid fa-chevron-right text-[10px]"></i>
           </button>
@@ -304,7 +304,7 @@
               <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">
                 Best Score
               </p>
-              <p id="dash-best-score" class="text-lg md:text-xl font-extrabold text-blue-600 dark:text-blue-400">0 pts</p>
+              <p id="dash-best-score" class="text-lg md:text-xl font-extrabold text-sky-600 dark:text-sky-400">0 pts</p>
             </div>
             <div class="bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/70 p-3 rounded-lg text-center space-y-0.5">
               <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">
@@ -331,7 +331,7 @@
               <span class="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-semibold px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">7 Days</span>
             </div>
             <div class="text-center py-4">
-              <p id="dash-weekly-rank" class="text-3xl md:text-4xl font-extrabold text-blue-600 dark:text-blue-400">—</p>
+              <p id="dash-weekly-rank" class="text-3xl md:text-4xl font-extrabold text-sky-600 dark:text-sky-400">—</p>
               <p class="text-xs text-slate-500 mt-1">Your leaderboard position</p>
             </div>
           </div>
@@ -358,7 +358,7 @@
           </div>
           <div class="bg-slate-50 dark:bg-slate-950/50 p-3 rounded-lg border border-slate-200 dark:border-slate-800/70 text-center space-y-0.5">
             <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Score</p>
-            <p id="dash-recent-score" class="text-sm font-bold text-blue-600 dark:text-blue-400">—</p>
+            <p id="dash-recent-score" class="text-sm font-bold text-sky-600 dark:text-sky-400">—</p>
           </div>
           <div class="bg-slate-50 dark:bg-slate-950/50 p-3 rounded-lg border border-slate-200 dark:border-slate-800/70 text-center space-y-0.5">
             <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Correct</p>
@@ -375,12 +375,12 @@
     <!-- VIEW 2: TEST MENU -->
     <section id="view-test-menu" class="page-view space-y-6 hidden">
       <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-xs">
-        <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2 flex items-center"><i class="fa-solid fa-circle-info text-blue-600 dark:text-blue-400 mr-2 text-base"></i> Test Instructions</h2>
+        <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2 flex items-center"><i class="fa-solid fa-circle-info text-sky-600 dark:text-sky-400 mr-2 text-base"></i> Test Instructions</h2>
         <p class="text-slate-600 dark:text-slate-400 text-sm mb-4">Add top and bottom digits. If the sum is 10 or more, <strong>type the last digit only</strong>. (Example: 8 + 6 = 14, type <strong>4</strong>).</p>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div class="bg-slate-50 dark:bg-slate-800 p-3 rounded-lg text-slate-600 dark:text-slate-400 text-xs flex items-center border border-slate-200 dark:border-slate-700"><i class="fa-solid fa-bolt text-blue-600 dark:text-blue-400 mr-2"></i> Speed measured per second</div>
-          <div class="bg-slate-50 dark:bg-slate-800 p-3 rounded-lg text-slate-600 dark:text-slate-400 text-xs flex items-center border border-slate-200 dark:border-slate-700"><i class="fa-solid fa-bullseye text-blue-600 dark:text-blue-400 mr-2"></i> Accuracy is vital</div>
-          <div class="bg-slate-50 dark:bg-slate-800 p-3 rounded-lg text-slate-600 dark:text-slate-400 text-xs flex items-center border border-slate-200 dark:border-slate-700"><i class="fa-solid fa-chart-line text-blue-600 dark:text-blue-400 mr-2"></i> Maintain consistency</div>
+          <div class="bg-slate-50 dark:bg-slate-800 p-3 rounded-lg text-slate-600 dark:text-slate-400 text-xs flex items-center border border-slate-200 dark:border-slate-700"><i class="fa-solid fa-bolt text-sky-600 dark:text-sky-400 mr-2"></i> Speed measured per second</div>
+          <div class="bg-slate-50 dark:bg-slate-800 p-3 rounded-lg text-slate-600 dark:text-slate-400 text-xs flex items-center border border-slate-200 dark:border-slate-700"><i class="fa-solid fa-bullseye text-sky-600 dark:text-sky-400 mr-2"></i> Accuracy is vital</div>
+          <div class="bg-slate-50 dark:bg-slate-800 p-3 rounded-lg text-slate-600 dark:text-slate-400 text-xs flex items-center border border-slate-200 dark:border-slate-700"><i class="fa-solid fa-chart-line text-sky-600 dark:text-sky-400 mr-2"></i> Maintain consistency</div>
         </div>
       </div>
 
@@ -392,7 +392,7 @@
             <h3 class="font-bold text-slate-900 dark:text-slate-100 text-base mb-1">Free Practice</h3>
             <p class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm leading-relaxed">Warmup with no time limit. Stop anytime.</p>
           </div>
-          <button type="button" onclick="event.stopPropagation(); app.actions.triggerTestIntent('Free Practice', 0)" class="w-full bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-slate-950 font-semibold py-2.5 sm:py-3 rounded-lg transition-colors duration-150 text-sm shadow-xs flex items-center justify-center space-x-2">
+          <button type="button" onclick="event.stopPropagation(); app.actions.triggerTestIntent('Free Practice', 0)" class="w-full bg-sky-600 hover:bg-sky-700 text-white dark:bg-sky-500 dark:hover:bg-sky-600 dark:text-slate-950 font-semibold py-2.5 sm:py-3 rounded-lg transition-colors duration-150 text-sm shadow-xs flex items-center justify-center space-x-2">
             <span>Select Mode</span>
             <i class="fa-solid fa-chevron-right text-[10px]"></i>
           </button>
@@ -405,21 +405,21 @@
             <h3 class="font-bold text-slate-900 dark:text-slate-100 text-base mb-1">Quick Test</h3>
             <p class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm leading-relaxed">120-second rapid practice to boost response.</p>
           </div>
-          <button type="button" onclick="event.stopPropagation(); app.actions.triggerTestIntent('Quick Test', 120)" class="w-full bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-slate-950 font-semibold py-2.5 sm:py-3 rounded-lg transition-colors duration-150 text-sm shadow-xs flex items-center justify-center space-x-2">
+          <button type="button" onclick="event.stopPropagation(); app.actions.triggerTestIntent('Quick Test', 120)" class="w-full bg-sky-600 hover:bg-sky-700 text-white dark:bg-sky-500 dark:hover:bg-sky-600 dark:text-slate-950 font-semibold py-2.5 sm:py-3 rounded-lg transition-colors duration-150 text-sm shadow-xs flex items-center justify-center space-x-2">
             <span>Select Mode</span>
             <i class="fa-solid fa-chevron-right text-[10px]"></i>
           </button>
         </div>
 
         <!-- Standard Test -->
-        <div onclick="app.actions.triggerTestIntent('Standard Test', 300)" class="bg-white dark:bg-slate-900 border border-blue-300 dark:border-blue-500/40 p-5 sm:p-6 rounded-xl flex flex-col justify-between space-y-4 relative overflow-hidden shadow-xs hover:border-blue-500 transition-colors duration-150 cursor-pointer">
-          <div class="absolute top-0 right-0 bg-blue-600 text-white dark:bg-blue-500 dark:text-slate-950 text-[10px] font-bold px-2.5 py-0.5 rounded-bl-lg">HRD STANDARD</div>
+        <div onclick="app.actions.triggerTestIntent('Standard Test', 300)" class="bg-white dark:bg-slate-900 border border-sky-300 dark:border-sky-500/40 p-5 sm:p-6 rounded-xl flex flex-col justify-between space-y-4 relative overflow-hidden shadow-xs hover:border-sky-500 transition-colors duration-150 cursor-pointer">
+          <div class="absolute top-0 right-0 bg-sky-600 text-white dark:bg-sky-500 dark:text-slate-950 text-[10px] font-bold px-2.5 py-0.5 rounded-bl-lg">HRD STANDARD</div>
           <div>
-            <span class="inline-block bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20 text-[10px] font-semibold px-2.5 py-0.5 rounded mb-3 mt-1">5 MINUTES</span>
+            <span class="inline-block bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-400 border border-sky-200 dark:border-sky-500/20 text-[10px] font-semibold px-2.5 py-0.5 rounded mb-3 mt-1">5 MINUTES</span>
             <h3 class="font-bold text-slate-900 dark:text-slate-100 text-base mb-1">Standard Test</h3>
             <p class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm leading-relaxed">Standard recruitment simulation mode.</p>
           </div>
-          <button type="button" onclick="event.stopPropagation(); app.actions.triggerTestIntent('Standard Test', 300)" class="w-full bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-slate-950 font-semibold py-2.5 sm:py-3 rounded-lg transition-colors duration-150 text-sm shadow-xs flex items-center justify-center space-x-2">
+          <button type="button" onclick="event.stopPropagation(); app.actions.triggerTestIntent('Standard Test', 300)" class="w-full bg-sky-600 hover:bg-sky-700 text-white dark:bg-sky-500 dark:hover:bg-sky-600 dark:text-slate-950 font-semibold py-2.5 sm:py-3 rounded-lg transition-colors duration-150 text-sm shadow-xs flex items-center justify-center space-x-2">
             <span>Select Mode</span>
             <i class="fa-solid fa-chevron-right text-[10px]"></i>
           </button>
@@ -432,7 +432,7 @@
             <h3 class="font-bold text-slate-900 dark:text-slate-100 text-base mb-1">Marathon Test</h3>
             <p class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm leading-relaxed">Mental endurance and consistency test.</p>
           </div>
-          <button type="button" onclick="event.stopPropagation(); app.actions.triggerTestIntent('Marathon Test', 900)" class="w-full bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-slate-950 font-semibold py-2.5 sm:py-3 rounded-lg transition-colors duration-150 text-sm shadow-xs flex items-center justify-center space-x-2">
+          <button type="button" onclick="event.stopPropagation(); app.actions.triggerTestIntent('Marathon Test', 900)" class="w-full bg-sky-600 hover:bg-sky-700 text-white dark:bg-sky-500 dark:hover:bg-sky-600 dark:text-slate-950 font-semibold py-2.5 sm:py-3 rounded-lg transition-colors duration-150 text-sm shadow-xs flex items-center justify-center space-x-2">
             <span>Select Mode</span>
             <i class="fa-solid fa-chevron-right text-[10px]"></i>
           </button>
@@ -461,7 +461,7 @@
         <div id="digit-bottom" class="text-slate-900 dark:text-slate-100 font-mono font-extrabold text-5xl">8</div>
         
         <div class="mt-6">
-          <div id="input-placeholder" class="bg-blue-50 dark:bg-blue-500/10 border-2 border-blue-300 dark:border-blue-500/30 text-blue-600 dark:text-blue-400 font-black font-mono text-4xl w-20 h-20 rounded-xl flex items-center justify-center">_</div>
+          <div id="input-placeholder" class="bg-sky-50 dark:bg-sky-500/10 border-2 border-sky-300 dark:border-sky-500/30 text-sky-600 dark:text-sky-400 font-black font-mono text-4xl w-20 h-20 rounded-xl flex items-center justify-center">_</div>
         </div>
       </div>
 
@@ -511,7 +511,7 @@
           </div>
           <div class="bg-slate-50 dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
             <p class="text-[10px] text-slate-500 font-bold mb-1 uppercase">Consistency</p>
-            <p id="stat-res-cons" class="text-xl font-extrabold text-blue-600 dark:text-blue-400">0</p>
+            <p id="stat-res-cons" class="text-xl font-extrabold text-sky-600 dark:text-sky-400">0</p>
           </div>
         </div>
 
@@ -523,21 +523,21 @@
             </div>
             <div class="h-8 w-[1px] bg-slate-200 dark:bg-slate-700"></div>
             <div>
-              <p class="text-xs text-blue-600 dark:text-blue-400 font-extrabold uppercase">Final Score</p>
-              <p id="stat-res-score" class="text-3xl font-black text-blue-600 dark:text-blue-400">0</p>
+              <p class="text-xs text-sky-600 dark:text-sky-400 font-extrabold uppercase">Final Score</p>
+              <p id="stat-res-score" class="text-3xl font-black text-sky-600 dark:text-sky-400">0</p>
             </div>
           </div>
-          <div id="stat-res-badge" class="bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 text-xs font-bold px-3 py-1 rounded-full uppercase border border-blue-200 dark:border-blue-500/20">
+          <div id="stat-res-badge" class="bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-400 text-xs font-bold px-3 py-1 rounded-full uppercase border border-sky-200 dark:border-sky-500/20">
             Standard Mode
           </div>
         </div>
 
-        <div id="stat-res-advice" class="bg-blue-50/60 dark:bg-blue-500/5 border border-blue-200/60 dark:border-blue-500/10 p-4 rounded-lg text-blue-800 dark:text-blue-300 text-xs sm:text-sm font-medium">
+        <div id="stat-res-advice" class="bg-sky-50/60 dark:bg-sky-500/5 border border-sky-200/60 dark:border-sky-500/10 p-4 rounded-lg text-blue-800 dark:text-sky-300 text-xs sm:text-sm font-medium">
           Keep practicing to improve your calculation speed and accuracy!
         </div>
 
         <div class="flex flex-col sm:flex-row gap-3 pt-2">
-          <button onclick="app.navigate('test-menu')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-slate-950 font-semibold py-2.5 rounded-lg transition-colors duration-150 text-sm shadow-xs">Retake Test</button>
+          <button onclick="app.navigate('test-menu')" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white dark:bg-sky-500 dark:hover:bg-sky-600 dark:text-slate-950 font-semibold py-2.5 rounded-lg transition-colors duration-150 text-sm shadow-xs">Retake Test</button>
           <button onclick="app.navigate('history')" class="flex-1 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 font-semibold py-2.5 rounded-lg transition-colors duration-150 text-sm shadow-xs">View History</button>
         </div>
       </div>
@@ -572,7 +572,7 @@
       <div id="history-chart-card" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 md:p-5 rounded-xl space-y-3 shadow-xs">
         <div class="flex items-center justify-between">
           <h3 class="font-bold text-sm text-slate-900 dark:text-slate-200 flex items-center gap-2">
-            <i class="fa-solid fa-chart-line text-blue-600 dark:text-blue-400"></i>
+            <i class="fa-solid fa-chart-line text-sky-600 dark:text-sky-400"></i>
             Score Progress Chart
           </h3>
           <span class="text-xs text-slate-500 font-medium">Session Trend</span>
@@ -608,7 +608,7 @@
     <!-- VIEW 6: LEADERBOARD -->
     <section id="view-leaderboard" class="page-view space-y-6 hidden">
       <div class="text-center space-y-1.5">
-        <h2 id="lb-header-title" class="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center justify-center"><i class="fa-solid fa-trophy text-blue-600 dark:text-blue-400 mr-2 text-lg"></i> Leaderboard</h2>
+        <h2 id="lb-header-title" class="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center justify-center"><i class="fa-solid fa-trophy text-sky-600 dark:text-sky-400 mr-2 text-lg"></i> Leaderboard</h2>
         <p id="lb-header-subtitle" class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Top performers based on their highest Standard Test score.</p>
         <p id="lb-header-description" class="text-xs text-slate-500 hidden italic">The highest achievement in Marathon Test.</p>
       </div>
@@ -616,7 +616,7 @@
       <!-- Mode Selector Tabs: Standard vs Marathon -->
       <div class="flex justify-center px-2">
         <div class="flex space-x-1.5 bg-slate-100 dark:bg-slate-900 p-1.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs w-full max-w-xs sm:w-auto sm:max-w-none">
-          <button id="lb-mode-standard" onclick="app.leaderboard.switchMode('standard')" class="flex-1 sm:flex-none px-4 sm:px-6 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors duration-120 bg-blue-600 text-white dark:bg-blue-500 dark:text-slate-950 flex items-center justify-center gap-1.5 shadow-xs">
+          <button id="lb-mode-standard" onclick="app.leaderboard.switchMode('standard')" class="flex-1 sm:flex-none px-4 sm:px-6 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors duration-120 bg-sky-600 text-white dark:bg-sky-500 dark:text-slate-950 flex items-center justify-center gap-1.5 shadow-xs">
             <i class="fa-solid fa-stopwatch"></i> Standard Test
           </button>
           <button id="lb-mode-marathon" onclick="app.leaderboard.switchMode('marathon')" class="flex-1 sm:flex-none px-4 sm:px-6 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors duration-120 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 flex items-center justify-center gap-1.5">
@@ -628,7 +628,7 @@
       <!-- Sub-Tabs: All Time vs Weekly (For Standard Test) -->
       <div id="lb-subtabs-container" class="flex justify-center px-2">
         <div class="flex space-x-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-lg border border-slate-200 dark:border-slate-800 w-full max-w-xs sm:w-auto sm:max-w-none">
-          <button id="lb-tab-global" onclick="app.leaderboard.switchTab('alltime')" class="tab-btn flex-1 sm:flex-none bg-blue-600 text-white dark:bg-blue-500 dark:text-slate-950 px-4 py-1.5 rounded text-xs sm:text-sm font-semibold transition-colors duration-120">All Time</button>
+          <button id="lb-tab-global" onclick="app.leaderboard.switchTab('alltime')" class="tab-btn flex-1 sm:flex-none bg-sky-600 text-white dark:bg-sky-500 dark:text-slate-950 px-4 py-1.5 rounded text-xs sm:text-sm font-semibold transition-colors duration-120">All Time</button>
           <button id="lb-tab-weekly" onclick="app.leaderboard.switchTab('weekly')" class="tab-btn flex-1 sm:flex-none text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 px-4 py-1.5 rounded text-xs sm:text-sm font-semibold transition-colors duration-120">Weekly</button>
         </div>
       </div>
@@ -636,10 +636,10 @@
       <!-- Weekly Countdown & Info Banner -->
       <div id="lb-weekly-countdown-banner" class="hidden max-w-md mx-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-center space-y-1 shadow-xs">
         <div class="flex items-center justify-center space-x-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-          <i class="fa-solid fa-clock text-blue-600 dark:text-blue-400"></i>
+          <i class="fa-solid fa-clock text-sky-600 dark:text-sky-400"></i>
           <span>Resets in</span>
         </div>
-        <div id="lb-weekly-countdown-timer" class="text-xl font-extrabold text-blue-600 dark:text-blue-400 font-mono">
+        <div id="lb-weekly-countdown-timer" class="text-xl font-extrabold text-sky-600 dark:text-sky-400 font-mono">
           --d --h --m --s
         </div>
         <p id="lb-weekly-range-text" class="text-[11px] text-slate-500 font-medium">
@@ -650,14 +650,14 @@
       <!-- Dedicated Marathon Champion Section (Hall of Fame) -->
       <div id="lb-champion-container" class="hidden max-w-2xl mx-auto cursor-pointer group transition-colors duration-150">
         <div class="py-8 sm:py-10 text-center space-y-3.5 border-b border-slate-200 dark:border-slate-800">
-          <div class="inline-flex items-center space-x-2 text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-widest">
-            <span id="lb-champion-avatar" class="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 flex items-center justify-center text-[10px] overflow-hidden">?</span>
+          <div class="inline-flex items-center space-x-2 text-xs font-semibold text-sky-600 dark:text-sky-400 uppercase tracking-widest">
+            <span id="lb-champion-avatar" class="w-5 h-5 rounded-full bg-sky-100 dark:bg-sky-500/20 text-sky-700 dark:text-sky-300 flex items-center justify-center text-[10px] overflow-hidden">?</span>
             <span id="lb-champion-name" class="text-slate-900 dark:text-slate-100 font-bold text-sm sm:text-base">—</span>
           </div>
 
           <div class="space-y-1">
             <p class="text-[11px] uppercase tracking-widest text-slate-500 dark:text-slate-400 font-semibold">Best Marathon Score</p>
-            <p id="lb-champion-score" class="text-5xl sm:text-6xl md:text-7xl font-black text-blue-600 dark:text-blue-400 tracking-tight leading-none font-mono py-1">—</p>
+            <p id="lb-champion-score" class="text-5xl sm:text-6xl md:text-7xl font-black text-sky-600 dark:text-sky-400 tracking-tight leading-none font-mono py-1">—</p>
           </div>
 
           <div class="flex items-center justify-center flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400 font-medium">
@@ -680,7 +680,7 @@
           </div>
           <div>
             <p id="lb-podium-name-2" class="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate px-1">—</p>
-            <p id="lb-podium-score-2" class="text-[11px] text-blue-600 dark:text-blue-400 font-bold">0 pts</p>
+            <p id="lb-podium-score-2" class="text-[11px] text-sky-600 dark:text-sky-400 font-bold">0 pts</p>
           </div>
           <div class="h-16 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-lg flex items-center justify-center">
             <span class="text-xs font-bold text-slate-500 dark:text-slate-400">#2</span>
@@ -694,7 +694,7 @@
           </div>
           <div>
             <p id="lb-podium-name-1" class="text-xs sm:text-sm font-bold text-amber-600 dark:text-amber-400 truncate px-1">—</p>
-            <p id="lb-podium-score-1" class="text-xs text-blue-600 dark:text-blue-400 font-extrabold">0 pts</p>
+            <p id="lb-podium-score-1" class="text-xs text-sky-600 dark:text-sky-400 font-extrabold">0 pts</p>
           </div>
           <div class="h-24 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-lg flex items-center justify-center">
             <span class="text-sm font-bold text-amber-600 dark:text-amber-400">#1</span>
@@ -708,7 +708,7 @@
           </div>
           <div>
             <p id="lb-podium-name-3" class="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate px-1">—</p>
-            <p id="lb-podium-score-3" class="text-[11px] text-blue-600 dark:text-blue-400 font-bold">0 pts</p>
+            <p id="lb-podium-score-3" class="text-[11px] text-sky-600 dark:text-sky-400 font-bold">0 pts</p>
           </div>
           <div class="h-12 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-lg flex items-center justify-center">
             <span class="text-xs font-bold text-slate-500 dark:text-slate-400">#3</span>
@@ -717,13 +717,13 @@
       </div>
 
       <!-- Your Rank Card -->
-      <div id="lb-your-position" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl hidden max-w-3xl mx-auto cursor-pointer hover:border-blue-500/40 transition-colors duration-120 shadow-xs" onclick="app.leaderboard.openProfilePreview('self')">
+      <div id="lb-your-position" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl hidden max-w-3xl mx-auto cursor-pointer hover:border-sky-500/40 transition-colors duration-120 shadow-xs" onclick="app.leaderboard.openProfilePreview('self')">
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-3">
-            <div id="lb-your-avatar" class="w-9 h-9 bg-blue-50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 font-bold rounded-full flex items-center justify-center text-xs border border-blue-200 dark:border-blue-500/30 overflow-hidden flex-shrink-0">?</div>
+            <div id="lb-your-avatar" class="w-9 h-9 bg-sky-50 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400 font-bold rounded-full flex items-center justify-center text-xs border border-sky-200 dark:border-sky-500/30 overflow-hidden flex-shrink-0">?</div>
             <div>
               <div class="flex items-center space-x-2">
-                <span class="bg-blue-50 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400 font-bold text-xs px-2 py-0.5 rounded" id="lb-your-rank">—</span>
+                <span class="bg-sky-50 dark:bg-sky-500/20 text-sky-700 dark:text-sky-400 font-bold text-xs px-2 py-0.5 rounded" id="lb-your-rank">—</span>
                 <p class="font-bold text-slate-900 dark:text-slate-100 text-sm" id="lb-your-name">—</p>
               </div>
               <p class="text-xs text-slate-500 mt-0.5">Your current position</p>
@@ -731,7 +731,7 @@
           </div>
           <div class="flex items-center space-x-4 text-right">
             <div>
-              <p class="font-bold text-blue-600 dark:text-blue-400 text-sm sm:text-base" id="lb-your-score">—</p>
+              <p class="font-bold text-sky-600 dark:text-sky-400 text-sm sm:text-base" id="lb-your-score">—</p>
               <p class="text-[11px] text-slate-500" id="lb-your-acc">—</p>
             </div>
           </div>
@@ -761,16 +761,499 @@
       </div>
     </section>
 
+    <!-- VIEW: FRIENDS & SOCIAL HUB (MOBILE LEGENDS INSPIRED V2) -->
+    <section id="view-friends" class="page-view max-w-6xl mx-auto space-y-6 hidden">
+      
+      <!-- HERO HEADER CARD (Mobile Legends Game Inspired) -->
+      <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900/95 to-sky-950/90 border border-slate-800 p-5 sm:p-7 shadow-xl backdrop-blur-xl">
+        <!-- Background Glow Accent -->
+        <div class="absolute -top-24 -right-24 w-72 h-72 bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-24 -left-24 w-72 h-72 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+          <!-- Left: User Identity -->
+          <div class="flex items-center space-x-4 sm:space-x-5 min-w-0">
+            <!-- Avatar with Glowing Online Status Dot -->
+            <div class="relative shrink-0">
+              <div id="friends-hero-avatar" class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-tr from-sky-400 via-blue-500 to-indigo-600 text-white text-2xl sm:text-3xl font-black flex items-center justify-center shadow-lg border-2 border-white/20 overflow-hidden">
+                U
+              </div>
+              <span class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-slate-900 flex items-center justify-center shadow-xs" title="Online">
+                <span class="w-2 h-2 rounded-full bg-white animate-ping opacity-75"></span>
+              </span>
+            </div>
+
+            <!-- Identity Info -->
+            <div class="space-y-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <span class="inline-flex items-center gap-1 bg-sky-500/10 text-sky-400 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border border-sky-500/30 uppercase tracking-wider">
+                  <i class="fa-solid fa-shield-halved text-[9px]"></i> Social Hub
+                </span>
+              </div>
+              <h2 id="friends-hero-display-name" class="text-xl sm:text-2xl md:text-3xl font-black text-white truncate tracking-tight">
+                Player Name
+              </h2>
+              <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400 font-mono">
+                <span id="friends-hero-username" class="text-sky-400 font-semibold">@username</span>
+                <span>•</span>
+                <span id="friends-hero-userid" class="text-slate-300">ID: ---</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right / Bottom Right: Hero Status & Chat Button Inside Card -->
+          <div class="flex flex-col items-start md:items-end justify-between self-stretch space-y-3.5 w-full md:w-auto pt-2 md:pt-0 border-t md:border-t-0 border-slate-800/80">
+            <div class="flex flex-col md:items-end space-y-1">
+              <span class="text-xs font-bold text-slate-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-gamepad text-sky-400"></i> Player Social Hub
+              </span>
+              <p id="friends-hero-tagline" class="text-xs text-slate-400 font-medium">
+                Connected with <strong id="friends-hero-count" class="text-sky-400 font-bold">0</strong> players
+              </p>
+            </div>
+
+            <!-- Chat Icon Button (Bottom Right of Social Hub Card) -->
+            <button type="button" onclick="app.navigate('chat')" class="self-end bg-sky-600 hover:bg-sky-500 active:scale-95 text-white font-extrabold px-4 py-2.5 rounded-2xl transition shadow-lg shadow-sky-600/20 flex items-center gap-2 border border-sky-400/30 group relative" title="Open Chat Menu">
+              <i class="fa-solid fa-comments text-base group-hover:scale-110 transition-transform"></i>
+              <span class="text-xs font-bold">Chat</span>
+              <span class="chat-global-unread-badge hidden absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-black min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900 shadow-sm animate-pulse">0</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+
+
+      <!-- SEGMENT CONTROL (GLASS TAB BAR - FRIENDS HUB V3) -->
+      <div class="flex items-center justify-between bg-slate-100 dark:bg-slate-900/90 p-1.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-inner">
+        <button id="friends-tab-btn-friends" type="button" onclick="app.friendsHub.switchTab('friends')" class="friends-tab-btn flex-1 py-3 px-2 sm:px-4 rounded-xl text-xs sm:text-sm font-extrabold transition-all duration-200 flex items-center justify-center gap-1.5 bg-white dark:bg-slate-800 text-sky-600 dark:text-sky-400 shadow-sm border border-slate-200/60 dark:border-slate-700/60">
+          <i class="fa-solid fa-users text-xs sm:text-sm"></i>
+          <span>Friends</span>
+          <span id="friends-badge-friends-count" class="bg-sky-100 dark:bg-sky-500/20 text-sky-700 dark:text-sky-300 text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
+        </button>
+
+        <button id="friends-tab-btn-following" type="button" onclick="app.friendsHub.switchTab('following')" class="friends-tab-btn flex-1 py-3 px-2 sm:px-4 rounded-xl text-xs sm:text-sm font-extrabold transition-all duration-200 flex items-center justify-center gap-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200">
+          <i class="fa-solid fa-paper-plane text-xs sm:text-sm"></i>
+          <span>Following</span>
+          <span id="friends-badge-following-count" class="bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 text-[10px] px-2 py-0.5 rounded-full font-bold hidden">0</span>
+        </button>
+
+        <button id="friends-tab-btn-requests" type="button" onclick="app.friendsHub.switchTab('requests')" class="friends-tab-btn flex-1 py-3 px-2 sm:px-4 rounded-xl text-xs sm:text-sm font-extrabold transition-all duration-200 flex items-center justify-center gap-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200">
+          <i class="fa-solid fa-user-clock text-xs sm:text-sm"></i>
+          <span>Requests</span>
+          <span id="friends-badge-requests-count" class="bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 text-[10px] px-2 py-0.5 rounded-full font-bold hidden">0</span>
+        </button>
+
+        <button id="friends-tab-btn-search" type="button" onclick="app.friendsHub.switchTab('search')" class="friends-tab-btn flex-1 py-3 px-2 sm:px-4 rounded-xl text-xs sm:text-sm font-extrabold transition-all duration-200 flex items-center justify-center gap-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200">
+          <i class="fa-solid fa-magnifying-glass text-xs sm:text-sm"></i>
+          <span>Search</span>
+        </button>
+      </div>
+
+      <!-- TAB PANE 1: FRIENDS LIST -->
+      <div id="friends-pane-friends" class="space-y-4">
+        <div class="flex items-center justify-between px-1">
+          <span class="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+            <i class="fa-solid fa-users text-sky-500"></i> My Friends Squad
+          </span>
+        </div>
+
+        <!-- 3 CARDS PER ROW ON DESKTOP (lg:grid-cols-3) -->
+        <div id="friends-list-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Dynamic Player Profile Cards -->
+        </div>
+
+        <!-- Empty State: Friends -->
+        <div id="friends-empty-friends" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-8 sm:p-12 rounded-3xl text-center shadow-xs space-y-4 hidden">
+          <div class="w-16 h-16 bg-sky-50 dark:bg-sky-500/10 text-sky-500 rounded-2xl flex items-center justify-center mx-auto text-2xl border border-sky-200 dark:border-sky-500/20 shadow-xs">
+            <i class="fa-solid fa-user-group"></i>
+          </div>
+          <div class="space-y-1.5 max-w-sm mx-auto">
+            <h3 class="font-bold text-base md:text-lg text-slate-900 dark:text-slate-100">No Friends Added Yet</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              Use the Search tab to connect with players by User ID, Username, or Display Name and build your squad.
+            </p>
+          </div>
+          <button type="button" onclick="app.friendsHub.switchTab('search')" class="bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition shadow-xs inline-flex items-center gap-1.5">
+            <i class="fa-solid fa-magnifying-glass text-xs"></i> Find Players
+          </button>
+        </div>
+      </div>
+
+      <!-- TAB PANE 2: FOLLOWING (OUTGOING REQUESTS) -->
+      <div id="friends-pane-following" class="space-y-4 hidden">
+        <div class="flex items-center justify-between px-1">
+          <span class="text-xs font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
+            <i class="fa-solid fa-paper-plane text-xs"></i> Following (Pending Sent)
+          </span>
+        </div>
+
+        <div id="friends-following-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Dynamic Player Profile Cards for Following -->
+        </div>
+
+        <!-- Empty State: Following -->
+        <div id="friends-empty-following" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-8 sm:p-12 rounded-3xl text-center shadow-xs space-y-4 hidden">
+          <div class="w-16 h-16 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-500 rounded-2xl flex items-center justify-center mx-auto text-2xl border border-indigo-200 dark:border-indigo-500/20 shadow-xs">
+            <i class="fa-solid fa-paper-plane"></i>
+          </div>
+          <div class="space-y-1.5 max-w-sm mx-auto">
+            <h3 class="font-bold text-base md:text-lg text-slate-900 dark:text-slate-100">Not Following Anyone Yet</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              When you send a friend request to a player, they will appear here until they accept.
+            </p>
+          </div>
+          <button type="button" onclick="app.friendsHub.switchTab('search')" class="bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition shadow-xs inline-flex items-center gap-1.5">
+            <i class="fa-solid fa-magnifying-glass text-xs"></i> Find Players
+          </button>
+        </div>
+      </div>
+
+      <!-- TAB PANE 3: REQUESTS (INCOMING ONLY) -->
+      <div id="friends-pane-requests" class="space-y-5 hidden">
+        <!-- Incoming Requests Section -->
+        <div id="friends-requests-incoming-container" class="space-y-3">
+          <div class="flex items-center justify-between px-1">
+            <span class="text-xs font-black uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+              <i class="fa-solid fa-inbox"></i> Incoming Requests
+            </span>
+          </div>
+          <div id="friends-requests-incoming-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Dynamic Compact Incoming Cards -->
+          </div>
+        </div>
+
+        <!-- Empty State: Requests -->
+        <div id="friends-empty-requests" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-8 sm:p-12 rounded-3xl text-center shadow-xs space-y-4 hidden">
+          <div class="w-16 h-16 bg-amber-50 dark:bg-amber-500/10 text-amber-500 rounded-2xl flex items-center justify-center mx-auto text-2xl border border-amber-200 dark:border-amber-500/20 shadow-xs">
+            <i class="fa-solid fa-user-clock"></i>
+          </div>
+          <div class="space-y-1.5 max-w-sm mx-auto">
+            <h3 class="font-bold text-base md:text-lg text-slate-900 dark:text-slate-100">No Incoming Requests</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              Friend requests sent to you by other players will appear here.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB PANE 3: SEARCH -->
+      <div id="friends-pane-search" class="space-y-4 hidden">
+        <!-- Sticky Search Bar -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4.5 rounded-2xl shadow-xs space-y-3 sticky top-16 z-30 backdrop-blur-md">
+          <label for="friends-search-input" class="block text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+            <i class="fa-solid fa-users-viewfinder text-sky-500"></i> Universal Player Search
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
+              <i class="fa-solid fa-magnifying-glass text-sm"></i>
+            </div>
+            <input type="text"
+                   id="friends-search-input"
+                   oninput="app.userSearchService.handleInput(this.value)"
+                   placeholder="Search by User ID, Username, or Display Name..."
+                   class="w-full pl-10 pr-10 py-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition">
+            <button type="button"
+                    id="friends-search-clear"
+                    onclick="app.userSearchService.clearSearch()"
+                    class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hidden transition">
+              <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+          </div>
+          <p class="text-[11px] text-slate-400 dark:text-slate-500 flex items-center gap-1">
+            <i class="fa-solid fa-bolt text-sky-500 text-[10px]"></i> Instantly matches User ID, Username, or Display Name.
+          </p>
+        </div>
+
+        <!-- Recent Search History Container -->
+        <div id="friends-search-history-container" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-xs space-y-2.5 hidden">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+              <i class="fa-solid fa-clock-rotate-left text-xs"></i> Recent Searches
+            </span>
+            <button type="button" onclick="app.friendsHub.clearSearchHistory()" class="text-[11px] font-bold text-rose-500 hover:text-rose-600 transition flex items-center gap-1">
+              <i class="fa-solid fa-trash-can text-[10px]"></i> Clear History
+            </button>
+          </div>
+          <div id="friends-search-history-list" class="flex flex-wrap gap-2 pt-1">
+            <!-- Search history pills -->
+          </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="friends-search-loading" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-8 rounded-2xl text-center shadow-xs space-y-3 hidden">
+          <div class="animate-spin rounded-full h-8 w-8 border-3 border-sky-500 border-t-transparent mx-auto"></div>
+          <p class="text-xs font-semibold text-slate-500 dark:text-slate-400">Searching players...</p>
+        </div>
+
+        <!-- Live Search Results List -->
+        <div id="friends-search-results-container" class="space-y-3 hidden">
+          <div class="flex items-center justify-between px-1">
+            <span class="text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Search Results</span>
+          </div>
+          <div id="friends-search-results-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Dynamic Player Cards -->
+          </div>
+        </div>
+
+        <!-- Empty State Container: Search Idle -->
+        <div id="friends-empty-search-idle" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-8 sm:p-12 rounded-3xl text-center shadow-xs space-y-4">
+          <div class="w-16 h-16 bg-sky-50 dark:bg-sky-500/10 text-sky-500 rounded-2xl flex items-center justify-center mx-auto text-2xl border border-sky-200 dark:border-sky-500/20 shadow-xs">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </div>
+          <div class="space-y-1.5 max-w-sm mx-auto">
+            <h3 class="font-bold text-base md:text-lg text-slate-900 dark:text-slate-100">Find & Connect with Players</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              Enter a User ID, Username, or Display Name above to search for players.
+            </p>
+          </div>
+        </div>
+
+        <!-- Empty State Container: Search No Results -->
+        <div id="friends-empty-no-results" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-8 sm:p-12 rounded-3xl text-center shadow-xs space-y-4 hidden">
+          <div class="w-16 h-16 bg-rose-50 dark:bg-rose-500/10 text-rose-500 rounded-2xl flex items-center justify-center mx-auto text-2xl border border-rose-200 dark:border-rose-500/20 shadow-xs">
+      <!-- Right: Hero Tagline & Global Chat Icon -->
+      <div class="flex items-center gap-3 border-t md:border-t-0 pt-3 md:pt-0 border-slate-800/80 w-full md:w-auto justify-between md:justify-end">
+        <div class="flex flex-col md:items-end space-y-1.5">
+          <span class="text-xs font-bold text-slate-400 flex items-center gap-1.5">
+            <i class="fa-solid fa-gamepad text-sky-400"></i> Player Social Hub
+          </span>
+          <p id="friends-hero-tagline" class="text-xs text-slate-400 font-medium">
+            Connected with <strong id="friends-hero-count" class="text-sky-400 font-bold">0</strong> players
+          </p>
+        </div>
+
+        <!-- Global Chat Icon Button (Header Top-Right Shortcut) -->
+        <button type="button" onclick="app.navigate('chat')" class="bg-sky-600 hover:bg-sky-500 active:scale-95 text-white font-bold p-3 rounded-2xl transition shadow-md shadow-sky-600/20 flex items-center justify-center gap-2 border border-sky-400/30 shrink-0 relative" title="Open Chat Hub">
+          <i class="fa-solid fa-comments text-base"></i>
+          <span class="text-xs font-bold hidden sm:inline">Chat</span>
+          <span class="chat-global-unread-badge hidden absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-black min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900 shadow-sm animate-pulse">0</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- SEGMENT CONTROL (GLASS TAB BAR - FRIENDS HUB V3) -->
+  <div class="flex items-center justify-between bg-slate-100 dark:bg-slate-900/90 p-1.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-inner">
+    <button id="friends-tab-btn-friends" type="button" onclick="app.friendsHub.switchTab('friends')" class="friends-tab-btn flex-1 py-3 px-2 sm:px-4 rounded-xl text-xs sm:text-sm font-extrabold transition-all duration-200 flex items-center justify-center gap-1.5 bg-white dark:bg-slate-800 text-sky-600 dark:text-sky-400 shadow-sm border border-slate-200/60 dark:border-slate-700/60">
+      <i class="fa-solid fa-users text-xs sm:text-sm"></i>
+      <span>Friends</span>
+      <span id="friends-badge-friends-count" class="bg-sky-100 dark:bg-sky-500/20 text-sky-700 dark:text-sky-300 text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
+    </button>
+
+    <button id="friends-tab-btn-following" type="button" onclick="app.friendsHub.switchTab('following')" class="friends-tab-btn flex-1 py-3 px-2 sm:px-4 rounded-xl text-xs sm:text-sm font-extrabold transition-all duration-200 flex items-center justify-center gap-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200">
+      <i class="fa-solid fa-paper-plane text-xs sm:text-sm"></i>
+      <span>Following</span>
+      <span id="friends-badge-following-count" class="bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 text-[10px] px-2 py-0.5 rounded-full font-bold hidden">0</span>
+    </button>
+
+    <button id="friends-tab-btn-requests" type="button" onclick="app.friendsHub.switchTab('requests')" class="friends-tab-btn flex-1 py-3 px-2 sm:px-4 rounded-xl text-xs sm:text-sm font-extrabold transition-all duration-200 flex items-center justify-center gap-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200">
+      <i class="fa-solid fa-inbox text-xs sm:text-sm"></i>
+      <span>Requests</span>
+      <span id="friends-badge-requests-count" class="bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 text-[10px] px-2 py-0.5 rounded-full font-bold hidden">0</span>
+    </button>
+  </div>
+
+  <!-- SEARCH BAR COMPONENT -->
+  <div class="relative">
+    <div class="relative flex items-center">
+      <i class="fa-solid fa-magnifying-glass absolute left-4 text-slate-400 text-sm"></i>
+      <input type="text" 
+             id="friends-search-input" 
+             placeholder="Search players by name, @username, or numeric ID..." 
+             oninput="app.userSearchService.handleInput(this.value)"
+             class="w-full pl-11 pr-10 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition shadow-xs">
+      <button id="friends-search-clear" 
+              type="button" 
+              onclick="app.userSearchService.clearSearch()" 
+              class="absolute right-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg hidden">
+        <i class="fa-solid fa-circle-xmark text-sm"></i>
+      </button>
+    </div>
+
+    <!-- Recent Search History Chips Container -->
+    <div id="friends-search-history-container" class="mt-2.5 flex items-center gap-2 flex-wrap hidden">
+      <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0">Recent:</span>
+      <div id="friends-search-history-list" class="flex items-center gap-1.5 flex-wrap"></div>
+    </div>
+  </div>
+
+  <!-- MAIN FRIENDS CONTENT CONTAINER -->
+  <div id="friends-content-container" class="space-y-4">
+    <!-- Friends Grid -->
+    <div id="friends-grid-friends" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+
+    <!-- Following Grid (Outgoing Friend Requests) -->
+    <div id="friends-grid-following" class="grid grid-cols-1 md:grid-cols-2 gap-4 hidden"></div>
+
+    <!-- Requests Grid (Incoming Friend Requests) -->
+    <div id="friends-grid-requests" class="grid grid-cols-1 md:grid-cols-2 gap-4 hidden"></div>
+
+    <!-- Search Results Grid -->
+    <div id="friends-grid-search" class="grid grid-cols-1 md:grid-cols-2 gap-4 hidden"></div>
+
+    <!-- Empty State -->
+    <div id="friends-empty-state" class="p-10 text-center bg-white dark:bg-slate-900/60 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3 hidden">
+      <div class="w-14 h-14 bg-sky-50 dark:bg-sky-500/10 text-sky-500 rounded-2xl flex items-center justify-center mx-auto text-2xl border border-sky-200 dark:border-sky-500/20">
+        <i class="fa-solid fa-users-slash"></i>
+</div>
+      <h3 id="friends-empty-title" class="font-extrabold text-base text-slate-900 dark:text-slate-100">No Friends Found</h3>
+      <p id="friends-empty-desc" class="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">Use the search bar above to discover and connect with players.</p>
+    </div>
+  </div>
+</section>
+
+<!-- VIEW: CHAT UI V2 (PREMIUM GAME SOCIAL CHAT) -->
+<section id="view-chat" class="page-view max-w-6xl mx-auto hidden space-y-4">
+  
+  <!-- Main Chat Container (Fixed responsive height with internal isolated scroll) -->
+  <div class="flex flex-col md:flex-row h-[calc(100vh-140px)] min-h-[520px] max-h-[720px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+    
+    <!-- Left Sidebar: Conversations List (320px Fixed on Desktop) -->
+    <div id="chat-conversations-panel" class="w-full md:w-[320px] shrink-0 border-r border-slate-200 dark:border-slate-800 flex flex-col h-full bg-slate-50/60 dark:bg-slate-950/50 min-h-0">
+      
+      <!-- Header & Segment Tabs -->
+      <div class="p-3.5 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-3 shrink-0">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2.5">
+            <div class="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-500 flex items-center justify-center text-sm font-bold border border-sky-500/20">
+              <i class="fa-solid fa-comments"></i>
+            </div>
+            <h2 class="text-base font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Social Chat</h2>
+          </div>
+          <button type="button" onclick="app.chatService.closeChat()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+            <i class="fa-solid fa-xmark text-sm"></i>
+          </button>
+        </div>
+
+        <!-- Segmented Control: Friends vs Requests -->
+        <div class="flex items-center p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl border border-slate-200/60 dark:border-slate-700/60 gap-1">
+          <button id="chat-tab-btn-friends" type="button" onclick="app.chatService.switchTab('friends')" class="flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 bg-white dark:bg-slate-900 text-sky-600 dark:text-sky-400 shadow-xs border border-slate-200/60 dark:border-slate-700/60">
+            <i class="fa-solid fa-user-group text-[11px]"></i>
+            <span>Friends</span>
+            <span id="chat-badge-friends-count" class="bg-sky-500/20 text-sky-700 dark:text-sky-300 text-[10px] px-1.5 py-0.2 rounded-full font-extrabold hidden">0</span>
+          </button>
+
+          <button id="chat-tab-btn-requests" type="button" onclick="app.chatService.switchTab('requests')" class="flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200">
+            <i class="fa-solid fa-inbox text-[11px]"></i>
+            <span>Requests</span>
+            <span id="chat-badge-requests-count" class="bg-amber-500/20 text-amber-700 dark:text-amber-300 text-[10px] px-1.5 py-0.2 rounded-full font-extrabold hidden">0</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Conversations Scroll List (Fixed internal scroll container) -->
+      <div id="chat-conversations-list" class="flex-1 overflow-y-auto p-2 space-y-1 min-h-0 overscroll-contain">
+        <!-- Dynamic Conversation Cards -->
+      </div>
+
+      <!-- Empty Conversations State -->
+      <div id="chat-conversations-empty" class="p-6 text-center space-y-2.5 my-auto hidden">
+        <div class="w-10 h-10 bg-slate-100 dark:bg-slate-800 text-slate-400 rounded-xl flex items-center justify-center mx-auto text-base border border-slate-200 dark:border-slate-700">
+          <i class="fa-solid fa-comment-slash"></i>
+        </div>
+        <p class="text-xs font-medium text-slate-500 dark:text-slate-400">No active conversations.</p>
+      </div>
+    </div>
+
+    <!-- Right Side: Conversation View (Flex-1) -->
+    <div id="chat-active-panel" class="hidden md:flex flex-1 flex-col h-full bg-white dark:bg-slate-900 relative min-w-0 min-h-0">
+      
+      <!-- Active Conversation Header (Shrink-0) -->
+      <div id="chat-active-header" class="p-3.5 sm:p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-950/80 backdrop-blur-md shrink-0">
+        <div class="flex items-center space-x-3 min-w-0">
+          <!-- Mobile Back Button -->
+          <button type="button" onclick="app.chatService.showConversationsPanelOnMobile()" class="md:hidden text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white p-1.5 rounded-xl border border-slate-200 dark:border-slate-800">
+            <i class="fa-solid fa-arrow-left text-xs"></i>
+          </button>
+
+          <!-- Recipient Avatar -->
+          <div id="chat-active-avatar" class="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-600 text-white font-extrabold text-sm flex items-center justify-center border border-slate-200 dark:border-slate-700 shrink-0 overflow-hidden">
+            U
+          </div>
+
+          <!-- Recipient Info -->
+          <div class="space-y-0.5 min-w-0">
+            <div class="flex items-center gap-2">
+              <h3 id="chat-active-displayname" class="font-extrabold text-sm text-slate-900 dark:text-slate-100 truncate">Select a conversation</h3>
+              <span id="chat-active-badge" class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-500 border border-sky-500/30 uppercase tracking-wider hidden">Friend</span>
+            </div>
+            <p id="chat-active-username" class="text-xs text-slate-500 dark:text-slate-400 font-mono truncate">@user</p>
+          </div>
+        </div>
+
+        <!-- Security Badge (Encrypted) -->
+        <div class="flex items-center space-x-2 shrink-0">
+          <span id="chat-active-encryption-badge" title="Messages are encrypted before being stored." class="inline-flex items-center gap-1.5 text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-500/30">
+            <i class="fa-solid fa-lock text-[9px]"></i>
+            <span>Encrypted</span>
+          </span>
+          <!-- Hidden expiration timer container retained for JS logic -->
+          <div id="chat-active-timer" class="hidden"><span id="chat-active-timer-val" class="hidden"></span></div>
+        </div>
+      </div>
+
+      <!-- Messages Stream View (Dedicated internal scroll container) -->
+      <div id="chat-messages-stream" class="flex-1 p-4 sm:p-5 overflow-y-auto space-y-3 bg-slate-50/40 dark:bg-slate-950/30 min-h-0 overscroll-contain">
+        <!-- Dynamic Message Bubbles -->
+      </div>
+
+      <!-- Active Chat Idle State (No Conversation Selected) -->
+      <div id="chat-idle-state" class="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-white dark:bg-slate-900 z-10 space-y-3">
+        <div class="w-14 h-14 rounded-2xl bg-sky-50 dark:bg-sky-500/10 text-sky-500 flex items-center justify-center text-2xl border border-sky-200 dark:border-sky-500/20">
+          <i class="fa-solid fa-comments"></i>
+        </div>
+        <div class="space-y-1 max-w-xs">
+          <h3 class="font-extrabold text-base text-slate-900 dark:text-slate-100">Social Chat</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+            Select a conversation from the sidebar to start messaging.
+          </p>
+        </div>
+      </div>
+
+      <!-- Composer Bar (Shrink-0) -->
+      <div id="chat-composer-container" class="p-3 sm:p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
+        <div class="relative flex items-center gap-2">
+          <textarea id="chat-input-text"
+                    rows="1"
+                    placeholder="Type a message..."
+                    onkeydown="app.chatService.handleInputKeyDown(event)"
+                    class="w-full pl-4 pr-12 py-3 bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 rounded-2xl text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition resize-none max-h-32"></textarea>
+          <button type="button"
+                  onclick="app.chatService.sendMessage()"
+                  class="shrink-0 w-11 h-11 bg-sky-600 hover:bg-sky-700 text-white rounded-2xl flex items-center justify-center shadow-xs transition active:scale-95">
+            <i class="fa-solid fa-paper-plane text-sm"></i>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
     <!-- VIEW 7: PROFILE -->
     <section id="view-profile" class="page-view max-w-2xl mx-auto space-y-6 hidden">
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 md:p-8 rounded-xl flex flex-col md:flex-row items-center md:items-start gap-6 relative shadow-xs">
         <button id="profile-edit-btn" onclick="app.navigate('edit-profile')" class="absolute top-4 right-4 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold px-3.5 py-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 hidden transition-colors duration-120"><i class="fa-solid fa-pen mr-1.5"></i>Edit</button>
         
-        <div id="profile-avatar" class="w-20 h-20 bg-blue-50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 text-3xl font-bold rounded-full flex items-center justify-center flex-shrink-0 border-2 border-blue-200 dark:border-blue-500/30 overflow-hidden shadow-xs">?</div>
+        <div id="profile-avatar" class="w-20 h-20 bg-sky-50 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400 text-3xl font-bold rounded-full flex items-center justify-center flex-shrink-0 border-2 border-sky-200 dark:border-sky-500/30 overflow-hidden shadow-xs">?</div>
         
-        <div class="text-center md:text-left space-y-1.5 flex-1">
-          <h2 id="profile-username" class="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100">User_Guest</h2>
-          <p id="profile-displayname" class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">Guest User</p>
+        <div class="text-center md:text-left space-y-1 flex-1">
+          <div class="flex items-center justify-center md:justify-start space-x-2">
+            <h2 id="profile-displayname" class="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100">Guest User</h2>
+            <button type="button" id="btn-copy-profile-displayname" onclick="app.userSearchService.copyText(app.state.user?.displayName || app.state.user?.username, 'Display Name')" title="Copy Display Name" class="hover:text-sky-500 transition text-slate-400 dark:text-slate-500 focus:outline-none p-0.5">
+              <i class="fa-regular fa-copy text-sm md:text-base"></i>
+            </button>
+          </div>
+          <p id="profile-username" class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">@User_Guest</p>
+          <div id="profile-userid-container" class="flex items-center justify-center md:justify-start space-x-1.5 text-xs font-mono mt-0.5">
+            <span class="font-medium text-slate-400 dark:text-slate-500">User ID</span>
+            <strong id="profile-userid" class="text-slate-700 dark:text-slate-300 font-bold select-all font-mono">-</strong>
+            <button type="button" id="btn-copy-profile-userid" onclick="app.userIdService.copyUserId(app.state.user?.user_id)" title="Copy User ID" class="hover:text-sky-500 transition text-slate-400 dark:text-slate-500 focus:outline-none p-0.5">
+              <i class="fa-regular fa-copy text-xs"></i>
+            </button>
+          </div>
           <p id="profile-bio" class="text-xs text-slate-500 mt-1 line-clamp-2">No bio added.</p>
           <div class="pt-1 flex items-center justify-center md:justify-start space-x-4">
             <span class="text-xs text-slate-500 flex items-center"><i class="fa-solid fa-calendar-days mr-1.5"></i> <span id="profile-joindate">Joined -</span></span>
@@ -785,7 +1268,7 @@
         </div>
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-lg text-center shadow-xs">
           <p class="text-[10px] text-slate-500 font-bold uppercase mb-0.5">Best Score</p>
-          <p id="profile-bestscore" class="text-base font-bold text-blue-600 dark:text-blue-400">-</p>
+          <p id="profile-bestscore" class="text-base font-bold text-sky-600 dark:text-sky-400">-</p>
         </div>
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-lg text-center shadow-xs">
           <p class="text-[10px] text-slate-500 font-bold uppercase mb-0.5">Avg Acc</p>
@@ -804,12 +1287,12 @@
       <!-- Marathon Hall of Fame Stats Group -->
       <div class="grid grid-cols-2 gap-3">
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-lg text-center shadow-xs">
-          <p class="text-[10px] text-blue-700 dark:text-blue-400 font-bold uppercase mb-0.5">🏛 Hall of Fame Rank</p>
+          <p class="text-[10px] text-sky-700 dark:text-sky-400 font-bold uppercase mb-0.5">🏛 Hall of Fame Rank</p>
           <p id="profile-marathon-rank" class="text-base font-bold text-slate-900 dark:text-slate-100">-</p>
         </div>
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-lg text-center shadow-xs">
-          <p class="text-[10px] text-blue-700 dark:text-blue-400 font-bold uppercase mb-0.5">Best Marathon Score</p>
-          <p id="profile-marathon-score" class="text-base font-bold text-blue-600 dark:text-blue-400">-</p>
+          <p class="text-[10px] text-sky-700 dark:text-sky-400 font-bold uppercase mb-0.5">Best Marathon Score</p>
+          <p id="profile-marathon-score" class="text-base font-bold text-sky-600 dark:text-sky-400">-</p>
         </div>
       </div>
 
@@ -818,12 +1301,12 @@
         <!-- Header -->
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-2">
-            <div class="w-7 h-7 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-lg flex items-center justify-center text-xs border border-blue-100 dark:border-blue-500/20">
+            <div class="w-7 h-7 bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 rounded-lg flex items-center justify-center text-xs border border-sky-100 dark:border-sky-500/20">
               <i class="fa-solid fa-trophy"></i>
             </div>
             <h4 class="font-bold text-sm text-slate-900 dark:text-slate-100">Achievements</h4>
           </div>
-          <button onclick="app.achievements.openShowcaseModal()" class="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline transition flex items-center gap-1">
+          <button onclick="app.achievements.openShowcaseModal()" class="text-xs font-semibold text-sky-600 dark:text-sky-400 hover:underline transition flex items-center gap-1">
             <i class="fa-solid fa-pen-to-square text-[10px]"></i> Edit Showcase
           </button>
         </div>
@@ -837,16 +1320,16 @@
         <div class="space-y-1">
           <div class="flex justify-between items-center text-xs">
             <span id="profile-ach-counter" class="font-medium text-slate-600 dark:text-slate-400">0 / 0 Unlocked</span>
-            <span id="profile-ach-percent" class="font-bold text-blue-600 dark:text-blue-400">0%</span>
+            <span id="profile-ach-percent" class="font-bold text-sky-600 dark:text-sky-400">0%</span>
           </div>
           <div class="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
-            <div id="profile-ach-bar" class="bg-blue-600 dark:bg-blue-500 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+            <div id="profile-ach-bar" class="bg-sky-600 dark:bg-sky-500 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
           </div>
         </div>
 
         <!-- View All Link -->
         <div class="flex items-center justify-end pt-0.5">
-          <button onclick="app.navigate('achievements')" class="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline transition flex items-center gap-1 group">
+          <button onclick="app.navigate('achievements')" class="text-xs font-semibold text-sky-600 dark:text-sky-400 hover:underline transition flex items-center gap-1 group">
             View All <i class="fa-solid fa-arrow-right text-[10px] group-hover:translate-x-0.5 transition"></i>
           </button>
         </div>
@@ -871,7 +1354,7 @@
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden divide-y divide-slate-100 dark:divide-slate-800/60 shadow-xs">
           <button onclick="app.navigate('history')" class="w-full p-3.5 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors duration-120 text-left group">
             <div class="flex items-center space-x-3">
-              <div class="w-8 h-8 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 rounded-lg flex items-center justify-center text-sm transition-colors duration-120"><i class="fa-solid fa-clock-rotate-left"></i></div>
+              <div class="w-8 h-8 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:text-sky-600 dark:group-hover:text-sky-400 rounded-lg flex items-center justify-center text-sm transition-colors duration-120"><i class="fa-solid fa-clock-rotate-left"></i></div>
               <div>
                 <span class="font-bold text-slate-900 dark:text-slate-200 text-sm block">Test History</span>
                 <span class="text-xs text-slate-500">View your performance graph and test statistics</span>
@@ -890,7 +1373,7 @@
           <!-- Email / Password User UI -->
           <div id="profile-email-security-ui" class="flex items-center justify-between">
             <div class="flex items-center space-x-3">
-              <div class="w-8 h-8 bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 rounded-lg flex items-center justify-center text-sm">
+              <div class="w-8 h-8 bg-slate-100 dark:bg-slate-800 text-sky-600 dark:text-sky-400 rounded-lg flex items-center justify-center text-sm">
                 <i class="fa-solid fa-lock"></i>
               </div>
               <div>
@@ -898,7 +1381,7 @@
                 <span class="text-xs text-slate-500 font-mono">••••••••</span>
               </div>
             </div>
-            <button type="button" onclick="app.actions.openChangePasswordModal()" class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-blue-600 dark:text-blue-400 text-xs font-semibold px-3.5 py-1.5 rounded-lg transition-colors duration-120 shadow-xs">
+            <button type="button" onclick="app.actions.openChangePasswordModal()" class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-sky-600 dark:text-sky-400 text-xs font-semibold px-3.5 py-1.5 rounded-lg transition-colors duration-120 shadow-xs">
               Change Password
             </button>
           </div>
@@ -906,7 +1389,7 @@
           <!-- Google OAuth User UI -->
           <div id="profile-google-security-ui" class="hidden flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div class="flex items-center space-x-3">
-              <div class="w-8 h-8 bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 rounded-lg flex items-center justify-center text-sm">
+              <div class="w-8 h-8 bg-slate-100 dark:bg-slate-800 text-sky-600 dark:text-sky-400 rounded-lg flex items-center justify-center text-sm">
                 <i class="fa-solid fa-shield-halved"></i>
               </div>
               <div>
@@ -921,6 +1404,63 @@
           </div>
 
         </div>
+      <!-- Preferences Group -->
+      <div class="space-y-2">
+        <h4 class="font-bold text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider px-1">Preferences</h4>
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-xs space-y-4">
+          <!-- Interaction Sub-header -->
+          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+            <div class="flex items-center space-x-2">
+              <i class="fa-solid fa-keyboard text-sky-500 text-sm"></i>
+              <h5 class="font-bold text-slate-900 dark:text-slate-100 text-xs uppercase tracking-wider">Interaction</h5>
+            </div>
+            <span class="text-[10px] text-slate-500 dark:text-slate-400 font-mono">Test Feedback</span>
+          </div>
+
+          <!-- Keyboard Feedback Mode (Segmented Control) -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Keyboard Feedback</label>
+              <button type="button" id="btn-preview-feedback" onclick="app.audioFeedbackService.playPreview()" class="text-[11px] font-extrabold text-sky-600 dark:text-sky-400 hover:text-sky-500 flex items-center gap-1 transition focus:outline-none focus:ring-2 focus:ring-sky-400 rounded px-1.5 py-0.5 bg-sky-50 dark:bg-sky-500/10 border border-sky-200 dark:border-sky-500/20">
+                <i class="fa-solid fa-volume-high text-[10px]"></i> Preview
+              </button>
+            </div>
+            
+            <div id="keyboard-feedback-segmented" class="grid grid-cols-3 gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+              <button type="button" onclick="app.audioFeedbackService.setMode('off')" data-mode="off" class="py-2 px-1 text-xs font-semibold rounded-lg transition-all text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200">
+                Off
+              </button>
+              <button type="button" onclick="app.audioFeedbackService.setMode('soft')" data-mode="soft" class="py-2 px-1 text-xs font-semibold rounded-lg transition-all bg-white dark:bg-slate-900 text-sky-600 dark:text-sky-400 shadow-xs border border-slate-200 dark:border-slate-700">
+                Soft <span class="text-[9px] font-extrabold text-sky-500 dark:text-sky-400 opacity-90">(Recommended)</span>
+              </button>
+              <button type="button" onclick="app.audioFeedbackService.setMode('mechanical')" data-mode="mechanical" class="py-2 px-1 text-xs font-semibold rounded-lg transition-all text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200">
+                Mechanical
+              </button>
+            </div>
+          </div>
+
+          <!-- Feedback Volume Slider -->
+          <div>
+            <div class="flex justify-between items-center text-xs mb-1">
+              <label class="font-semibold text-slate-700 dark:text-slate-300">Feedback Volume</label>
+              <span id="feedback-volume-text" class="font-extrabold text-sky-600 dark:text-sky-400">25%</span>
+            </div>
+            <input type="range" id="feedback-volume-slider" min="0" max="70" value="25" step="1"
+                   oninput="app.audioFeedbackService.setVolume(this.value)"
+                   class="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-sky-500">
+          </div>
+
+          <!-- Final 5-Second Countdown Sound Toggle -->
+          <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+            <div>
+              <span class="text-xs font-semibold text-slate-800 dark:text-slate-200 block">Countdown Sound</span>
+              <span class="text-[11px] text-slate-500 dark:text-slate-400 block">Subtle 5-second countdown sequence (Timed modes only).</span>
+            </div>
+            <button type="button" id="toggle-countdown-sound" onclick="app.audioFeedbackService.toggleCountdown()" class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-sky-500">
+              <span id="toggle-countdown-dot" class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-5"></span>
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- General Menu Group -->
@@ -929,7 +1469,7 @@
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden divide-y divide-slate-100 dark:divide-slate-800/60 shadow-xs">
           <button onclick="app.navigate('articles')" class="w-full p-3.5 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors duration-120 text-left group">
             <div class="flex items-center space-x-3">
-              <div class="w-8 h-8 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 rounded-lg flex items-center justify-center text-sm transition-colors duration-120">
+              <div class="w-8 h-8 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:text-sky-600 dark:group-hover:text-sky-400 rounded-lg flex items-center justify-center text-sm transition-colors duration-120">
                 <i class="fa-solid fa-book-open"></i>
               </div>
               <span class="font-bold text-slate-900 dark:text-slate-200 text-sm">Learn</span>
@@ -939,7 +1479,7 @@
 
           <button onclick="app.actions.showInfoModal('Help Center', 'Need assistance? Read the test instructions in the Tests menu or learn test tips on the Learn page. For technical support, contact the Koran Test team at support@korantest.com.')" class="w-full p-3.5 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors duration-120 text-left group">
             <div class="flex items-center space-x-3">
-              <div class="w-8 h-8 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 rounded-lg flex items-center justify-center text-sm transition-colors duration-120">
+              <div class="w-8 h-8 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:text-sky-600 dark:group-hover:text-sky-400 rounded-lg flex items-center justify-center text-sm transition-colors duration-120">
                 <i class="fa-solid fa-circle-question"></i>
               </div>
               <span class="font-bold text-slate-900 dark:text-slate-200 text-sm">Help Center</span>
@@ -949,7 +1489,7 @@
 
           <button onclick="app.actions.showInfoModal('Privacy Policy', 'Your privacy is paramount. Your scores and performance data are securely encrypted in Supabase and only used for your personal history charts and public Leaderboards if you consent.')" class="w-full p-3.5 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors duration-120 text-left group">
             <div class="flex items-center space-x-3">
-              <div class="w-8 h-8 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 rounded-lg flex items-center justify-center text-sm transition-colors duration-120">
+              <div class="w-8 h-8 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:text-sky-600 dark:group-hover:text-sky-400 rounded-lg flex items-center justify-center text-sm transition-colors duration-120">
                 <i class="fa-solid fa-shield-halved"></i>
               </div>
               <span class="font-bold text-slate-900 dark:text-slate-200 text-sm">Privacy Policy</span>
@@ -959,7 +1499,7 @@
 
           <button onclick="app.actions.showInfoModal('Terms of Service', 'By using the Koran Test v2.0 platform, you agree to refrain from cheating or using automated tools during test simulations.')" class="w-full p-3.5 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors duration-120 text-left group">
             <div class="flex items-center space-x-3">
-              <div class="w-8 h-8 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 rounded-lg flex items-center justify-center text-sm transition-colors duration-120">
+              <div class="w-8 h-8 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:text-sky-600 dark:group-hover:text-sky-400 rounded-lg flex items-center justify-center text-sm transition-colors duration-120">
                 <i class="fa-solid fa-file-contract"></i>
               </div>
               <span class="font-bold text-slate-900 dark:text-slate-200 text-sm">Terms of Service</span>
@@ -969,7 +1509,7 @@
 
           <button onclick="app.actions.showInfoModal('About Koran Test', 'Koran Test v2.0 is the most complete modern Pauli & Kraepelin calculation simulation platform featuring real-time ranking and graph consistency analytics.')" class="w-full p-3.5 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors duration-120 text-left group">
             <div class="flex items-center space-x-3">
-              <div class="w-8 h-8 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 rounded-lg flex items-center justify-center text-sm transition-colors duration-120">
+              <div class="w-8 h-8 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:text-sky-600 dark:group-hover:text-sky-400 rounded-lg flex items-center justify-center text-sm transition-colors duration-120">
                 <i class="fa-solid fa-circle-info"></i>
               </div>
               <span class="font-bold text-slate-900 dark:text-slate-200 text-sm">About</span>
@@ -989,7 +1529,6 @@
         </div>
       </div>
     </section>
-    </section>
 
     <!-- VIEW 8: EDIT PROFILE -->
     <section id="view-edit-profile" class="page-view max-w-md mx-auto hidden">
@@ -1000,10 +1539,10 @@
         </div>
         
         <div class="flex flex-col items-center space-y-3">
-          <div id="edit-avatar-preview" class="w-20 h-20 bg-blue-50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 text-3xl font-bold rounded-full flex items-center justify-center border-2 border-dashed border-blue-300 dark:border-blue-500/50 overflow-hidden relative">?</div>
+          <div id="edit-avatar-preview" class="w-20 h-20 bg-sky-50 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400 text-3xl font-bold rounded-full flex items-center justify-center border-2 border-dashed border-sky-300 dark:border-sky-500/50 overflow-hidden relative">?</div>
           <div class="flex gap-2">
             <input type="file" id="edit-avatar-input" accept="image/jpeg,image/jpg,image/png,image/webp" class="hidden" onchange="app.actions.handleAvatarSelect(event)">
-            <button type="button" onclick="document.getElementById('edit-avatar-input').click()" class="text-xs text-blue-700 dark:text-blue-400 font-semibold py-1.5 px-3 bg-blue-50 dark:bg-blue-500/10 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors duration-120 flex items-center gap-1.5 border border-blue-200 dark:border-blue-500/20">
+            <button type="button" onclick="document.getElementById('edit-avatar-input').click()" class="text-xs text-sky-700 dark:text-sky-400 font-semibold py-1.5 px-3 bg-sky-50 dark:bg-sky-500/10 rounded-lg hover:bg-sky-100 dark:hover:bg-sky-500/20 transition-colors duration-120 flex items-center gap-1.5 border border-sky-200 dark:border-sky-500/20">
               <i class="fa-solid fa-camera"></i> Change Photo
             </button>
             <button type="button" id="btn-remove-avatar" onclick="app.actions.removeAvatar()" class="text-xs text-red-600 dark:text-red-400 font-semibold py-1.5 px-3 bg-red-50 dark:bg-red-500/10 rounded-lg hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors duration-120 hidden flex items-center gap-1.5 border border-red-200 dark:border-red-500/20">
@@ -1016,7 +1555,7 @@
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Username (Unique)</label>
             <div class="relative">
-              <input type="text" id="edit-username" autocomplete="off" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 pr-10 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-colors duration-120" placeholder="your_username">
+              <input type="text" id="edit-username" autocomplete="off" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 pr-10 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition-colors duration-120" placeholder="your_username">
               <div id="edit-username-status-icon" class="absolute right-3 top-1/2 -translate-y-1/2 hidden flex items-center justify-center pointer-events-none"></div>
             </div>
             <p id="edit-username-status-text" class="text-xs text-slate-500 mt-1"></p>
@@ -1024,11 +1563,11 @@
           </div>
           <div>
              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Display Name</label>
-             <input type="text" id="edit-displayname" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-colors duration-120" placeholder="Your Name">
+             <input type="text" id="edit-displayname" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition-colors duration-120" placeholder="Your Name">
           </div>
           <div>
              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Bio</label>
-             <textarea id="edit-bio" rows="3" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-colors duration-120 resize-none" placeholder="Write something about yourself..."></textarea>
+             <textarea id="edit-bio" rows="3" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition-colors duration-120 resize-none" placeholder="Write something about yourself..."></textarea>
           </div>
           <div>
              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Email (Private)</label>
@@ -1036,7 +1575,7 @@
           </div>
           <div>
              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Profile Visibility</label>
-             <select id="edit-visibility" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-colors duration-120">
+             <select id="edit-visibility" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition-colors duration-120">
                <option value="public">Public — Anyone can view your profile</option>
                <option value="private">Private — Only you can view your profile</option>
              </select>
@@ -1046,7 +1585,7 @@
 
         <div class="flex gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
           <button onclick="app.navigate('profile')" class="flex-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold py-2.5 rounded-lg transition-colors duration-120 text-sm">Cancel</button>
-          <button id="btn-save-profile" onclick="app.actions.saveProfile()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-slate-950 font-semibold py-2.5 rounded-lg transition-colors duration-120 text-sm disabled:opacity-50 disabled:cursor-not-allowed">Save</button>
+          <button id="btn-save-profile" onclick="app.actions.saveProfile()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white dark:bg-sky-500 dark:hover:bg-sky-600 dark:text-slate-950 font-semibold py-2.5 rounded-lg transition-colors duration-120 text-sm disabled:opacity-50 disabled:cursor-not-allowed">Save</button>
         </div>
       </div>
     </section>
@@ -1058,17 +1597,17 @@
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
             <div class="flex items-center space-x-2">
-              <button id="achievements-back-btn" onclick="app.achievements.goBack()" class="text-slate-500 dark:text-slate-400 hover:text-blue-400 text-sm font-medium flex items-center gap-1 transition">
+              <button id="achievements-back-btn" onclick="app.achievements.goBack()" class="text-slate-500 dark:text-slate-400 hover:text-sky-400 text-sm font-medium flex items-center gap-1 transition">
                 <i class="fa-solid fa-arrow-left"></i> <span id="achievements-back-text">Profile</span>
               </button>
               <span class="text-slate-600">•</span>
-              <span id="achievements-badge-text" class="text-xs font-extrabold text-blue-400 uppercase tracking-wider">Achievements</span>
+              <span id="achievements-badge-text" class="text-xs font-extrabold text-sky-400 uppercase tracking-wider">Achievements</span>
             </div>
             <h2 id="achievements-header-title" class="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-100 mt-1">Achievements</h2>
             <p id="achievements-header-subtitle" class="text-xs text-slate-500 dark:text-slate-400 mt-1">Track your progress and unlock milestones.</p>
           </div>
           <div id="achievements-summary" class="bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 px-4 py-2.5 rounded-xl text-right flex items-center space-x-3">
-            <div class="w-10 h-10 bg-blue-500/10 text-blue-400 rounded-xl flex items-center justify-center text-lg">
+            <div class="w-10 h-10 bg-sky-500/10 text-sky-400 rounded-xl flex items-center justify-center text-lg">
               <i class="fa-solid fa-trophy"></i>
             </div>
             <div>
@@ -1080,7 +1619,7 @@
 
         <!-- Global Progress Bar -->
         <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
-          <div id="achievements-progress-bar" class="bg-gradient-to-r from-blue-500 to-blue-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+          <div id="achievements-progress-bar" class="bg-gradient-to-r from-sky-500 to-sky-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
         </div>
       </div>
 
@@ -1098,7 +1637,7 @@
     <!-- VIEW 10: LEARN / ARTICLES LIST -->
     <section id="view-articles" class="page-view space-y-8 hidden">
       <div class="text-center space-y-2">
-        <span class="inline-block bg-blue-500/10 text-blue-400 px-3 py-1 rounded-full text-xs font-bold border border-blue-500/20 mb-1">Education Center</span>
+        <span class="inline-block bg-sky-500/10 text-sky-400 px-3 py-1 rounded-full text-xs font-bold border border-sky-500/20 mb-1">Education Center</span>
         <h2 class="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-100">Learn</h2>
         <p class="text-sm text-slate-500 dark:text-slate-400">Tips, tricks, and insights for Pauli & Kraepelin tests.</p>
       </div>
@@ -1107,24 +1646,24 @@
         <!-- Article 1 -->
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden group cursor-pointer hover:border-slate-200 dark:border-slate-700 transition" onclick="app.articles.viewDetail(0)">
           <div class="h-40 bg-slate-100 dark:bg-slate-800 overflow-hidden relative">
-            <div class="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 group-hover:scale-105 transition-transform duration-500"></div>
+            <div class="absolute inset-0 bg-gradient-to-br from-sky-500/20 to-purple-500/20 group-hover:scale-105 transition-transform duration-500"></div>
             <div class="absolute inset-0 flex items-center justify-center text-slate-700 text-4xl"><i class="fa-solid fa-newspaper"></i></div>
           </div>
           <div class="p-5 space-y-2">
-            <span class="text-[10px] text-blue-400 font-bold uppercase tracking-wider">20 Jul 2026</span>
-            <h4 class="font-bold text-base text-slate-900 dark:text-slate-100 group-hover:text-blue-400 transition leading-snug">Secrets to Passing Pauli & Kraepelin Career Tests</h4>
+            <span class="text-[10px] text-sky-400 font-bold uppercase tracking-wider">20 Jul 2026</span>
+            <h4 class="font-bold text-base text-slate-900 dark:text-slate-100 group-hover:text-sky-400 transition leading-snug">Secrets to Passing Pauli & Kraepelin Career Tests</h4>
             <p class="text-xs text-slate-500 line-clamp-2 mt-1">Discover what recruiters evaluate beyond calculation speed.</p>
           </div>
         </div>
         <!-- Article 2 -->
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden group cursor-pointer hover:border-slate-200 dark:border-slate-700 transition" onclick="app.articles.viewDetail(0)">
           <div class="h-40 bg-slate-100 dark:bg-slate-800 overflow-hidden relative">
-            <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-blue-500/20 group-hover:scale-105 transition-transform duration-500"></div>
+            <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-sky-500/20 group-hover:scale-105 transition-transform duration-500"></div>
             <div class="absolute inset-0 flex items-center justify-center text-slate-700 text-4xl"><i class="fa-solid fa-brain"></i></div>
           </div>
           <div class="p-5 space-y-2">
-            <span class="text-[10px] text-blue-400 font-bold uppercase tracking-wider">15 Jul 2026</span>
-            <h4 class="font-bold text-base text-slate-900 dark:text-slate-100 group-hover:text-blue-400 transition leading-snug">Importance of the Consistency Curve</h4>
+            <span class="text-[10px] text-sky-400 font-bold uppercase tracking-wider">15 Jul 2026</span>
+            <h4 class="font-bold text-base text-slate-900 dark:text-slate-100 group-hover:text-sky-400 transition leading-snug">Importance of the Consistency Curve</h4>
             <p class="text-xs text-slate-500 line-clamp-2 mt-1">Why sharp fluctuations in your graph can affect your evaluation.</p>
           </div>
         </div>
@@ -1135,8 +1674,8 @@
             <div class="absolute inset-0 flex items-center justify-center text-slate-700 text-4xl"><i class="fa-solid fa-stopwatch"></i></div>
           </div>
           <div class="p-5 space-y-2">
-            <span class="text-[10px] text-blue-400 font-bold uppercase tracking-wider">10 Jul 2026</span>
-            <h4 class="font-bold text-base text-slate-900 dark:text-slate-100 group-hover:text-blue-400 transition leading-snug">Tips to Maintain Focus for 60 Minutes</h4>
+            <span class="text-[10px] text-sky-400 font-bold uppercase tracking-wider">10 Jul 2026</span>
+            <h4 class="font-bold text-base text-slate-900 dark:text-slate-100 group-hover:text-sky-400 transition leading-snug">Tips to Maintain Focus for 60 Minutes</h4>
             <p class="text-xs text-slate-500 line-clamp-2 mt-1">How to train concentration stamina for lengthy speed-math tests.</p>
           </div>
         </div>
@@ -1147,8 +1686,8 @@
             <div class="absolute inset-0 flex items-center justify-center text-slate-700 text-4xl"><i class="fa-solid fa-pen-ruler"></i></div>
           </div>
           <div class="p-5 space-y-2">
-            <span class="text-[10px] text-blue-400 font-bold uppercase tracking-wider">05 Jul 2026</span>
-            <h4 class="font-bold text-base text-slate-900 dark:text-slate-100 group-hover:text-blue-400 transition leading-snug">Differences Between Pauli & Kraepelin Tests</h4>
+            <span class="text-[10px] text-sky-400 font-bold uppercase tracking-wider">05 Jul 2026</span>
+            <h4 class="font-bold text-base text-slate-900 dark:text-slate-100 group-hover:text-sky-400 transition leading-snug">Differences Between Pauli & Kraepelin Tests</h4>
             <p class="text-xs text-slate-500 line-clamp-2 mt-1">Though similar, fundamental differences exist in methods and instructions.</p>
           </div>
         </div>
@@ -1157,16 +1696,16 @@
 
     <!-- VIEW 11: ARTICLE DETAIL -->
     <section id="view-article-detail" class="page-view max-w-2xl mx-auto space-y-6 hidden">
-      <button onclick="app.navigate('articles')" class="text-blue-400 text-sm font-bold flex items-center hover:text-blue-300 transition">
+      <button onclick="app.navigate('articles')" class="text-sky-400 text-sm font-bold flex items-center hover:text-sky-300 transition">
         <i class="fa-solid fa-arrow-left mr-2"></i> Back to Articles
       </button>
       
       <div id="article-detail-thumbnail" class="w-full h-48 md:h-64 bg-slate-100 dark:bg-slate-800 rounded-xl relative overflow-hidden">
-         <div class="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20"></div>
+         <div class="absolute inset-0 bg-gradient-to-br from-sky-500/20 to-purple-500/20"></div>
       </div>
       
       <div class="space-y-4">
-        <span id="article-detail-date" class="text-xs text-blue-400 font-bold uppercase tracking-wider">20 Jul 2026</span>
+        <span id="article-detail-date" class="text-xs text-sky-400 font-bold uppercase tracking-wider">20 Jul 2026</span>
         <h1 id="article-detail-title" class="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-100 leading-tight">Secrets to Passing Pauli & Kraepelin Career Tests</h1>
         <hr class="border-slate-200 dark:border-slate-800">
         <div id="article-detail-content" class="text-slate-500 dark:text-slate-400 text-sm md:text-base leading-relaxed space-y-4 pb-8">
@@ -1196,12 +1735,12 @@
         </div>
         
         <div class="space-y-3 pt-2">
-          <button onclick="app.navigate('login')" class="w-full bg-blue-500 hover:bg-blue-600 text-slate-950 font-bold py-3 rounded-xl transition text-lg shadow-lg shadow-blue-500/20">Sign In</button>
+          <button onclick="app.navigate('login')" class="w-full bg-sky-500 hover:bg-sky-600 text-slate-950 font-bold py-3 rounded-xl transition text-lg shadow-lg shadow-sky-500/20">Sign In</button>
           <button onclick="app.navigate('register')" class="w-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-bold py-3 rounded-xl transition text-lg">Create Account</button>
         </div>
 
         <div class="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-xl text-slate-500 dark:text-slate-400 text-sm border border-slate-200 dark:border-slate-700/50 text-left flex items-start space-x-3">
-           <i class="fa-solid fa-circle-info text-blue-400 mt-0.5"></i>
+           <i class="fa-solid fa-circle-info text-sky-400 mt-0.5"></i>
            <p>Global Leaderboards and Achievement Systems are exclusively available to signed-in users.</p>
         </div>
       </div>
@@ -1212,7 +1751,7 @@
         <!-- Profile Card -->
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden">
           <div class="p-6 md:p-8 bg-slate-100 dark:bg-slate-800/30 border-b border-slate-200 dark:border-slate-800 flex items-center space-x-4">
-            <div id="usr-avatar" class="w-16 h-16 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center text-2xl font-bold border-2 border-blue-500/30">?</div>
+            <div id="usr-avatar" class="w-16 h-16 bg-sky-500/20 text-sky-400 rounded-full flex items-center justify-center text-2xl font-bold border-2 border-sky-500/30">?</div>
             <div>
               <h3 id="usr-display-name" class="font-extrabold text-lg text-slate-900 dark:text-slate-100">User Name</h3>
               <p id="usr-display-email" class="text-xs text-slate-500">email@example.com</p>
@@ -1226,15 +1765,15 @@
 
           <div class="p-4 space-y-1">
             <button onclick="app.navigate('profile')" class="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition group">
-              <div class="flex items-center space-x-3"><i class="fa-solid fa-id-card w-5 text-center text-slate-500 group-hover:text-blue-400 transition"></i> <span class="font-medium text-sm">My Profile</span></div>
+              <div class="flex items-center space-x-3"><i class="fa-solid fa-id-card w-5 text-center text-slate-500 group-hover:text-sky-400 transition"></i> <span class="font-medium text-sm">My Profile</span></div>
               <i class="fa-solid fa-chevron-right text-xs text-slate-600"></i>
             </button>
             <button onclick="app.navigate('history')" class="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition group">
-              <div class="flex items-center space-x-3"><i class="fa-solid fa-clock-rotate-left w-5 text-center text-slate-500 group-hover:text-blue-400 transition"></i> <span class="font-medium text-sm">Test History</span></div>
+              <div class="flex items-center space-x-3"><i class="fa-solid fa-clock-rotate-left w-5 text-center text-slate-500 group-hover:text-sky-400 transition"></i> <span class="font-medium text-sm">Test History</span></div>
               <i class="fa-solid fa-chevron-right text-xs text-slate-600"></i>
             </button>
             <button onclick="app.navigate('achievements')" class="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition group">
-              <div class="flex items-center space-x-3"><i class="fa-solid fa-medal w-5 text-center text-slate-500 group-hover:text-blue-400 transition"></i> <span class="font-medium text-sm">Achievements</span></div>
+              <div class="flex items-center space-x-3"><i class="fa-solid fa-medal w-5 text-center text-slate-500 group-hover:text-sky-400 transition"></i> <span class="font-medium text-sm">Achievements</span></div>
               <i class="fa-solid fa-chevron-right text-xs text-slate-600"></i>
             </button>
           </div>
@@ -1247,23 +1786,23 @@
           </div>
           <div class="p-3 space-y-1">
             <button onclick="app.navigate('articles')" class="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition group">
-              <div class="flex items-center space-x-3"><i class="fa-solid fa-book-open w-5 text-center text-slate-500 group-hover:text-blue-400 transition"></i> <span class="font-medium text-sm">Learn</span></div>
+              <div class="flex items-center space-x-3"><i class="fa-solid fa-book-open w-5 text-center text-slate-500 group-hover:text-sky-400 transition"></i> <span class="font-medium text-sm">Learn</span></div>
               <i class="fa-solid fa-chevron-right text-xs text-slate-600"></i>
             </button>
             <button class="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition group" onclick="app.toast.show('Segera hadir!', 'info')">
-              <div class="flex items-center space-x-3"><i class="fa-solid fa-circle-question w-5 text-center text-slate-500 group-hover:text-blue-400 transition"></i> <span class="font-medium text-sm">Help Center</span></div>
+              <div class="flex items-center space-x-3"><i class="fa-solid fa-circle-question w-5 text-center text-slate-500 group-hover:text-sky-400 transition"></i> <span class="font-medium text-sm">Help Center</span></div>
               <i class="fa-solid fa-chevron-right text-xs text-slate-600"></i>
             </button>
             <button class="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition group" onclick="app.toast.show('Segera hadir!', 'info')">
-              <div class="flex items-center space-x-3"><i class="fa-solid fa-shield-halved w-5 text-center text-slate-500 group-hover:text-blue-400 transition"></i> <span class="font-medium text-sm">Privacy Policy</span></div>
+              <div class="flex items-center space-x-3"><i class="fa-solid fa-shield-halved w-5 text-center text-slate-500 group-hover:text-sky-400 transition"></i> <span class="font-medium text-sm">Privacy Policy</span></div>
               <i class="fa-solid fa-chevron-right text-xs text-slate-600"></i>
             </button>
             <button class="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition group" onclick="app.toast.show('Segera hadir!', 'info')">
-              <div class="flex items-center space-x-3"><i class="fa-solid fa-file-lines w-5 text-center text-slate-500 group-hover:text-blue-400 transition"></i> <span class="font-medium text-sm">Terms of Service</span></div>
+              <div class="flex items-center space-x-3"><i class="fa-solid fa-file-lines w-5 text-center text-slate-500 group-hover:text-sky-400 transition"></i> <span class="font-medium text-sm">Terms of Service</span></div>
               <i class="fa-solid fa-chevron-right text-xs text-slate-600"></i>
             </button>
             <button class="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition group" onclick="app.toast.show('Segera hadir!', 'info')">
-              <div class="flex items-center space-x-3"><i class="fa-solid fa-circle-info w-5 text-center text-slate-500 group-hover:text-blue-400 transition"></i> <span class="font-medium text-sm">About</span></div>
+              <div class="flex items-center space-x-3"><i class="fa-solid fa-circle-info w-5 text-center text-slate-500 group-hover:text-sky-400 transition"></i> <span class="font-medium text-sm">About</span></div>
               <i class="fa-solid fa-chevron-right text-xs text-slate-600"></i>
             </button>
             <button onclick="app.actions.logout()" class="w-full flex items-center justify-between p-3 rounded-xl hover:bg-red-500/10 text-red-400 transition group">
@@ -1298,7 +1837,7 @@
             </div>
           </div>
           <div class="pt-2 flex items-center justify-between border-t border-amber-200 dark:border-amber-500/20 text-xs">
-            <button type="button" id="btn-resend-verification" onclick="app.actions.resendVerificationEmail()" class="text-blue-600 dark:text-blue-400 font-semibold hover:underline disabled:opacity-50">
+            <button type="button" id="btn-resend-verification" onclick="app.actions.resendVerificationEmail()" class="text-sky-600 dark:text-sky-400 font-semibold hover:underline disabled:opacity-50">
               Resend Verification Email
             </button>
             <span id="resend-cooldown-text" class="text-slate-500 dark:text-slate-400 font-mono text-[11px] hidden"></span>
@@ -1308,21 +1847,21 @@
         <form onsubmit="app.actions.handleAuth(event, 'login')" class="space-y-4">
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Email</label>
-            <input type="email" id="login-email" required class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-colors duration-120" placeholder="email@example.com">
+            <input type="email" id="login-email" required class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition-colors duration-120" placeholder="email@example.com">
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Password</label>
             <div class="relative">
-              <input type="password" id="login-pwd" required class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 pr-10 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-colors duration-120" placeholder="••••••••">
+              <input type="password" id="login-pwd" required class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 pr-10 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition-colors duration-120" placeholder="••••••••">
               <button type="button" onclick="app.actions.togglePasswordVisibility('login-pwd', 'login-pwd-eye')" class="absolute right-3 top-3 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
                 <i id="login-pwd-eye" class="fa-solid fa-eye text-xs"></i>
               </button>
             </div>
           </div>
           <div class="flex justify-end">
-            <button type="button" onclick="app.navigate('forgot-password')" class="text-xs text-blue-600 dark:text-blue-400 font-semibold hover:underline">Forgot password?</button>
+            <button type="button" onclick="app.navigate('forgot-password')" class="text-xs text-sky-600 dark:text-sky-400 font-semibold hover:underline">Forgot password?</button>
           </div>
-          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-slate-950 font-semibold py-2.5 rounded-lg transition-colors duration-120 text-sm shadow-xs mt-2">Sign In</button>
+          <button type="submit" class="w-full bg-sky-600 hover:bg-sky-700 text-white dark:bg-sky-500 dark:hover:bg-sky-600 dark:text-slate-950 font-semibold py-2.5 rounded-lg transition-colors duration-120 text-sm shadow-xs mt-2">Sign In</button>
         </form>
 
         <div class="flex items-center space-x-3 my-2">
@@ -1337,7 +1876,7 @@
           <span id="btn-google-text">Continue with Google</span>
         </button>
 
-        <p class="text-center text-xs text-slate-500 pt-1">Don't have an account? <button onclick="app.navigate('register')" class="text-blue-600 dark:text-blue-400 font-semibold hover:underline">Register here</button></p>
+        <p class="text-center text-xs text-slate-500 pt-1">Don't have an account? <button onclick="app.navigate('register')" class="text-sky-600 dark:text-sky-400 font-semibold hover:underline">Register here</button></p>
       </div>
     </section>
 
@@ -1364,7 +1903,7 @@
           <div>
             <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Username</label>
             <div class="relative">
-              <input type="text" id="reg-name" required autocomplete="off" class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 pr-10 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 transition" placeholder="username (e.g. zaky)">
+              <input type="text" id="reg-name" required autocomplete="off" class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 pr-10 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-sky-500 transition" placeholder="username (e.g. zaky)">
               <div id="username-status-icon" class="absolute right-3 top-1/2 -translate-y-1/2 hidden flex items-center justify-center pointer-events-none"></div>
             </div>
             <p id="username-status-text" class="text-xs text-slate-500 mt-1">Lowercase letters, numbers, and underscores (3-20 characters).</p>
@@ -1372,7 +1911,7 @@
           <div>
             <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Email</label>
             <div class="relative">
-              <input type="email" id="reg-email" required autocomplete="off" class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 pr-10 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 transition" placeholder="email@example.com">
+              <input type="email" id="reg-email" required autocomplete="off" class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 pr-10 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-sky-500 transition" placeholder="email@example.com">
               <div id="email-status-icon" class="absolute right-3 top-1/2 -translate-y-1/2 hidden flex items-center justify-center pointer-events-none"></div>
             </div>
             <p id="email-status-text" class="text-xs text-slate-500 mt-1">Use your active email address.</p>
@@ -1380,7 +1919,7 @@
           <div>
             <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Password</label>
             <div class="relative">
-              <input type="password" id="reg-pwd" required minlength="6" autocomplete="new-password" class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 pr-10 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 transition" placeholder="At least 6 characters">
+              <input type="password" id="reg-pwd" required minlength="6" autocomplete="new-password" class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 pr-10 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-sky-500 transition" placeholder="At least 6 characters">
               <button type="button" onclick="app.actions.togglePasswordVisibility('reg-pwd', 'reg-pwd-eye')" class="absolute right-3 top-3 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200">
                 <i id="reg-pwd-eye" class="fa-solid fa-eye text-xs"></i>
               </button>
@@ -1395,10 +1934,10 @@
               <p id="pwd-strength-text" class="text-xs font-medium text-slate-500"></p>
             </div>
           </div>
-          <button type="submit" id="btn-register-submit" disabled class="w-full bg-blue-500 hover:bg-blue-600 text-slate-950 font-bold py-2.5 rounded-lg transition mt-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-500">Register Now</button>
+          <button type="submit" id="btn-register-submit" disabled class="w-full bg-sky-500 hover:bg-sky-600 text-slate-950 font-bold py-2.5 rounded-lg transition mt-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-sky-500">Register Now</button>
         </form>
 
-        <p class="text-center text-xs text-slate-500 pt-2">Already have an account? <button onclick="app.navigate('login')" class="text-blue-400 font-bold hover:underline">Sign in here</button></p>
+        <p class="text-center text-xs text-slate-500 pt-2">Already have an account? <button onclick="app.navigate('login')" class="text-sky-400 font-bold hover:underline">Sign in here</button></p>
       </div>
     </section>
 
@@ -1406,7 +1945,7 @@
     <section id="view-onboarding" class="page-view max-w-md mx-auto hidden">
       <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 md:p-8 rounded-2xl shadow-xl space-y-5">
         <div class="text-center space-y-2">
-          <div class="w-16 h-16 mx-auto bg-blue-500/10 text-blue-400 rounded-full flex items-center justify-center text-3xl mb-2">
+          <div class="w-16 h-16 mx-auto bg-sky-500/10 text-sky-400 rounded-full flex items-center justify-center text-3xl mb-2">
             <i class="fa-solid fa-user-gear"></i>
           </div>
           <h2 class="text-2xl font-extrabold text-slate-900 dark:text-slate-100">Choose Your Username</h2>
@@ -1417,13 +1956,13 @@
           <div>
             <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Username</label>
             <div class="relative">
-              <input type="text" id="onboarding-username" required autocomplete="off" class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 pr-10 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 transition" placeholder="Enter your username">
+              <input type="text" id="onboarding-username" required autocomplete="off" class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 pr-10 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-sky-500 transition" placeholder="Enter your username">
               <div id="onboarding-username-status-icon" class="absolute right-3 top-1/2 -translate-y-1/2 hidden flex items-center justify-center pointer-events-none"></div>
             </div>
             <p id="onboarding-username-status-text" class="text-xs text-slate-500 mt-1">Lowercase letters, numbers, and underscores (3-20 characters).</p>
           </div>
 
-          <button type="submit" id="btn-onboarding-submit" disabled class="w-full bg-blue-500 hover:bg-blue-600 text-slate-950 font-bold py-2.5 rounded-lg transition mt-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-500 flex items-center justify-center space-x-2">
+          <button type="submit" id="btn-onboarding-submit" disabled class="w-full bg-sky-500 hover:bg-sky-600 text-slate-950 font-bold py-2.5 rounded-lg transition mt-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-sky-500 flex items-center justify-center space-x-2">
             <span>Complete Registration</span>
           </button>
         </form>
@@ -1437,15 +1976,15 @@
         
         <!-- 1. LOADING STATE (Verifying OTP token or Code in progress) -->
         <div id="verify-loading-state" class="hidden space-y-5 py-2">
-          <div class="w-20 h-20 mx-auto bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center text-4xl border border-blue-500/20 shadow-lg shadow-blue-500/10">
+          <div class="w-20 h-20 mx-auto bg-sky-500/10 text-sky-400 rounded-2xl flex items-center justify-center text-4xl border border-sky-500/20 shadow-lg shadow-sky-500/10">
             <i class="fa-solid fa-spinner animate-spin"></i>
           </div>
           <div class="space-y-2">
             <h2 class="text-2xl font-extrabold text-slate-900 dark:text-slate-100">Verifying Email...</h2>
             <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Please wait while we confirm your email address with Koran Test.</p>
           </div>
-          <div class="flex items-center justify-center space-x-2 text-xs text-blue-400 bg-slate-50 dark:bg-slate-950/60 py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-800/80">
-            <div class="animate-spin rounded-full h-3.5 w-3.5 border-2 border-blue-400 border-t-transparent"></div>
+          <div class="flex items-center justify-center space-x-2 text-xs text-sky-400 bg-slate-50 dark:bg-slate-950/60 py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-800/80">
+            <div class="animate-spin rounded-full h-3.5 w-3.5 border-2 border-sky-400 border-t-transparent"></div>
             <span class="font-medium">Validating verification link...</span>
           </div>
         </div>
@@ -1461,7 +2000,7 @@
           </div>
           <p class="text-xs text-slate-500 dark:text-slate-400">Redirecting to Login...</p>
           <div class="flex items-center justify-center space-x-2 text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-950/60 py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-800/80">
-            <div class="animate-spin rounded-full h-4 w-4 border-2 border-blue-400 border-t-transparent"></div>
+            <div class="animate-spin rounded-full h-4 w-4 border-2 border-sky-400 border-t-transparent"></div>
             <span class="font-medium">Navigating to login page...</span>
           </div>
         </div>
@@ -1476,7 +2015,7 @@
             <p id="verify-error-message" class="text-xs text-rose-400 leading-relaxed font-medium">The verification link is invalid or has expired.</p>
           </div>
           <div class="space-y-3 pt-2">
-            <button type="button" onclick="app.navigate('login')" class="w-full bg-blue-500 hover:bg-blue-400 text-slate-950 font-extrabold py-2.5 px-4 rounded-xl transition shadow-lg shadow-blue-500/20 text-sm">
+            <button type="button" onclick="app.navigate('login')" class="w-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-extrabold py-2.5 px-4 rounded-xl transition shadow-lg shadow-sky-500/20 text-sm">
               Go to Login
             </button>
             <button type="button" onclick="app.navigate('register')" class="w-full text-xs text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200 font-bold transition py-1">
@@ -1488,11 +2027,11 @@
         <!-- 4. WAITING STATE (Post-Registration default screen) -->
         <div id="verify-waiting-state" class="space-y-5">
           <div class="relative w-20 h-20 mx-auto">
-            <div class="w-20 h-20 bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center text-4xl border border-blue-500/20 shadow-lg shadow-blue-500/10">
+            <div class="w-20 h-20 bg-sky-500/10 text-sky-400 rounded-2xl flex items-center justify-center text-4xl border border-sky-500/20 shadow-lg shadow-sky-500/10">
               <i class="fa-solid fa-envelope-open-text animate-bounce"></i>
             </div>
             <div class="absolute -bottom-1 -right-1 w-7 h-7 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center border border-slate-200 dark:border-slate-800">
-              <div id="verify-spinner-badge" class="animate-spin rounded-full h-4 w-4 border-2 border-blue-400 border-t-transparent"></div>
+              <div id="verify-spinner-badge" class="animate-spin rounded-full h-4 w-4 border-2 border-sky-400 border-t-transparent"></div>
             </div>
           </div>
 
@@ -1500,12 +2039,12 @@
             <h2 class="text-2xl font-extrabold text-slate-900 dark:text-slate-100">Verify Your Email</h2>
             <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
               We've sent a verification email to:<br>
-              <strong id="verify-email-address" class="text-blue-400 font-bold break-all">user@example.com</strong>
+              <strong id="verify-email-address" class="text-sky-400 font-bold break-all">user@example.com</strong>
             </p>
           </div>
 
           <div class="bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-xl p-3.5 text-left text-xs text-slate-500 dark:text-slate-400 space-y-1.5 leading-relaxed">
-            <div class="flex items-center space-x-2 text-blue-300 font-bold text-[11px] uppercase tracking-wider">
+            <div class="flex items-center space-x-2 text-sky-300 font-bold text-[11px] uppercase tracking-wider">
               <i class="fa-solid fa-circle-info"></i>
               <span>Instructions</span>
             </div>
@@ -1513,18 +2052,18 @@
           </div>
 
           <div id="verify-status-box" class="flex items-center justify-center space-x-2 text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-950/60 py-2 px-3 rounded-lg border border-slate-200 dark:border-slate-800/80">
-            <div id="verify-status-spinner" class="animate-spin rounded-full h-3.5 w-3.5 border-2 border-blue-400 border-t-transparent"></div>
+            <div id="verify-status-spinner" class="animate-spin rounded-full h-3.5 w-3.5 border-2 border-sky-400 border-t-transparent"></div>
             <span id="verify-status-text" class="font-medium">Waiting for email verification...</span>
           </div>
 
           <div class="space-y-3 pt-1">
-            <button type="button" onclick="app.actions.openEmailApp()" class="w-full bg-blue-500 hover:bg-blue-400 text-slate-950 font-extrabold py-2.5 px-4 rounded-xl transition shadow-lg shadow-blue-500/20 flex items-center justify-center space-x-2 text-sm">
+            <button type="button" onclick="app.actions.openEmailApp()" class="w-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-extrabold py-2.5 px-4 rounded-xl transition shadow-lg shadow-sky-500/20 flex items-center justify-center space-x-2 text-sm">
               <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
               <span>Open Email App</span>
             </button>
 
             <div class="flex items-center justify-between bg-slate-100 dark:bg-slate-800/40 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs">
-              <button type="button" id="btn-verify-resend" onclick="app.actions.resendVerificationFromPage()" class="text-blue-400 font-bold hover:underline disabled:opacity-50 disabled:no-underline disabled:cursor-not-allowed">
+              <button type="button" id="btn-verify-resend" onclick="app.actions.resendVerificationFromPage()" class="text-sky-400 font-bold hover:underline disabled:opacity-50 disabled:no-underline disabled:cursor-not-allowed">
                 Resend Verification Email
               </button>
               <span id="verify-resend-cooldown" class="text-slate-500 dark:text-slate-400 font-mono text-[11px] hidden"></span>
@@ -1547,7 +2086,7 @@
         <!-- 1. FORM STATE -->
         <div id="forgot-form-state" class="space-y-6">
           <div class="text-center space-y-2">
-            <div class="w-16 h-16 mx-auto bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center text-3xl border border-blue-500/20 shadow-lg shadow-blue-500/10">
+            <div class="w-16 h-16 mx-auto bg-sky-500/10 text-sky-400 rounded-2xl flex items-center justify-center text-3xl border border-sky-500/20 shadow-lg shadow-sky-500/10">
               <i class="fa-solid fa-key"></i>
             </div>
             <h2 class="text-2xl font-extrabold text-slate-900 dark:text-slate-100">Forgot Password</h2>
@@ -1557,11 +2096,11 @@
           <form onsubmit="app.actions.handleForgotPasswordSubmit(event)" class="space-y-4">
             <div>
               <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Email Address</label>
-              <input type="email" id="forgot-email" required class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 transition" placeholder="email@example.com">
+              <input type="email" id="forgot-email" required class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-sky-500 transition" placeholder="email@example.com">
             </div>
 
             <div class="space-y-3 pt-2">
-              <button type="submit" id="btn-forgot-submit" class="w-full bg-blue-500 hover:bg-blue-400 text-slate-950 font-extrabold py-2.5 px-4 rounded-xl transition shadow-lg shadow-blue-500/20 text-sm flex items-center justify-center space-x-2">
+              <button type="submit" id="btn-forgot-submit" class="w-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-extrabold py-2.5 px-4 rounded-xl transition shadow-lg shadow-sky-500/20 text-sm flex items-center justify-center space-x-2">
                 <span>Send Reset Link</span>
               </button>
 
@@ -1575,7 +2114,7 @@
 
         <!-- 2. SENT SUCCESS STATE -->
         <div id="forgot-sent-state" class="hidden space-y-6 text-center">
-          <div class="w-20 h-20 mx-auto bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center text-4xl border border-blue-500/20 shadow-lg shadow-blue-500/10">
+          <div class="w-20 h-20 mx-auto bg-sky-500/10 text-sky-400 rounded-2xl flex items-center justify-center text-4xl border border-sky-500/20 shadow-lg shadow-sky-500/10">
             <i class="fa-solid fa-paper-plane animate-bounce"></i>
           </div>
 
@@ -1583,19 +2122,19 @@
             <h2 class="text-2xl font-extrabold text-slate-900 dark:text-slate-100">Reset Email Sent</h2>
             <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
               We've sent a password reset link to:<br>
-              <strong id="forgot-sent-email-display" class="text-blue-400 font-bold break-all">user@example.com</strong>
+              <strong id="forgot-sent-email-display" class="text-sky-400 font-bold break-all">user@example.com</strong>
             </p>
             <p class="text-xs text-slate-500 dark:text-slate-400">Please check your inbox and follow the instructions.</p>
           </div>
 
           <div class="space-y-3 pt-2">
-            <button type="button" onclick="app.actions.openResetEmailApp()" class="w-full bg-blue-500 hover:bg-blue-400 text-slate-950 font-extrabold py-2.5 px-4 rounded-xl transition shadow-lg shadow-blue-500/20 flex items-center justify-center space-x-2 text-sm">
+            <button type="button" onclick="app.actions.openResetEmailApp()" class="w-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-extrabold py-2.5 px-4 rounded-xl transition shadow-lg shadow-sky-500/20 flex items-center justify-center space-x-2 text-sm">
               <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
               <span>Open Email</span>
             </button>
 
             <div class="flex items-center justify-between bg-slate-100 dark:bg-slate-800/40 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs">
-              <button type="button" id="btn-forgot-resend" onclick="app.actions.resendResetEmail()" class="text-blue-400 font-bold hover:underline disabled:opacity-50 disabled:no-underline disabled:cursor-not-allowed">
+              <button type="button" id="btn-forgot-resend" onclick="app.actions.resendResetEmail()" class="text-sky-400 font-bold hover:underline disabled:opacity-50 disabled:no-underline disabled:cursor-not-allowed">
                 Resend Reset Link
               </button>
               <span id="forgot-resend-cooldown" class="text-slate-500 dark:text-slate-400 font-mono text-[11px] hidden"></span>
@@ -1618,7 +2157,7 @@
         <!-- 1. FORM STATE -->
         <div id="reset-form-state" class="space-y-6">
           <div class="text-center space-y-2">
-            <div class="w-16 h-16 mx-auto bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center text-3xl border border-blue-500/20 shadow-lg shadow-blue-500/10">
+            <div class="w-16 h-16 mx-auto bg-sky-500/10 text-sky-400 rounded-2xl flex items-center justify-center text-3xl border border-sky-500/20 shadow-lg shadow-sky-500/10">
               <i class="fa-solid fa-lock"></i>
             </div>
             <h2 class="text-2xl font-extrabold text-slate-900 dark:text-slate-100">Create New Password</h2>
@@ -1629,7 +2168,7 @@
             <div>
               <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">New Password</label>
               <div class="relative">
-                <input type="password" id="reset-pwd" required class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 pr-10 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 transition" placeholder="••••••••">
+                <input type="password" id="reset-pwd" required class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 pr-10 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-sky-500 transition" placeholder="••••••••">
                 <button type="button" onclick="app.actions.toggleResetPasswordVisibility('reset-pwd', 'reset-pwd-eye')" class="absolute right-3 top-3 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200">
                   <i id="reset-pwd-eye" class="fa-solid fa-eye text-xs"></i>
                 </button>
@@ -1649,7 +2188,7 @@
             <div>
               <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Confirm Password</label>
               <div class="relative">
-                <input type="password" id="reset-confirm-pwd" required class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 pr-10 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 transition" placeholder="••••••••">
+                <input type="password" id="reset-confirm-pwd" required class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 pr-10 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-sky-500 transition" placeholder="••••••••">
                 <button type="button" onclick="app.actions.toggleResetPasswordVisibility('reset-confirm-pwd', 'reset-confirm-pwd-eye')" class="absolute right-3 top-3 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200">
                   <i id="reset-confirm-pwd-eye" class="fa-solid fa-eye text-xs"></i>
                 </button>
@@ -1658,7 +2197,7 @@
             </div>
 
             <div class="space-y-3 pt-2">
-              <button type="submit" id="btn-reset-submit" class="w-full bg-blue-500 hover:bg-blue-400 text-slate-950 font-extrabold py-2.5 px-4 rounded-xl transition shadow-lg shadow-blue-500/20 text-sm flex items-center justify-center space-x-2">
+              <button type="submit" id="btn-reset-submit" class="w-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-extrabold py-2.5 px-4 rounded-xl transition shadow-lg shadow-sky-500/20 text-sm flex items-center justify-center space-x-2">
                 <span>Update Password</span>
               </button>
             </div>
@@ -1676,7 +2215,7 @@
           </div>
           <p class="text-xs text-slate-500 dark:text-slate-400">Redirecting to Login...</p>
           <div class="flex items-center justify-center space-x-2 text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-950/60 py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-800/80">
-            <div class="animate-spin rounded-full h-4 w-4 border-2 border-blue-400 border-t-transparent"></div>
+            <div class="animate-spin rounded-full h-4 w-4 border-2 border-sky-400 border-t-transparent"></div>
             <span class="font-medium">Navigating to login page...</span>
           </div>
         </div>
@@ -1691,7 +2230,7 @@
             <p id="reset-invalid-message" class="text-xs text-rose-400 leading-relaxed font-medium">The password reset link is invalid, corrupted, or has expired.</p>
           </div>
           <div class="space-y-3 pt-2">
-            <button type="button" onclick="app.navigate('forgot-password')" class="w-full bg-blue-500 hover:bg-blue-400 text-slate-950 font-extrabold py-2.5 px-4 rounded-xl transition shadow-lg shadow-blue-500/20 text-sm">
+            <button type="button" onclick="app.navigate('forgot-password')" class="w-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-extrabold py-2.5 px-4 rounded-xl transition shadow-lg shadow-sky-500/20 text-sm">
               Request New Reset Link
             </button>
             <button type="button" onclick="app.navigate('login')" class="w-full text-xs text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200 font-bold transition py-1">
@@ -1710,7 +2249,7 @@
         <!-- Admin Sidebar -->
         <div id="admin-sidebar" class="w-56 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 p-4 space-y-1 hidden flex-col">
           <div class="pb-6 px-2 flex items-center space-x-2">
-            <div class="bg-blue-500 text-slate-950 p-1.5 rounded text-xs font-bold">KTA</div>
+            <div class="bg-sky-500 text-slate-950 p-1.5 rounded text-xs font-bold">KTA</div>
             <span class="font-bold text-slate-900 dark:text-slate-100 text-sm">Administrator</span>
           </div>
           <button onclick="app.admin.switchPanel('dashboard')" class="admin-sidebar-item w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:bg-slate-800 hover:text-slate-900 dark:text-slate-100 transition text-left active"><i class="fa-solid fa-chart-pie w-5 text-center"></i> <span>Dashboard</span></button>
@@ -1731,8 +2270,8 @@
              <h3 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-1">Admin Access</h3>
              <p class="text-xs text-slate-500 mb-5">Please sign in with administrator credentials.</p>
              <form onsubmit="event.preventDefault(); app.admin.login();" class="space-y-4">
-                <input type="password" id="admin-pin" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-2.5 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 transition font-mono" placeholder="Admin PIN/Password">
-                <button type="submit" class="w-full bg-blue-500 text-slate-950 font-bold py-2.5 rounded-lg hover:bg-blue-600 transition text-sm">Authorize</button>
+                <input type="password" id="admin-pin" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-2.5 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-sky-500 transition font-mono" placeholder="Admin PIN/Password">
+                <button type="submit" class="w-full bg-sky-500 text-slate-950 font-bold py-2.5 rounded-lg hover:bg-sky-600 transition text-sm">Authorize</button>
              </form>
           </div>
 
@@ -1758,11 +2297,11 @@
               <div class="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5">
                 <h4 class="font-bold text-slate-900 dark:text-slate-100 mb-4">Quick Actions</h4>
                 <div class="space-y-2">
-                  <button class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-3 rounded-lg text-sm text-left text-slate-700 dark:text-slate-300 hover:text-blue-400 transition">Clear System Cache</button>
-                  <button class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-3 rounded-lg text-sm text-left text-slate-700 dark:text-slate-300 hover:text-blue-400 transition">Recalculate Leaderboard</button>
+                  <button class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-3 rounded-lg text-sm text-left text-slate-700 dark:text-slate-300 hover:text-sky-400 transition">Clear System Cache</button>
+                  <button class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-3 rounded-lg text-sm text-left text-slate-700 dark:text-slate-300 hover:text-sky-400 transition">Recalculate Leaderboard</button>
                 </div>
               </div>
-              <div class="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-5 font-mono text-blue-400 text-xs overflow-hidden">
+              <div class="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-5 font-mono text-sky-400 text-xs overflow-hidden">
                 <p>> System boot OK</p>
                 <p>> Firebase connected</p>
                 <p>> App version: v2.0.1 (Koran Test)</p>
@@ -1774,12 +2313,12 @@
           <!-- Users Panel -->
           <div id="admin-users-panel" class="hidden space-y-4">
              <h3 class="text-xl font-bold text-slate-900 dark:text-slate-100">Manage Users</h3>
-             <input type="text" class="w-full md:w-1/2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-2 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500" placeholder="Search user (name/email)...">
+             <input type="text" class="w-full md:w-1/2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-2 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-sky-500" placeholder="Search user (name/email)...">
              <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden overflow-x-auto">
                <table class="w-full text-left text-sm whitespace-nowrap">
                   <thead class="bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-xs uppercase"><tr><th class="p-3">User</th><th class="p-3">Email</th><th class="p-3">Role</th><th class="p-3">Action</th></tr></thead>
                   <tbody class="divide-y divide-slate-800 text-slate-700 dark:text-slate-300">
-                    <tr><td class="p-3">John Doe</td><td class="p-3">john@ex.com</td><td class="p-3"><span class="bg-slate-100 dark:bg-slate-800 text-xs px-2 py-1 rounded">MEMBER</span></td><td class="p-3 space-x-2"><button class="text-blue-400 hover:underline">View</button><button class="text-amber-400 hover:underline">Suspend</button></td></tr>
+                    <tr><td class="p-3">John Doe</td><td class="p-3">john@ex.com</td><td class="p-3"><span class="bg-slate-100 dark:bg-slate-800 text-xs px-2 py-1 rounded">MEMBER</span></td><td class="p-3 space-x-2"><button class="text-sky-400 hover:underline">View</button><button class="text-amber-400 hover:underline">Suspend</button></td></tr>
                   </tbody>
                </table>
              </div>
@@ -1792,7 +2331,7 @@
                <table class="w-full text-left text-sm whitespace-nowrap">
                   <thead class="bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-xs uppercase"><tr><th class="p-3">ID</th><th class="p-3">User</th><th class="p-3">Score</th><th class="p-3">Mode</th><th class="p-3">Action</th></tr></thead>
                   <tbody class="divide-y divide-slate-800 text-slate-700 dark:text-slate-300">
-                    <tr><td class="p-3">#RES01</td><td class="p-3">Jane</td><td class="p-3 font-bold text-blue-400">450</td><td class="p-3">Standard</td><td class="p-3 space-x-2"><button class="text-red-400 hover:underline">Flag</button></td></tr>
+                    <tr><td class="p-3">#RES01</td><td class="p-3">Jane</td><td class="p-3 font-bold text-sky-400">450</td><td class="p-3">Standard</td><td class="p-3 space-x-2"><button class="text-red-400 hover:underline">Flag</button></td></tr>
                   </tbody>
                </table>
              </div>
@@ -1815,7 +2354,7 @@
           <i class="fa-solid fa-arrow-left text-xs"></i>
           <span>Kembali</span>
         </button>
-        <button id="pubprof-share-btn" onclick="app.sharePublicProfile()" class="inline-flex items-center space-x-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 text-xs font-semibold px-3.5 py-2 rounded-lg bg-white dark:bg-slate-900 border border-blue-200 dark:border-blue-500/30 shadow-xs transition-colors duration-120">
+        <button id="pubprof-share-btn" onclick="app.sharePublicProfile()" class="inline-flex items-center space-x-2 text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-500/10 text-xs font-semibold px-3.5 py-2 rounded-lg bg-white dark:bg-slate-900 border border-sky-200 dark:border-sky-500/30 shadow-xs transition-colors duration-120">
           <i class="fa-solid fa-share-nodes text-xs"></i>
           <span>Share Profile</span>
         </button>
@@ -1888,7 +2427,7 @@
           <p id="pubprof-err-desc" class="text-xs text-slate-500 leading-relaxed">The requested profile could not be found.</p>
         </div>
         <div class="flex flex-col sm:flex-row items-center justify-center gap-2.5 pt-2">
-          <button onclick="app.navigate('leaderboard')" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs px-5 py-2.5 rounded-lg transition-colors shadow-xs">
+          <button onclick="app.navigate('leaderboard')" class="w-full sm:w-auto bg-sky-600 hover:bg-sky-700 text-white font-semibold text-xs px-5 py-2.5 rounded-lg transition-colors shadow-xs">
             Return to Leaderboard
           </button>
           <button onclick="app.navigate('home')" class="w-full sm:w-auto bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-xs px-5 py-2.5 rounded-lg transition-colors">
@@ -1897,22 +2436,21 @@
         </div>
       </div>
 
-      <!-- Private Profile State Container (Dedicated Page) -->
-      <div id="pubprof-private-state" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-8 sm:p-10 rounded-xl text-center shadow-xs space-y-5 hidden">
-        <div class="w-16 h-16 bg-amber-50 dark:bg-amber-500/10 text-amber-500 rounded-full flex items-center justify-center mx-auto text-2xl border border-amber-200 dark:border-amber-500/30 shadow-xs">
+      <!-- Private Profile State Container (Dedicated Page - Relationship Aware V2) -->
+      <div id="pubprof-private-state" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-8 sm:p-10 rounded-2xl text-center shadow-xs space-y-5 hidden">
+        <div class="w-16 h-16 bg-amber-50 dark:bg-amber-500/10 text-amber-500 rounded-2xl flex items-center justify-center mx-auto text-2xl border border-amber-200 dark:border-amber-500/30 shadow-xs">
           <i class="fa-solid fa-lock"></i>
         </div>
         <div class="space-y-1.5 max-w-sm mx-auto">
-          <h3 class="font-bold text-lg text-slate-900 dark:text-slate-100">This profile is private.</h3>
-          <p class="text-xs text-slate-500 leading-relaxed">The owner has chosen not to share this profile publicly.</p>
+          <h3 id="pubprof-private-title" class="font-bold text-lg text-slate-900 dark:text-slate-100">Private Profile</h3>
+          <p id="pubprof-private-desc" class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+            This user has chosen to keep their profile private. You must become friends to view this profile.
+          </p>
         </div>
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-2.5 pt-2">
-          <button onclick="app.goBackFromPublicProfile()" class="w-full sm:w-auto bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-xs px-5 py-2.5 rounded-lg transition-colors flex items-center justify-center gap-1.5">
+        <div id="pubprof-private-actions" class="flex flex-col sm:flex-row items-center justify-center gap-2.5 pt-2">
+          <button onclick="app.goBackFromPublicProfile()" class="w-full sm:w-auto bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-xs px-5 py-2.5 rounded-xl transition flex items-center justify-center gap-1.5">
             <i class="fa-solid fa-arrow-left text-xs"></i>
             <span>Back</span>
-          </button>
-          <button onclick="app.navigate('home')" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs px-5 py-2.5 rounded-lg transition-colors shadow-xs">
-            Go to Home
           </button>
         </div>
       </div>
@@ -1920,19 +2458,19 @@
       <!-- Main Profile Content Container -->
       <div id="pubprof-content" class="space-y-6 hidden">
         <!-- Profile Owner Indicator Banner (Owner Only) -->
-        <div id="pubprof-owner-banner" class="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 p-4 rounded-xl flex items-center justify-between shadow-xs hidden">
+        <div id="pubprof-owner-banner" class="bg-sky-50 dark:bg-sky-500/10 border border-sky-200 dark:border-sky-500/30 p-4 rounded-xl flex items-center justify-between shadow-xs hidden">
           <div class="flex items-center space-x-2.5">
-            <i id="pubprof-owner-icon" class="fa-solid fa-user-check text-blue-600 dark:text-blue-400 text-sm"></i>
-            <span id="pubprof-owner-text" class="text-xs sm:text-sm font-semibold text-blue-900 dark:text-blue-200">This is your Public Profile.</span>
+            <i id="pubprof-owner-icon" class="fa-solid fa-user-check text-sky-600 dark:text-sky-400 text-sm"></i>
+            <span id="pubprof-owner-text" class="text-xs sm:text-sm font-semibold text-blue-900 dark:text-sky-200">This is your Public Profile.</span>
           </div>
-          <button onclick="app.navigate('edit-profile')" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs px-3.5 py-1.5 rounded-lg transition-colors shadow-xs">
+          <button onclick="app.navigate('edit-profile')" class="bg-sky-600 hover:bg-sky-700 text-white font-semibold text-xs px-3.5 py-1.5 rounded-lg transition-colors shadow-xs">
             <i class="fa-solid fa-pen text-[10px] mr-1"></i> Edit Profile
           </button>
         </div>
 
         <!-- 1. Profile Header -->
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 md:p-8 rounded-xl flex flex-col md:flex-row items-center md:items-start gap-6 relative shadow-xs">
-          <div id="pubprof-avatar" class="w-20 h-20 bg-blue-50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 text-3xl font-bold rounded-full flex items-center justify-center flex-shrink-0 border-2 border-blue-200 dark:border-blue-500/30 overflow-hidden shadow-xs">?</div>
+          <div id="pubprof-avatar" class="w-20 h-20 bg-sky-50 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400 text-3xl font-bold rounded-full flex items-center justify-center flex-shrink-0 border-2 border-sky-200 dark:border-sky-500/30 overflow-hidden shadow-xs">?</div>
           
           <div class="text-center md:text-left space-y-1 flex-1">
             <h2 id="pubprof-displayname" class="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100">-</h2>
@@ -1941,17 +2479,22 @@
               <span class="text-xs text-slate-500 flex items-center"><i class="fa-solid fa-calendar-days mr-1.5"></i> <span id="pubprof-joindate">Joined -</span></span>
             </div>
           </div>
+
+          <!-- Dynamic Relationship Actions Container -->
+          <div id="pubprof-relationship-actions" class="flex items-center justify-center md:justify-end shrink-0 w-full md:w-auto pt-2 md:pt-0 border-t md:border-t-0 border-slate-100 dark:border-slate-800">
+            <!-- Populated dynamically by app.friendService -->
+          </div>
         </div>
 
         <!-- 2. Statistics Cards Grid (5 core stats) -->
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
           <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-lg text-center shadow-xs">
             <p class="text-[10px] text-slate-500 font-bold uppercase mb-0.5">Best Standard</p>
-            <p id="pubprof-best-std" class="text-base font-bold text-blue-600 dark:text-blue-400">-</p>
+            <p id="pubprof-best-std" class="text-base font-bold text-sky-600 dark:text-sky-400">-</p>
           </div>
           <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-lg text-center shadow-xs">
             <p class="text-[10px] text-slate-500 font-bold uppercase mb-0.5">Best Marathon</p>
-            <p id="pubprof-best-mar" class="text-base font-bold text-blue-600 dark:text-blue-400">-</p>
+            <p id="pubprof-best-mar" class="text-base font-bold text-sky-600 dark:text-sky-400">-</p>
           </div>
           <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-lg text-center shadow-xs">
             <p class="text-[10px] text-slate-500 font-bold uppercase mb-0.5">Total Tests</p>
@@ -1984,7 +2527,7 @@
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-xs space-y-3">
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-2">
-              <div class="w-7 h-7 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-lg flex items-center justify-center text-xs border border-blue-100 dark:border-blue-500/20">
+              <div class="w-7 h-7 bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 rounded-lg flex items-center justify-center text-xs border border-sky-100 dark:border-sky-500/20">
                 <i class="fa-solid fa-trophy"></i>
               </div>
               <h4 class="font-bold text-sm text-slate-900 dark:text-slate-100">Achievements</h4>
@@ -1992,10 +2535,10 @@
             <span id="pubprof-achievements-summary" class="text-xs font-bold text-slate-700 dark:text-slate-300">0 / 0 Unlocked</span>
           </div>
           <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-            <div id="pubprof-achievements-bar" class="bg-blue-500 h-full rounded-full transition-all duration-300" style="width: 0%;"></div>
+            <div id="pubprof-achievements-bar" class="bg-sky-500 h-full rounded-full transition-all duration-300" style="width: 0%;"></div>
           </div>
           <div class="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex justify-end">
-            <button onclick="app.openPublicAchievementsFromCurrentProfile()" class="inline-flex items-center space-x-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline transition-colors">
+            <button onclick="app.openPublicAchievementsFromCurrentProfile()" class="inline-flex items-center space-x-1.5 text-xs font-semibold text-sky-600 dark:text-sky-400 hover:underline transition-colors">
               <span>View All Achievements</span>
               <i class="fa-solid fa-arrow-right text-[10px]"></i>
             </button>
@@ -2025,38 +2568,37 @@
         </div>
 
         <!-- 6. Guest Call-To-Action Card (Unauthenticated Visitors Only) -->
-        <div id="pubprof-guest-cta" class="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-700 dark:to-indigo-800 text-white p-6 sm:p-7 rounded-xl shadow-md space-y-4 hidden">
+        <div id="pubprof-guest-cta" class="bg-gradient-to-r from-sky-600 to-indigo-600 dark:from-sky-700 dark:to-indigo-800 text-white p-6 sm:p-7 rounded-xl shadow-md space-y-4 hidden">
           <div class="space-y-1.5">
             <h3 class="font-extrabold text-lg sm:text-xl">Enjoying Koran Test?</h3>
-            <p class="text-xs sm:text-sm text-blue-100 leading-relaxed max-w-lg">
+            <p class="text-xs sm:text-sm text-sky-100 leading-relaxed max-w-lg">
               Create your own account to track your progress, unlock achievements, and compete on the leaderboard.
             </p>
           </div>
           <div class="flex flex-wrap items-center gap-3 pt-1">
-            <button onclick="app.navigate('register')" class="bg-white hover:bg-slate-100 text-blue-700 font-bold text-xs px-4 py-2.5 rounded-lg transition-colors shadow-xs">
+            <button onclick="app.navigate('register')" class="bg-white hover:bg-slate-100 text-sky-700 font-bold text-xs px-4 py-2.5 rounded-lg transition-colors shadow-xs">
               Create Account
             </button>
-            <button onclick="app.navigate('login')" class="bg-blue-500/30 hover:bg-blue-500/40 text-white font-bold text-xs px-4 py-2.5 rounded-lg border border-white/20 transition-colors">
+            <button onclick="app.navigate('login')" class="bg-sky-500/30 hover:bg-sky-500/40 text-white font-bold text-xs px-4 py-2.5 rounded-lg border border-white/20 transition-colors">
               Sign In
             </button>
           </div>
         </div>
       </div>
     </section>
-
-
+  </main>
 
   <!-- AUTH INTENT MODAL -->
   <div id="modal-auth-intent" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
     <div class="absolute inset-0 bg-slate-50 dark:bg-slate-950/80 backdrop-blur-md" onclick="app.actions.closeAuthModal()"></div>
     <div class="bg-white dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-2xl relative w-full max-w-sm space-y-5 my-auto modal-card z-10" id="modal-auth-intent-content">
       <div class="text-center space-y-2">
-        <div class="w-14 h-14 mx-auto bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center text-2xl mb-3 border border-blue-500/20 shadow-inner"><i class="fa-solid fa-lock"></i></div>
+        <div class="w-14 h-14 mx-auto bg-sky-500/10 text-sky-400 rounded-2xl flex items-center justify-center text-2xl mb-3 border border-sky-500/20 shadow-inner"><i class="fa-solid fa-lock"></i></div>
         <h3 class="text-xl font-extrabold text-slate-900 dark:text-slate-100">Sign In Required</h3>
         <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Sign in or register to save test history and submit scores to Global Leaderboards.</p>
       </div>
       <div class="space-y-2.5 pt-1">
-        <button onclick="app.actions.closeAuthModal(); app.navigate('login')" class="w-full bg-blue-500 hover:bg-blue-400 text-slate-950 font-extrabold py-2.5 rounded-xl transition text-sm shadow-md shadow-blue-500/20">Sign In</button>
+        <button onclick="app.actions.closeAuthModal(); app.navigate('login')" class="w-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-extrabold py-2.5 rounded-xl transition text-sm shadow-md shadow-sky-500/20">Sign In</button>
         <button onclick="app.actions.closeAuthModal(); app.navigate('register')" class="w-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-bold py-2.5 rounded-xl transition text-sm">Create Account</button>
         <button onclick="app.actions.closeAuthModal(); app.actions.continueAsGuest()" class="w-full text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200 font-semibold py-2 rounded-xl transition text-xs">Continue as Guest</button>
       </div>
@@ -2072,19 +2614,19 @@
       </button>
 
       <div class="flex flex-col items-center text-center space-y-3 pt-1">
-        <div id="profile-preview-avatar" class="w-18 h-18 sm:w-20 sm:h-20 bg-blue-50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 text-2xl sm:text-3xl font-bold rounded-full flex items-center justify-center border-2 border-blue-200 dark:border-blue-500/30 shadow-xs overflow-hidden">
+        <div id="profile-preview-avatar" class="w-18 h-18 sm:w-20 sm:h-20 bg-sky-50 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400 text-2xl sm:text-3xl font-bold rounded-full flex items-center justify-center border-2 border-sky-200 dark:border-sky-500/30 shadow-xs overflow-hidden">
           ?
         </div>
         <div>
-          <h3 id="profile-preview-name" onclick="app.leaderboard.navigateToPublicProfile()" class="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors">—</h3>
-          <p id="profile-preview-username" onclick="app.leaderboard.navigateToPublicProfile()" class="text-xs text-slate-500 dark:text-slate-400 font-mono hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors">—</p>
+          <h3 id="profile-preview-name" onclick="app.leaderboard.navigateToPublicProfile()" class="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 hover:text-sky-600 dark:hover:text-sky-400 cursor-pointer transition-colors">—</h3>
+          <p id="profile-preview-username" onclick="app.leaderboard.navigateToPublicProfile()" class="text-xs text-slate-500 dark:text-slate-400 font-mono hover:text-sky-600 dark:hover:text-sky-400 cursor-pointer transition-colors">—</p>
         </div>
       </div>
 
       <div class="grid grid-cols-3 gap-2 bg-slate-50 dark:bg-slate-950/60 p-3.5 rounded-lg border border-slate-200 dark:border-slate-800/80 text-center">
         <div>
           <p class="text-[10px] uppercase font-bold text-slate-500">Rank</p>
-          <p id="profile-preview-rank" class="text-base font-extrabold text-blue-600 dark:text-blue-400">—</p>
+          <p id="profile-preview-rank" class="text-base font-extrabold text-sky-600 dark:text-sky-400">—</p>
         </div>
         <div>
           <p class="text-[10px] uppercase font-bold text-slate-500">Best Score</p>
@@ -2115,7 +2657,7 @@
         <button onclick="app.leaderboard.closeProfilePreview()" class="flex-1 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 font-semibold py-2.5 rounded-lg text-xs sm:text-sm transition-colors duration-120 shadow-xs">
           Close
         </button>
-        <button id="btn-view-full-profile" onclick="app.leaderboard.navigateToPublicProfile()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-slate-950 font-semibold py-2.5 rounded-lg text-xs sm:text-sm transition-colors duration-120 shadow-xs">
+        <button id="btn-view-full-profile" onclick="app.leaderboard.navigateToPublicProfile()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white dark:bg-sky-500 dark:hover:bg-sky-600 dark:text-slate-950 font-semibold py-2.5 rounded-lg text-xs sm:text-sm transition-colors duration-120 shadow-xs">
           View Full Profile
         </button>
       </div>
@@ -2151,7 +2693,7 @@
       </div>
 
       <!-- Responsive Grid Container -->
-      <div id="showcase-picker-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 overflow-y-auto flex-1 pr-1 min-h-0">
+      <div id="showcase-picker-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 overflow-y-auto flex-1 pr-1 min-h-0 content-start items-start">
         <!-- Populated dynamically -->
       </div>
 
@@ -2159,7 +2701,7 @@
       <div class="flex items-center justify-between gap-3 pt-3 border-t border-slate-100 dark:border-slate-800 shrink-0">
         <div class="flex items-center space-x-2">
           <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">Selected:</span>
-          <span id="showcase-picker-counter" class="text-xs font-bold bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full">
+          <span id="showcase-picker-counter" class="text-xs font-bold bg-sky-50 dark:bg-sky-500/10 border border-sky-200 dark:border-sky-500/20 text-sky-600 dark:text-sky-400 px-2 py-0.5 rounded-full">
             0 / 4
           </span>
         </div>
@@ -2167,7 +2709,7 @@
           <button onclick="app.achievements.closeShowcaseModal()" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium px-3.5 py-1.5 rounded-lg text-xs transition-colors duration-120">
             Cancel
           </button>
-          <button id="btn-save-showcase" onclick="app.achievements.saveShowcase()" class="bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-slate-950 font-semibold px-4 py-1.5 rounded-lg text-xs transition-colors duration-120 shadow-xs disabled:opacity-40 disabled:cursor-not-allowed">
+          <button id="btn-save-showcase" onclick="app.achievements.saveShowcase()" class="bg-sky-600 hover:bg-sky-700 text-white dark:bg-sky-500 dark:hover:bg-sky-600 dark:text-slate-950 font-semibold px-4 py-1.5 rounded-lg text-xs transition-colors duration-120 shadow-xs disabled:opacity-40 disabled:cursor-not-allowed">
             Save Changes
           </button>
         </div>
@@ -2178,7 +2720,7 @@
 
   <!-- ACHIEVEMENT UNLOCKED MODAL -->
   <div id="modal-achievement-unlocked" class="fixed inset-0 bg-slate-50 dark:bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden transition-all duration-300">
-    <div class="bg-white dark:bg-slate-900 border border-blue-500/40 w-full max-w-sm rounded-2xl p-6 text-center space-y-4 shadow-2xl relative my-auto">
+    <div class="bg-white dark:bg-slate-900 border border-sky-500/40 w-full max-w-sm rounded-2xl p-6 text-center space-y-4 shadow-2xl relative my-auto">
       
       <!-- Top Banner -->
       <div class="inline-flex items-center space-x-2 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-black px-3.5 py-1 rounded-full uppercase tracking-wider">
@@ -2199,7 +2741,7 @@
       </div>
 
       <!-- Action Button -->
-      <button onclick="app.achievements.closeUnlockModal()" class="w-full bg-blue-500 hover:bg-blue-400 text-slate-950 font-extrabold py-3 rounded-xl text-sm transition shadow-lg shadow-blue-500/20">
+      <button onclick="app.achievements.closeUnlockModal()" class="w-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-extrabold py-3 rounded-xl text-sm transition shadow-lg shadow-sky-500/20">
         Continue
       </button>
     </div>
@@ -2230,10 +2772,10 @@
         </div>
         <div class="flex justify-between items-center text-slate-500 dark:text-slate-400">
           <span>Current Progress</span>
-          <span id="ach-detail-progress-text" class="font-bold text-blue-400">5 / 10 (50%)</span>
+          <span id="ach-detail-progress-text" class="font-bold text-sky-400">5 / 10 (50%)</span>
         </div>
         <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
-          <div id="ach-detail-progress-bar" class="bg-blue-500 h-2 rounded-full transition-all duration-300" style="width: 50%"></div>
+          <div id="ach-detail-progress-bar" class="bg-sky-500 h-2 rounded-full transition-all duration-300" style="width: 50%"></div>
         </div>
         <div id="ach-detail-status-wrap" class="flex justify-between items-center pt-1 border-t border-slate-200 dark:border-slate-700/40 text-slate-500 dark:text-slate-400">
           <span>Status</span>
@@ -2254,7 +2796,7 @@
         <i class="fa-solid fa-xmark"></i>
       </button>
       <div class="flex items-center space-x-3 border-b border-slate-200 dark:border-slate-800 pb-3">
-        <div class="w-10 h-10 bg-blue-500/10 text-blue-400 rounded-xl flex items-center justify-center text-lg"><i id="info-modal-icon" class="fa-solid fa-circle-info"></i></div>
+        <div class="w-10 h-10 bg-sky-500/10 text-sky-400 rounded-xl flex items-center justify-center text-lg"><i id="info-modal-icon" class="fa-solid fa-circle-info"></i></div>
         <h3 id="info-modal-title" class="text-lg font-extrabold text-slate-900 dark:text-slate-100">Information</h3>
       </div>
       <div id="info-modal-body" class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed space-y-2 max-h-60 overflow-y-auto pr-1">
@@ -2280,7 +2822,7 @@
       </div>
 
       <div class="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-3 pt-2">
-        <button id="btn-inactivity-stay" onclick="app.inactivity.handleStayLoggedIn()" class="w-full sm:flex-1 bg-blue-500 hover:bg-blue-600 text-slate-950 font-bold py-3 rounded-xl transition text-sm shadow-lg shadow-blue-500/20">
+        <button id="btn-inactivity-stay" onclick="app.inactivity.handleStayLoggedIn()" class="w-full sm:flex-1 bg-sky-500 hover:bg-sky-600 text-slate-950 font-bold py-3 rounded-xl transition text-sm shadow-lg shadow-sky-500/20">
           Stay Logged In
         </button>
         <button id="btn-inactivity-logout" onclick="app.inactivity.handleSignOut()" class="w-full sm:flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-bold py-3 rounded-xl transition text-sm">
@@ -2298,7 +2840,7 @@
       </button>
 
       <div class="flex items-center space-x-3 border-b border-slate-200 dark:border-slate-800 pb-4">
-        <div class="w-10 h-10 bg-blue-500/10 text-blue-400 rounded-xl flex items-center justify-center text-lg">
+        <div class="w-10 h-10 bg-sky-500/10 text-sky-400 rounded-xl flex items-center justify-center text-lg">
           <i class="fa-solid fa-key"></i>
         </div>
         <div>
@@ -2312,7 +2854,7 @@
         <div>
           <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Current Password</label>
           <div class="relative">
-            <input type="password" id="change-curr-pwd" required class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 pr-10 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 transition" placeholder="••••••••">
+            <input type="password" id="change-curr-pwd" required class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 pr-10 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-sky-500 transition" placeholder="••••••••">
             <button type="button" onclick="app.actions.toggleChangePasswordVisibility('change-curr-pwd', 'change-curr-pwd-eye')" class="absolute right-3 top-3 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200">
               <i id="change-curr-pwd-eye" class="fa-solid fa-eye text-xs"></i>
             </button>
@@ -2323,7 +2865,7 @@
         <div>
           <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">New Password</label>
           <div class="relative">
-            <input type="password" id="change-new-pwd" required class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 pr-10 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 transition" placeholder="••••••••">
+            <input type="password" id="change-new-pwd" required class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 pr-10 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-sky-500 transition" placeholder="••••••••">
             <button type="button" onclick="app.actions.toggleChangePasswordVisibility('change-new-pwd', 'change-new-pwd-eye')" class="absolute right-3 top-3 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200">
               <i id="change-new-pwd-eye" class="fa-solid fa-eye text-xs"></i>
             </button>
@@ -2344,7 +2886,7 @@
         <div>
           <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Confirm New Password</label>
           <div class="relative">
-            <input type="password" id="change-confirm-pwd" required class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 pr-10 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 transition" placeholder="••••••••">
+            <input type="password" id="change-confirm-pwd" required class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 pr-10 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-sky-500 transition" placeholder="••••••••">
             <button type="button" onclick="app.actions.toggleChangePasswordVisibility('change-confirm-pwd', 'change-confirm-pwd-eye')" class="absolute right-3 top-3 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200">
               <i id="change-confirm-pwd-eye" class="fa-solid fa-eye text-xs"></i>
             </button>
@@ -2357,7 +2899,7 @@
           <button type="button" onclick="app.actions.closeChangePasswordModal()" class="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold py-2.5 rounded-xl transition text-sm">
             Cancel
           </button>
-          <button type="submit" id="btn-change-pwd-submit" class="flex-1 bg-blue-500 hover:bg-blue-400 text-slate-950 font-extrabold py-2.5 rounded-xl transition shadow-lg shadow-blue-500/20 text-sm flex items-center justify-center space-x-2">
+          <button type="submit" id="btn-change-pwd-submit" class="flex-1 bg-sky-500 hover:bg-sky-400 text-slate-950 font-extrabold py-2.5 rounded-xl transition shadow-lg shadow-sky-500/20 text-sm flex items-center justify-center space-x-2">
             <span>Save Password</span>
           </button>
         </div>
@@ -2369,13 +2911,13 @@
   <footer class="hidden md:block bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-6 px-4 mt-auto">
     <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center space-y-3 md:space-y-0">
       <div class="flex items-center space-x-2">
-        <div class="bg-blue-600 text-white p-1 rounded font-bold text-xs shadow-xs">KT</div>
+        <div class="bg-sky-600 text-white p-1 rounded font-bold text-xs shadow-xs">KT</div>
         <span class="font-bold text-sm text-slate-700 dark:text-slate-300">Koran Test</span>
       </div>
       <div class="flex space-x-4 text-xs text-slate-500">
-        <button onclick="app.navigate('home')" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-120">Home</button>
-        <button onclick="app.navigate('articles')" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-120">Learn</button>
-        <button onclick="app.navigate('leaderboard')" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-120">Leaderboard</button>
+        <button onclick="app.navigate('home')" class="hover:text-sky-600 dark:hover:text-sky-400 transition-colors duration-120">Home</button>
+        <button onclick="app.navigate('articles')" class="hover:text-sky-600 dark:hover:text-sky-400 transition-colors duration-120">Learn</button>
+        <button onclick="app.navigate('leaderboard')" class="hover:text-sky-600 dark:hover:text-sky-400 transition-colors duration-120">Leaderboard</button>
       </div>
       <p class="text-xs text-slate-500 dark:text-slate-400">© 2026 Koran Test. All rights reserved.</p>
     </div>

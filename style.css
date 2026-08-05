@@ -10,27 +10,27 @@
 
 /* Color Palette & Layout Variables */
 :root {
-  /* Light Theme Defaults (Apple / Arc / Notion Style) */
-  --bg-primary: #f7f9fc;
+  /* Light Theme Defaults (White & Ocean Blue / Biru Laut) */
+  --bg-primary: #f8fafc;
   --bg-secondary: #ffffff;
   --bg-surface: #ffffff;
-  --bg-muted: #f1f5f9;
-  --border: #e5e7eb;
-  --border-strong: #d1d5db;
+  --bg-muted: #f0f9ff;
+  --border: #e2e8f0;
+  --border-strong: #bae6fd;
   
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
-  --primary-dark: #1e40af;
-  --primary-light: #dbeafe;
-  --primary-border: #93c5fd;
+  --primary: #0284c7;
+  --primary-hover: #0369a1;
+  --primary-dark: #075985;
+  --primary-light: #e0f2fe;
+  --primary-border: #7dd3fc;
   
   --text-primary: #0f172a;
-  --text-secondary: #64748b;
-  --text-muted: #94a3b8;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
   
-  --success: #22c55e;
-  --warning: #f59e0b;
-  --error: #ef4444;
+  --success: #059669;
+  --warning: #d97706;
+  --error: #dc2626;
 
   /* Mobile Layout System Variables */
   --mobile-header-height: 3.5rem;
@@ -39,10 +39,10 @@
   --mobile-bottom-spacing: calc(var(--mobile-nav-height) + var(--safe-area-bottom) + 2rem);
 
   /* Elevation & Shadows */
-  --shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.03);
-  --shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.03);
-  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -2px rgba(15, 23, 42, 0.03);
-  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.05), 0 4px 6px -4px rgba(15, 23, 42, 0.03);
+  --shadow-xs: 0 1px 2px 0 rgba(2, 132, 199, 0.04);
+  --shadow-sm: 0 1px 3px 0 rgba(2, 132, 199, 0.06), 0 1px 2px -1px rgba(2, 132, 199, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(2, 132, 199, 0.06), 0 2px 4px -2px rgba(2, 132, 199, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(2, 132, 199, 0.06), 0 4px 6px -4px rgba(2, 132, 199, 0.04);
 }
 
 /* Dark Mode Variable Overrides */
@@ -54,11 +54,11 @@
   --border: #334155;
   --border-strong: #475569;
   
-  --primary: #3b82f6;
-  --primary-hover: #60a5fa;
-  --primary-dark: #2563eb;
-  --primary-light: rgba(59, 130, 246, 0.15);
-  --primary-border: rgba(59, 130, 246, 0.3);
+  --primary: #38bdf8;
+  --primary-hover: #7dd3fc;
+  --primary-dark: #0284c7;
+  --primary-light: rgba(56, 189, 248, 0.15);
+  --primary-border: rgba(56, 189, 248, 0.3);
   
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
