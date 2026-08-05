@@ -1234,29 +1234,33 @@
 </section>
 
     <!-- VIEW 7: PROFILE -->
-    <section id="view-profile" class="page-view max-w-2xl mx-auto space-y-6 hidden">
-        <button id="profile-edit-btn" onclick="app.navigate('edit-profile')" class="absolute top-4 right-4 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold px-3.5 py-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 hidden transition-colors duration-120"><i class="fa-solid fa-pen mr-1.5"></i>Edit</button>
+    <section id="view-profile" class="page-view max-w-2xl mx-auto space-y-6 hidden relative">
+        <button id="profile-edit-btn" onclick="app.navigate('edit-profile')" class="absolute top-4 right-4 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold px-3.5 py-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 hidden transition-colors duration-120 z-10"><i class="fa-solid fa-pen mr-1.5"></i>Edit</button>
         
-        <div id="profile-avatar" class="w-20 h-20 bg-sky-50 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400 text-3xl font-bold rounded-full flex items-center justify-center flex-shrink-0 border-2 border-sky-200 dark:border-sky-500/30 overflow-hidden shadow-xs">?</div>
+      <!-- Profile Header Card -->
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs">
+        <div class="flex flex-col items-center md:flex-row md:items-start gap-4">
+          <div id="profile-avatar" class="w-20 h-20 bg-sky-50 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400 text-3xl font-bold rounded-full flex items-center justify-center flex-shrink-0 border-2 border-sky-200 dark:border-sky-500/30 overflow-hidden shadow-xs">?</div>
         
-        <div class="text-center md:text-left space-y-1 flex-1">
-          <div class="flex items-center justify-center md:justify-start space-x-2">
-            <h2 id="profile-displayname" class="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100">Guest User</h2>
-            <button type="button" id="btn-copy-profile-displayname" onclick="app.userSearchService.copyText(app.state.user?.displayName || app.state.user?.username, 'Display Name')" title="Copy Display Name" class="hover:text-sky-500 transition text-slate-400 dark:text-slate-500 focus:outline-none p-0.5">
-              <i class="fa-regular fa-copy text-sm md:text-base"></i>
-            </button>
-          </div>
-          <p id="profile-username" class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">@User_Guest</p>
-          <div id="profile-userid-container" class="flex items-center justify-center md:justify-start space-x-1.5 text-xs font-mono mt-0.5">
-            <span class="font-medium text-slate-400 dark:text-slate-500">User ID</span>
-            <strong id="profile-userid" class="text-slate-700 dark:text-slate-300 font-bold select-all font-mono">-</strong>
-            <button type="button" id="btn-copy-profile-userid" onclick="app.userIdService.copyUserId(app.state.user?.user_id)" title="Copy User ID" class="hover:text-sky-500 transition text-slate-400 dark:text-slate-500 focus:outline-none p-0.5">
-              <i class="fa-regular fa-copy text-xs"></i>
-            </button>
-          </div>
-          <p id="profile-bio" class="text-xs text-slate-500 mt-1 line-clamp-2">No bio added.</p>
-          <div class="pt-1 flex items-center justify-center md:justify-start space-x-4">
-            <span class="text-xs text-slate-500 flex items-center"><i class="fa-solid fa-calendar-days mr-1.5"></i> <span id="profile-joindate">Joined -</span></span>
+          <div class="text-center md:text-left space-y-1 flex-1 min-w-0">
+            <div class="flex items-center justify-center md:justify-start space-x-2">
+              <h2 id="profile-displayname" class="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100 truncate">Guest User</h2>
+              <button type="button" id="btn-copy-profile-displayname" onclick="app.userSearchService.copyText(app.state.user?.displayName || app.state.user?.username, 'Display Name')" title="Copy Display Name" class="hover:text-sky-500 transition text-slate-400 dark:text-slate-500 focus:outline-none p-0.5 shrink-0">
+                <i class="fa-regular fa-copy text-sm md:text-base"></i>
+              </button>
+            </div>
+            <p id="profile-username" class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">@User_Guest</p>
+            <div id="profile-userid-container" class="flex items-center justify-center md:justify-start space-x-1.5 text-xs font-mono mt-0.5">
+              <span class="font-medium text-slate-400 dark:text-slate-500">User ID</span>
+              <strong id="profile-userid" class="text-slate-700 dark:text-slate-300 font-bold select-all font-mono">-</strong>
+              <button type="button" id="btn-copy-profile-userid" onclick="app.userIdService.copyUserId(app.state.user?.user_id)" title="Copy User ID" class="hover:text-sky-500 transition text-slate-400 dark:text-slate-500 focus:outline-none p-0.5">
+                <i class="fa-regular fa-copy text-xs"></i>
+              </button>
+            </div>
+            <p id="profile-bio" class="text-xs text-slate-500 mt-1 line-clamp-2">No bio added.</p>
+            <div class="pt-1 flex items-center justify-center md:justify-start space-x-4">
+              <span class="text-xs text-slate-500 flex items-center"><i class="fa-solid fa-calendar-days mr-1.5"></i> <span id="profile-joindate">Joined -</span></span>
+            </div>
           </div>
         </div>
       </div>
@@ -1404,6 +1408,8 @@
           </div>
 
         </div>
+      </div>
+
       <!-- Preferences Group -->
       <div class="space-y-2">
         <h4 class="font-bold text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider px-1">Preferences</h4>
